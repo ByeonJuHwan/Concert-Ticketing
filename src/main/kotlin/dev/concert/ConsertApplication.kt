@@ -1,4 +1,4 @@
-package dev.consert
+package dev.concert
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
