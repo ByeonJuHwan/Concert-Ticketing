@@ -1,7 +1,7 @@
 package dev.concert.presentation
 
 import dev.concert.ApiResult
-import dev.concert.presentation.request.PaymentRequest
+import dev.concert.presentation.request.PointChargeRequest
 import dev.concert.presentation.response.point.CurrentPointResponse
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -16,7 +16,7 @@ class PointController {
 
     @PutMapping("/charge")
     fun pointCharge(
-        @RequestBody paymentRequest: PaymentRequest,
+        @RequestBody pointRequest: PointChargeRequest,
     ): ApiResult<CurrentPointResponse> {
         return ApiResult(
             CurrentPointResponse(5000)
