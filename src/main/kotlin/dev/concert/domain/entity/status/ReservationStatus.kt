@@ -1,4 +1,4 @@
-package dev.concert.infrastructure.entity.status
+package dev.concert.domain.entity.status
 
 enum class ReservationStatus {
     PENDING, // 예약이 임시로 저장된 상태

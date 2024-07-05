@@ -1,15 +1,20 @@
-package dev.concert.infrastructure.entity
+package dev.concert.domain.entity
 
+import jakarta.persistence.ConstraintMode
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
 @Entity
 @Table(name = "concert_option")
 class ConcertOptionEntity (
-    concertId: Long,
+    concert: ConcertEntity,
     concertDate : String,
     concertTime : String,
     concertVenue : String,
@@ -19,7 +24,9 @@ class ConcertOptionEntity (
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long = 0
 
-    var concertId : Long = concertId
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "concert_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    var concert : ConcertEntity = concert
         protected set
 
     var concertVenue : String = concertVenue

@@ -1,6 +1,6 @@
 package dev.concert.presentation.response.token
 
-import dev.concert.infrastructure.entity.status.QueueTokenStatus
+import dev.concert.domain.entity.status.QueueTokenStatus
 
 data class QueueTokenStatusResponse(
     val token: String,
