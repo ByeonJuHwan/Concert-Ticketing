@@ -1,4 +1,4 @@
-package dev.concert.infrastructure.entity.status
+package dev.concert.domain.entity.status
 
 enum class SeatStatus {
     AVAILABLE,

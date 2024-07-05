@@ -1,4 +1,4 @@
-package dev.concert.infrastructure.entity
+package dev.concert.domain.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.ConstraintMode
@@ -15,18 +15,24 @@ import jakarta.persistence.Table
 @Entity
 @Table(name = "point")
 class PointEntity(
-    userId: Long,
+    user: UserEntity,
+    point : Long
 ) {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
 
-    @Column(nullable = false)
-    var userId : Long = userId
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    var user : UserEntity = user
         protected set
 
     @Column(nullable = false)
-    var point : Long = 0
+    var point : Long = point
         protected set
+
+    fun charge(amount: Long) {
+        if (amount <= 0) throw IllegalArgumentException("0보다 작은 값을 충전할 수 없습니다")
+        point += amount
+    }
 }

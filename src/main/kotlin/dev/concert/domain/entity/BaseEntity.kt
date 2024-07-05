@@ -1,4 +1,4 @@
-package dev.concert.infrastructure.entity
+package dev.concert.domain.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
