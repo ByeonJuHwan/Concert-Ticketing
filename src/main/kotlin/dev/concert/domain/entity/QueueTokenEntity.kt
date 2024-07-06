@@ -18,14 +18,12 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-@Table(name = "concert_option")
+@Table(name = "queue_token")
 class QueueTokenEntity (
     token : String,
     user : UserEntity,
-    userUUID : UUID,
     queueOrder : Int,
     remainingTime : Long,
-    expiresAt : LocalDateTime,
 ) : BaseEntity() {
 
     @Id
@@ -41,17 +39,20 @@ class QueueTokenEntity (
     var user : UserEntity = user
         protected set
 
-    var userUUID : UUID = userUUID
-        protected set
-
     @Column(nullable = false)
     var queueOrder: Int = queueOrder
         protected set
 
     @Column(nullable = false)
     var remainingTime: Long = remainingTime// 잔여 시간 (초 단위)
+        protected set
+
+    // 만료 시간은 1시간으로 설정
+    var expiredAt: LocalDateTime = LocalDateTime.now().plusHours(1)
+        protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val status: QueueTokenStatus = QueueTokenStatus.ACTIVE
+    var status: QueueTokenStatus = QueueTokenStatus.PENDING
+        protected set
 }
