@@ -32,7 +32,7 @@ sequenceDiagram
     participant TokenService
     participant TokenRepository
 
-    Client->>+TokenController: [POST] /queue/token
+    Client->>+TokenController: [POST] /queue/tokens
     TokenController->>+TokenService: 토큰 발급 요청(userId)
     TokenService->>+TokenRepository: 토큰 저장(TokenEntity)
     TokenRepository-->>-TokenService: 토큰
@@ -269,12 +269,12 @@ sequenceDiagram
 
 | Method | URI | Description         |
 |-----|-----|---------------------|
-| POST |/queue/token| 대기열 등록| 
+| POST |/queue/tokens| 대기열 등록| 
 
 **Request**
 
 ```https
-  curl -X POST https://{SERVER_URL}/queue/token \
+  curl -X POST https://{SERVER_URL}/queue/tokens \
   -H "Content-Type: application/json" \
   -d '{ \
         "userId": "{userId}", \
