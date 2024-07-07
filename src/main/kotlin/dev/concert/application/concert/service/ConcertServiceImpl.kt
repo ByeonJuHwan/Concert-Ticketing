@@ -1,6 +1,7 @@
 package dev.concert.application.concert.service
 
 import dev.concert.application.concert.dto.ConcertDatesDto
+import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
 import dev.concert.domain.ConcertRepository
 import org.springframework.stereotype.Service
@@ -30,5 +31,14 @@ class ConcertServiceImpl (
             concertVenue = it.concertVenue,
             concertDate = it.concertDate,
         )}
+    }
+
+    override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
+        return concertRepository.getAvailableSeats(concertOptionId).map { ConcertSeatsDto(
+            seatId = it.id,
+            seatNo = it.seatNo,
+            price = it.price,
+            status = it.seatStatus,
+        ) }
     }
 }
