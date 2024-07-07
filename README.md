@@ -382,7 +382,7 @@ curl -X GET https://{SERVER_URL}/concerts\
 
 | Method | URI | Description         |
 |-----|-----|---------------------|
-| GET |/concerts/{concertId}/dates/available |예약 가능한 날짜 조회 | 
+| GET |/concerts/{concertId}/available-dates |예약 가능한 날짜 조회 | 
 
 **Request**
 
