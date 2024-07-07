@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface TokenJpaRepository : JpaRepository<QueueTokenEntity, Long> {
 
     fun findTopByStatusOrderByQueueOrderDesc(status: QueueTokenStatus): QueueTokenEntity?
+    fun findByToken(token : String): QueueTokenEntity?
 }
