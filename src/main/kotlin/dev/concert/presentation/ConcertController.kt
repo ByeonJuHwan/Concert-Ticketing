@@ -2,7 +2,6 @@ package dev.concert.presentation
 
 import dev.concert.ApiResult
 import dev.concert.application.concert.facade.ConcertFacade
-import dev.concert.presentation.response.concert.ConcertAvailableDatesResponse
 import dev.concert.presentation.response.concert.ConcertsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -21,9 +20,9 @@ class ConcertController (
 ) {
 
 
-    @Operation(summary = "콘서트 예약 가능 날짜 조회", description = "콘서트 예약 가능 날짜를 조회합니다.")
+    @Operation(summary = "콘서트 목록 조회 API", description = "콘서트 목록을 조회합니다")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "콘서트 예약 가능 날짜 조회 성공"),
+        ApiResponse(responseCode = "200", description = "콘서트 목록 조회 성공"),
     )
     @GetMapping
     fun getConcerts(): ApiResult<ConcertsResponse> {
