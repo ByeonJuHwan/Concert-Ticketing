@@ -1,5 +1,6 @@
 package dev.concert
 
+import dev.concert.exception.TokenNotFoundException
 import dev.concert.exception.UserNotFountException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,6 +29,14 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
         return ResponseEntity(
             ErrorResponse("404", e.message ?: "존재하는 회원이 없습니다"),
             HttpStatus.NOT_FOUND
+        )
+    }
+
+    @ExceptionHandler(TokenNotFoundException::class)
+    fun handleTokenNotFoundException(e: TokenNotFoundException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("401", e.message ?: "토큰이 존재하지 않습니다"),
+            HttpStatus.UNAUTHORIZED
         )
     }
 
