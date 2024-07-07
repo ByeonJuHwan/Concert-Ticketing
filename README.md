@@ -706,7 +706,7 @@ erDiagram
         Long userId
         String token
         Int queueOrder
-        Long remainingTime
+	LocalDateTime expiresAt 
         QueueTokenStatus status
         LocalDateTime createdAt
         LocalDateTime updatedBy
