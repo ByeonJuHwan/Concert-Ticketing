@@ -1,10 +1,17 @@
 package dev.concert.application.concert.service
 
+import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.domain.ConcertRepository
+import dev.concert.domain.ReservationRepository
+import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
+import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.exception.SeatIsNotAvailableException
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -19,6 +26,12 @@ class ConcertServiceImplTest {
 
     @Mock
     private lateinit var concertRepository: ConcertRepository
+
+    @Mock
+    private lateinit var reservationRepository: ReservationRepository
+
+    @Mock
+    private lateinit var userRepository: UserRepository
 
     @InjectMocks
     private lateinit var concertService: ConcertServiceImpl
@@ -134,5 +147,75 @@ class ConcertServiceImplTest {
 
         // then
         assertEquals(2, availableSeats.size)
+    }
+
+    @Test
+    fun `예약가능한 좌석을 예약하면 좌석이 임시저장 상태가된다`() {
+        // given
+        val request = ConcertReservationDto(
+            userId = 1L,
+            seatId = 1L
+        )
+
+        val user = stubUserEntity()
+        val seat = stubSeatEntity()
+
+        given(userRepository.findById(request.userId)).willReturn(user)
+        given(concertRepository.getSeatWithLock(request.seatId)).willReturn(seat)
+
+        // when
+        val reservation = concertService.reserveSeat(request)
+
+        // then
+        assertThat(SeatStatus.TEMPORARILY_ASSIGNED).isEqualTo(seat.seatStatus)
+        assertThat(reservation).isNotNull
+    }
+
+    @Test
+    fun `임시저장되거나 이미 예약된 좌석을 예약하려하면 SeatIsNotAvailableException 예외가 발생한다`() {
+        // given
+        val request = ConcertReservationDto(
+            userId = 1L,
+            seatId = 1L
+        )
+
+        val user = stubUserEntity()
+        val seat = stubSeatEntity()
+
+        seat.changeStatus(SeatStatus.TEMPORARILY_ASSIGNED)
+
+        given(userRepository.findById(request.userId)).willReturn(user)
+        given(concertRepository.getSeatWithLock(request.seatId)).willReturn(seat)
+
+        // when
+        assertThatThrownBy { concertService.reserveSeat(request) }
+            .isInstanceOf(SeatIsNotAvailableException::class.java)
+            .hasMessage("예약 가능한 상태가 아닙니다")
+    }
+
+    private fun stubUserEntity() = UserEntity(
+        name = "변주환",
+    )
+
+    private fun stubSeatEntity(): SeatEntity {
+        val seat = SeatEntity(
+            seatNo = 1,
+            price = 100000,
+            concertOption = ConcertOptionEntity(
+                concert = ConcertEntity(
+                    concertName = "새해 콘서트",
+                    singer = "에스파",
+                    startDate = "20241201",
+                    endDate = "20241201",
+                    reserveStartDate = "20241201",
+                    reserveEndDate = "20241201"
+                ),
+                availableSeats = 50,
+                concertTime = "14:00",
+                concertVenue = "올림픽공원",
+                concertDate = "20241201"
+            ),
+        )
+        return seat
     }
 }
