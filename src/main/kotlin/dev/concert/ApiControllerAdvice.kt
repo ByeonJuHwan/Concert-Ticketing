@@ -53,7 +53,7 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
     @ExceptionHandler(SeatIsNotAvailableException::class)
     fun handleSeatIsNotAvailableException(e: SeatIsNotAvailableException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(
-            ErrorResponse("SEAT_NOT_AVAILABLE", e.message ?: "예약 가능한 상태가 아닙니다"),
+            ErrorResponse("409", e.message ?: "예약 가능한 상태가 아닙니다"),
             HttpStatus.CONFLICT
         )
     }

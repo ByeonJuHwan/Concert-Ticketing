@@ -57,19 +57,17 @@ class PointController (
         ApiResponse(responseCode = "200", description = "포인트 조회 성공"),
         ApiResponse(
             responseCode = "404",
-            description = "사용자를 찾을 수 없음",
+            description = "사용자를 찾을 수 없습니다",
             content = [Content(
                 mediaType = "application/json",
-                examples = [
-                    ExampleObject(
-                        value = """
-                                {
-                                    "code": 404
-                                    "message": "사용자를 찾을 수 없습니다."
-                                }
-                            """
-                    )
-                ]
+                examples = [ExampleObject(
+                    value = """
+                        {
+                            "code": "404",
+                            "message": "사용자를 찾을 수 없습니다"
+                        }
+                    """
+                )]
             )]
         ),
     )
