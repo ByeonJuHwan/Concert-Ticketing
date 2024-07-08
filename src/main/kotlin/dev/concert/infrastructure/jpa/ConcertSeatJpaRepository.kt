@@ -5,10 +5,18 @@ import dev.concert.domain.entity.QConcertOptionEntity.concertOptionEntity
 import dev.concert.domain.entity.QSeatEntity.seatEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.status.SeatStatus
+import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
-interface ConcertSeatJpaRepository : JpaRepository<SeatEntity, Long>, ConcertSeatJpaRepositoryCustom
+interface ConcertSeatJpaRepository : JpaRepository<SeatEntity, Long>, ConcertSeatJpaRepositoryCustom {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId")
+    fun findByIdWithLock(seatId: Long): SeatEntity?
+}
 
 interface ConcertSeatJpaRepositoryCustom {
     fun findAvailableSeats(concertOptionId: Long): List<SeatEntity>

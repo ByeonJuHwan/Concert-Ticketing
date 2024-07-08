@@ -22,7 +22,6 @@ class SeatEntity (
     price : Long,
     seatNo : Int,
 ){
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
@@ -44,4 +43,8 @@ class SeatEntity (
     @Column(nullable = false)
     var price : Long = price
         protected set
+
+    fun changeStatus(reserved: SeatStatus) {
+        this.seatStatus = reserved
+    }
 }
