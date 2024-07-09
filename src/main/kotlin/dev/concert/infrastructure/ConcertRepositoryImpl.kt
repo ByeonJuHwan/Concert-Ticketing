@@ -30,4 +30,8 @@ class ConcertRepositoryImpl (
     override fun getSeatWithLock(seatId: Long): SeatEntity? {
         return concertSeatJpaRepository.findByIdWithLock(seatId)
     }
+
+    override fun saveConcert(concertEntity: ConcertEntity): ConcertEntity {
+        return concertJpaRepository.save(concertEntity)
+    }
 }

@@ -1,11 +1,8 @@
 package dev.concert.application.point.service
 
-import dev.concert.application.point.dto.PointRequestDto
 import dev.concert.domain.PointRepository
-import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -20,9 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 class PointServiceImplTest {
 
     @Mock
-    private lateinit var userRepository: UserRepository
-
-    @Mock
     private lateinit var pointRepository: PointRepository
 
     @InjectMocks
@@ -31,16 +25,13 @@ class PointServiceImplTest {
     @Test
     fun `처음충전한 회원은 1000원을 충전하면 1000원 충전이 성공한다`() {
         // given
-        val userId = 1L
         val amount = 1000L
         val user = UserEntity(name = "test")
         val point = PointEntity(user,0)
 
         // when
-        `when`(userRepository.findById(userId)).thenReturn(user)
         `when`(pointRepository.findByUser(user)).thenReturn(point)
-        val chargePoints = pointService.chargePoints(PointRequestDto(userId, amount))
-
+        val chargePoints = pointService.chargePoints(user , amount)
         // then
         assertThat(chargePoints.point).isEqualTo(1000L)
     }
@@ -54,9 +45,8 @@ class PointServiceImplTest {
         val point = PointEntity(user, 1000L)
 
         // when
-        `when`(userRepository.findById(userId)).thenReturn(user)
         `when`(pointRepository.findByUser(user)).thenReturn(point)
-        val chargePoints = pointService.chargePoints(PointRequestDto(userId, amount))
+        val chargePoints = pointService.chargePoints(user , amount)
 
         // then
         assertThat(chargePoints.point).isEqualTo(2000L)
@@ -71,11 +61,10 @@ class PointServiceImplTest {
         val point = PointEntity(user,0)
 
         // when
-        `when`(userRepository.findById(userId)).thenReturn(user)
         `when`(pointRepository.findByUser(user)).thenReturn(point)
 
         // then
-        assertThatThrownBy { pointService.chargePoints(PointRequestDto(userId, amount)) }
+        assertThatThrownBy { pointService.chargePoints(user , amount) }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage("0보다 작은 값을 충전할 수 없습니다")
     }
@@ -88,9 +77,8 @@ class PointServiceImplTest {
         val point = PointEntity(user, 1000L)
 
         // when
-        `when`(userRepository.findById(userId)).thenReturn(user)
         `when`(pointRepository.findByUser(user)).thenReturn(point)
-        val currentPoint = pointService.getCurrentPoint(userId)
+        val currentPoint = pointService.getCurrentPoint(user)
 
         // then
         assertThat(currentPoint.point).isEqualTo(1000L)
