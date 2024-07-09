@@ -5,6 +5,8 @@ import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.util.Base64Util
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -40,5 +42,38 @@ class TokenServiceImplTest {
 
         // then
         assertNotNull(token)
+    }
+
+    @Test
+    fun `토큰이 만료되지 않았을 때 true를 반환해야 한다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val token = "test"
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user, queueOrder = 1)
+
+        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+
+        // when
+        val isTokenAllowed = tokenServiceImpl.isTokenAllowed(token)
+
+        // then
+        assertTrue(isTokenAllowed)
+    }
+
+    @Test
+    fun `토큰이 주어지면 해당 토큰에 대한 정보를 반환해야 한다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val token = "test"
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user, queueOrder = 1)
+
+        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+
+        // when
+        val tokenResponseDto = tokenServiceImpl.getToken(token)
+
+        // then
+        assertNotNull(tokenResponseDto)
+        assertThat(tokenResponseDto.token).isEqualTo(token)
     }
 }

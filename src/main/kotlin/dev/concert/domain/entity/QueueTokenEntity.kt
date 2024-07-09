@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Entity
 @Table(name = "queue_token")
@@ -23,7 +22,6 @@ class QueueTokenEntity (
     token : String,
     user : UserEntity,
     queueOrder : Int,
-    remainingTime : Long,
 ) : BaseEntity() {
 
     @Id
@@ -43,12 +41,8 @@ class QueueTokenEntity (
     var queueOrder: Int = queueOrder
         protected set
 
-    @Column(nullable = false)
-    var remainingTime: Long = remainingTime// 잔여 시간 (초 단위)
-        protected set
-
     // 만료 시간은 1시간으로 설정
-    var expiredAt: LocalDateTime = LocalDateTime.now().plusHours(1)
+    var expiresAt: LocalDateTime = LocalDateTime.now().plusHours(1)
         protected set
 
     @Enumerated(EnumType.STRING)

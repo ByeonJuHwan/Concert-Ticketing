@@ -20,4 +20,8 @@ class TokenRepositoryImpl(
             return it.queueOrder
         } ?: return 0
     }
+
+    override fun findByToken(token: String): QueueTokenEntity? {
+        return tokenJpaRepository.findByToken(token)
+    }
 }
