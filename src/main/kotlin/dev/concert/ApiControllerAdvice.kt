@@ -1,5 +1,7 @@
 package dev.concert
 
+import dev.concert.exception.NotFoundSeatException
+import dev.concert.exception.SeatIsNotAvailableException
 import dev.concert.exception.TokenNotFoundException
 import dev.concert.exception.UserNotFountException
 import org.slf4j.Logger
@@ -37,6 +39,22 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
         return ResponseEntity(
             ErrorResponse("401", e.message ?: "토큰이 존재하지 않습니다"),
             HttpStatus.UNAUTHORIZED
+        )
+    }
+
+    @ExceptionHandler(NotFoundSeatException::class)
+    fun handleNotFoundSeatException(e: NotFoundSeatException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("404", e.message ?: "존재하는 좌석이 없습니다"),
+            HttpStatus.NOT_FOUND
+        )
+    }
+
+    @ExceptionHandler(SeatIsNotAvailableException::class)
+    fun handleSeatIsNotAvailableException(e: SeatIsNotAvailableException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("409", e.message ?: "예약 가능한 상태가 아닙니다"),
+            HttpStatus.CONFLICT
         )
     }
 

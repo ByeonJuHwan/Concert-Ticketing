@@ -15,6 +15,7 @@ import jakarta.persistence.Table
 @Table(name = "concert_option")
 class ConcertOptionEntity (
     concert: ConcertEntity,
+    availableSeats : Int,
     concertDate : String,
     concertTime : String,
     concertVenue : String,
@@ -27,6 +28,9 @@ class ConcertOptionEntity (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "concert_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
     var concert : ConcertEntity = concert
+        protected set
+
+    var availableSeats : Int = availableSeats
         protected set
 
     var concertVenue : String = concertVenue
