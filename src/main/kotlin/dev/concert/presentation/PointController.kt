@@ -1,7 +1,7 @@
 package dev.concert.presentation
 
 import dev.concert.ApiResult
-import dev.concert.application.point.facade.PointFacade
+import dev.concert.application.point.facade.UserPointFacade
 import dev.concert.presentation.request.PointChargeRequest
 import dev.concert.presentation.request.toDto
 import dev.concert.presentation.response.point.CurrentPointResponse
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/points")
 class PointController (
-    private val pointFacade: PointFacade,
+    private val userPointFacade: UserPointFacade,
 ) {
 
     @Operation(
@@ -37,7 +37,7 @@ class PointController (
     fun pointCharge(
         @RequestBody pointRequest: PointChargeRequest,
     ): ApiResult<CurrentPointResponse> {
-        val response = pointFacade.chargePoints(pointRequest.toDto())
+        val response = userPointFacade.chargePoints(pointRequest.toDto())
         return ApiResult(data = CurrentPointResponse.from(response))
     }
 
@@ -78,7 +78,7 @@ class PointController (
         @PathVariable userId: Long,
     ): ApiResult<CurrentPointResponse> {
 
-        val response = pointFacade.getCurrentPoint(userId)
+        val response = userPointFacade.getCurrentPoint(userId)
         return ApiResult(data = CurrentPointResponse.from(response))
     }
 }
