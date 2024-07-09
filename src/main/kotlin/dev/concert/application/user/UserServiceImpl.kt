@@ -15,4 +15,9 @@ class UserServiceImpl (
     override fun getUser(userId: Long): UserEntity {
         return userRepository.findById(userId) ?: throw UserNotFountException("존재하는 회원이 없습니다")
     }
+
+    @Transactional
+    override fun saveUser(user: UserEntity): UserEntity {
+        return userRepository.save(user)
+    }
 }
