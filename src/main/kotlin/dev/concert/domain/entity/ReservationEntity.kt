@@ -20,13 +20,8 @@ import java.time.LocalDateTime
 @Table(name = "reservation")
 class ReservationEntity(
     user: UserEntity,
-    seatNo: Int,
-    concertName: String,
-    price: Long,
+    seat : SeatEntity,
     expiresAt: LocalDateTime,
-    concertDate: String,
-    concertTime: String,
-    concertVenue: String,
 ): BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,12 +32,9 @@ class ReservationEntity(
     var user : UserEntity = user
         protected set
 
-    @Column(nullable = false)
-    var seatNo: Int = seatNo
-        protected set
-
-    @Column(nullable = false)
-    var price : Long = price
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    var seat : SeatEntity = seat
         protected set
 
     @Column(nullable = false)
@@ -52,22 +44,6 @@ class ReservationEntity(
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     var status: ReservationStatus = ReservationStatus.PENDING
-        protected set
-
-    @Column(nullable = false)
-    var concertName : String = concertName
-        protected set
-
-    @Column(nullable = false)
-    var concertVenue : String = concertVenue
-        protected set
-
-    @Column(nullable = false)
-    var concertDate : String = concertDate
-        protected set
-
-    @Column(nullable = false)
-    var concertTime : String = concertTime
         protected set
 
 }
