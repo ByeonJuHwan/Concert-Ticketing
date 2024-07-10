@@ -4,6 +4,7 @@ import dev.concert.application.point.dto.PointResponseDto
 import dev.concert.domain.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.exception.NotEnoughPointException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +22,18 @@ class PointServiceImpl (
     }
 
     override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user))
+
+    override fun checkPoint(user: UserEntity, price: Long) : PointEntity {
+        val currentPoint = getPoint(user)
+        if(currentPoint.point < price){
+            throw NotEnoughPointException("포인트가 부족합니다.")
+        }
+        return currentPoint
+    }
+
+    override fun deductPoints(currentPoint: PointEntity, price: Long) {
+        currentPoint.deduct(price)
+    }
 
     private fun getPoint(user: UserEntity) =
         pointRepository.findByUser(user) ?: PointEntity(user, 0)

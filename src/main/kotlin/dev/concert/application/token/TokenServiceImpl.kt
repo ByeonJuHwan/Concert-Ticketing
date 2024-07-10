@@ -55,6 +55,10 @@ class TokenServiceImpl (
         )
     }
 
+    override fun deleteToken(user: UserEntity) {
+        tokenRepository.deleteToken(user)
+    }
+
     private fun getQueueToken(token: String) =
         tokenRepository.findByToken(token) ?: throw TokenNotFoundException("토큰이 존재하지 않습니다")
 

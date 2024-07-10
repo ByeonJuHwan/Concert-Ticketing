@@ -23,6 +23,7 @@ class ReservationEntity(
     seat : SeatEntity,
     expiresAt: LocalDateTime,
 ): BaseEntity() {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long = 0
@@ -46,4 +47,7 @@ class ReservationEntity(
     var status: ReservationStatus = ReservationStatus.PENDING
         protected set
 
+    fun changeStatus(status: ReservationStatus) {
+        this.status = status
+    }
 }

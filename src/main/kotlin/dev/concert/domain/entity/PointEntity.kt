@@ -35,4 +35,8 @@ class PointEntity(
         if (amount <= 0) throw IllegalArgumentException("0보다 작은 값을 충전할 수 없습니다")
         point += amount
     }
+
+    fun deduct(amount: Long) {
+        point -= amount
+    }
 }
