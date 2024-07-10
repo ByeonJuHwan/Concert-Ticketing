@@ -11,9 +11,11 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 
 @Entity
-class Payment (
+@Table(name="payment")
+class PaymentEntity (
     reservation : ReservationEntity,
     price : Long,
     paymentStatus: PaymentStatus,
