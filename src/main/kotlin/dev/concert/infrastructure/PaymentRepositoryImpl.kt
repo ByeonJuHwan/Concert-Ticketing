@@ -6,7 +6,7 @@ import dev.concert.infrastructure.jpa.PaymentJpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-class PaymentJpaRepositoryImpl (
+class PaymentRepositoryImpl (
     private val paymentRepository: PaymentJpaRepository,
 ) : PaymentRepository {
     override fun save(paymentEntity: PaymentEntity): PaymentEntity {
