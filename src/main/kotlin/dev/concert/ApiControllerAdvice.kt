@@ -1,6 +1,9 @@
 package dev.concert
 
+import dev.concert.exception.NotEnoughPointException
 import dev.concert.exception.NotFoundSeatException
+import dev.concert.exception.ReservationExpiredException
+import dev.concert.exception.ReservationNotFoundException
 import dev.concert.exception.SeatIsNotAvailableException
 import dev.concert.exception.TokenNotFoundException
 import dev.concert.exception.UserNotFountException
@@ -55,6 +58,29 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
         return ResponseEntity(
             ErrorResponse("409", e.message ?: "예약 가능한 상태가 아닙니다"),
             HttpStatus.CONFLICT
+        )
+    }
+    @ExceptionHandler(ReservationNotFoundException::class)
+    fun handleReservationNotFoundException(e: ReservationNotFoundException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("404", e.message ?: "존재하는 예약이 없습니다"),
+            HttpStatus.NOT_FOUND
+        )
+    }
+
+    @ExceptionHandler(ReservationExpiredException::class)
+    fun handleReservationExpiredException(e: ReservationExpiredException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("410", e.message ?: "예약이 만료되었습니다"),
+            HttpStatus.GONE
+        )
+    }
+
+    @ExceptionHandler(NotEnoughPointException::class)
+    fun handleNotEnoughPointException(e: NotEnoughPointException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(
+            ErrorResponse("400", e.message ?: "포인트가 부족합니다"),
+            HttpStatus.BAD_REQUEST
         )
     }
 
