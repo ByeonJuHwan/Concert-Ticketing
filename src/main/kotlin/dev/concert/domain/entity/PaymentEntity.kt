@@ -4,6 +4,8 @@ import dev.concert.domain.entity.status.PaymentStatus
 import dev.concert.domain.entity.status.PaymentType
 import jakarta.persistence.ConstraintMode
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.GeneratedValue
@@ -34,9 +36,11 @@ class PaymentEntity (
     var price : Long = price
         protected set
 
+    @Enumerated(EnumType.STRING)
     var paymentStatus: PaymentStatus = paymentStatus
         protected set
 
+    @Enumerated(EnumType.STRING)
     var paymentType : PaymentType = paymentType
         protected set
 }
