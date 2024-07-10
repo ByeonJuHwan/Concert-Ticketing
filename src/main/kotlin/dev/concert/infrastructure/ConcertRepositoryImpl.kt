@@ -30,8 +30,4 @@ class ConcertRepositoryImpl (
     override fun getAvailableSeats(concertOptionId: Long): List<SeatEntity> {
         return concertSeatJpaRepository.findAvailableSeats(concertOptionId)
     }
-
-    override fun getSeatWithLock(seatId: Long): SeatEntity? {
-        TODO("Not yet implemented")
-    }
 }
