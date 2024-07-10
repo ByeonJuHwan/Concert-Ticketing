@@ -9,6 +9,7 @@ import dev.concert.exception.TokenNotFoundException
 import dev.concert.exception.UserNotFountException
 import dev.concert.util.Base64Util
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
@@ -18,6 +19,8 @@ class TokenServiceImpl (
     private val tokenRepository: TokenRepository,
     private val userRepository: UserRepository,
 ) : TokenService {
+
+    @Transactional
     override fun generateToken(userId: Long): String {
         // 유저를찾고
         val user = getUser(userId)
@@ -42,6 +45,7 @@ class TokenServiceImpl (
         return tokenRepository.findByToken(token)?.expiresAt?.isAfter(LocalDateTime.now()) ?: false
     }
 
+    @Transactional(readOnly = true)
     override fun getToken(token: String): TokenResponseDto {
         val queueToken = getQueueToken(token)
 
@@ -55,6 +59,7 @@ class TokenServiceImpl (
         )
     }
 
+    @Transactional
     override fun deleteToken(user: UserEntity) {
         tokenRepository.deleteToken(user)
     }
