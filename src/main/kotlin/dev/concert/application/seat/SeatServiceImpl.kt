@@ -27,6 +27,7 @@ class SeatServiceImpl(
     @Transactional
     override fun changeSeatStatus(seat: SeatEntity, status: SeatStatus) {
         seat.changeSeatStatus(status)
+        seatRepository.save(seat)
     }
 
 }
