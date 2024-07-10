@@ -3,6 +3,7 @@ package dev.concert.application.point.service
 import dev.concert.domain.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.exception.NotEnoughPointException
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -82,5 +83,46 @@ class PointServiceImplTest {
 
         // then
         assertThat(currentPoint.point).isEqualTo(1000L)
+    }
+
+    @Test
+    fun `현재 포인트가 결제 포인트 보다 작으면 NotEnoughPointException 을 터트린다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val point = PointEntity(user, 0)
+
+        // when
+        `when`(pointRepository.findByUser(user)).thenReturn(point)
+
+        assertThatThrownBy {
+            pointService.checkPoint(user, 1000L)
+        }.isInstanceOf(NotEnoughPointException::class.java)
+    }
+
+    @Test
+    fun `현재 포인트가 결제 포인트 보다 같거나 많으면 현재 포인트를 응답한다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val point = PointEntity(user, 1000)
+
+        // when
+        `when`(pointRepository.findByUser(user)).thenReturn(point)
+        val currentPoint = pointService.checkPoint(user, 1000L)
+
+        // then
+        assertThat(currentPoint.point).isEqualTo(1000L)
+    }
+
+    @Test
+    fun `현재 포인트에서 결제 포인트를 차감한다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val point = PointEntity(user, 1000)
+
+        // when
+        pointService.deductPoints(point, 1000L)
+
+        // then
+        assertThat(point.point).isEqualTo(0L)
     }
 }
