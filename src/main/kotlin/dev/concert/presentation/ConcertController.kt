@@ -63,44 +63,44 @@ class ConcertController (
         return ApiResult(data = ConcertAvailableSeatsResponse(concertOptionId, seats))
     }
 
-    @Operation(summary = "콘서트 좌석 예약 API", description = "콘서트 좌석을 예약합니다")
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "콘서트 좌석 예약 성공"),
-        ApiResponse(
-            responseCode = "404",
-            description = "존재하는 좌석이 없습니다",
-            content = [Content(
+    @Operation(summary = "콘서트 좌석 예약 API", description = "콘서트 좌석을 예약합니다") 
+    @ApiResponses( 
+        ApiResponse(responseCode = "200", description = "콘서트 좌석 예약 성공"), 
+        ApiResponse( 
+            responseCode = "404", 
+            description = "존재하는 좌석이 없습니다", 
+            content = [Content( 
+                mediaType = "application/json", 
+                examples = [ExampleObject( 
+                    value = """ 
+                        { 
+                            "code": "404", 
+                            "message": "존재하는 좌석이 없습니다" 
+                        } 
+                    """ 
+                )] 
+            )] 
+        ), 
+        ApiResponse( 
+            responseCode = "409", 
+            description = "예약 가능한 상태가 아닙니다", 
+            content = [Content( 
                 mediaType = "application/json",
-                examples = [ExampleObject(
-                    value = """
-                        {
-                            "code": "404",
-                            "message": "존재하는 좌석이 없습니다"
-                        }
-                    """
-                )]
-            )]
-        ),
-        ApiResponse(
-            responseCode = "409",
-            description = "예약 가능한 상태가 아닙니다",
-            content = [Content(
-                mediaType = "application/json",
-                examples = [ExampleObject(
-                    value = """
-                        {
-                            "code": "409",
-                            "message": "예약 가능한 상태가 아닙니다"
-                        }
-                    """
-                )]
-            )]
-        ),
-    )
-    @PostMapping("reserve-seat")
-    fun reserveSeat(
-        @RequestBody request: ReserveSeatRequest
-    ) : ApiResult<ConcertReservationResponse>{
-        return ApiResult(data = concertFacade.reserveSeat(request.toDto()).toResponse())
-    }
+                examples = [ExampleObject( 
+                    value = """ 
+                        { 
+                            "code": "409", 
+                            "message": "예약 가능한 상태가 아닙니다" 
+                        } 
+                    """ 
+                )] 
+            )] 
+        ), 
+    ) 
+    @PostMapping("reserve-seat") 
+    fun reserveSeat( 
+        @RequestBody request: ReserveSeatRequest 
+    ) : ApiResult<ConcertReservationResponse>{ 
+        return ApiResult(data = concertFacade.reserveSeat(request.toDto()).toResponse()) 
+    } 
 }
