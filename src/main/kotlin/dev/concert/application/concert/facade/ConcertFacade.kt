@@ -25,10 +25,10 @@ class ConcertFacade (
     fun getAvailableDates(concertId: Long): List<ConcertDatesDto> {
         return concertService.getAvailableDates(concertId)
     }
-
-    fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
-        return concertService.getAvailableSeats(concertOptionId)
-    }
+ 
+    fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> { 
+        return concertService.getAvailableSeats(concertOptionId) 
+    } 
 
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         // 유저 정보 조회
