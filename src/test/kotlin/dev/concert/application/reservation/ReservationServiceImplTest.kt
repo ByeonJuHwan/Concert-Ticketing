@@ -7,7 +7,6 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
-import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
@@ -15,11 +14,9 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.BDDMockito.any
 import org.mockito.BDDMockito.given
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDateTime
 
@@ -111,7 +108,7 @@ class ReservationServiceImplTest {
         )
 
         // when
-        reservationService.changeReservationStatus(reservation, ReservationStatus.PAID)
+        reservationService.changeReservationStatusPaid(reservation)
 
         // then
         assertThat(reservation.status).isEqualTo(ReservationStatus.PAID)
