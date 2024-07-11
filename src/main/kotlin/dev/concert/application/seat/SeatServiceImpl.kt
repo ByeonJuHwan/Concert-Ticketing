@@ -25,13 +25,25 @@ class SeatServiceImpl(
     }
 
     @Transactional
-    override fun changeSeatStatus(seat: SeatEntity, status: SeatStatus) {
-        seat.changeSeatStatus(status)
+    override fun saveSeat(seatEntity: SeatEntity): SeatEntity {
+        return seatRepository.save(seatEntity)
+    }
+
+    @Transactional
+    override fun changeSeatStatusTemporary(seat: SeatEntity) {
+        seat.changeSeatStatus(SeatStatus.TEMPORARILY_ASSIGNED)
         seatRepository.save(seat)
     }
 
     @Transactional
-    override fun saveSeat(seatEntity: SeatEntity): SeatEntity {
-        return seatRepository.save(seatEntity)
+    override fun changeSeatStatusReserved(seat: SeatEntity) {
+        seat.changeSeatStatus(SeatStatus.RESERVED)
+        seatRepository.save(seat)
+    }
+
+    @Transactional
+    override fun changeSeatStatusAvailable(seat: SeatEntity) {
+        seat.changeSeatStatus(SeatStatus.AVAILABLE)
+        seatRepository.save(seat)
     }
 }

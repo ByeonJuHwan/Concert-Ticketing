@@ -53,16 +53,41 @@ class SeatServiceImplTest {
     }
 
     @Test
-    fun `좌성정보와 좌석 상태가 주어지면 좌석의 상태를 임시 예약으로 변경한다`() {
+    fun `좌성정보가 주어지면 좌석의 상태를 임시 예약으로 변경한다`() {
         // given
         val seatEntity = stubSeatEntity()
 
         // when
-        seatService.changeSeatStatus(seatEntity, SeatStatus.TEMPORARILY_ASSIGNED)
+        seatService.changeSeatStatusTemporary(seatEntity)
 
         // then
         assertThat(seatEntity.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
     }
+
+    @Test
+    fun `좌성정보 주어지면 좌석의 상태를 예약으로 변경한다`() {
+        // given
+        val seatEntity = stubSeatEntity()
+
+        // when
+        seatService.changeSeatStatusReserved(seatEntity)
+
+        // then
+        assertThat(seatEntity.seatStatus).isEqualTo(SeatStatus.RESERVED)
+    }
+
+    @Test
+    fun `좌성정보 주어지면 좌석의 상태를 Avaliable 로 변경한다`() {
+        // given
+        val seatEntity = stubSeatEntity()
+
+        // when
+        seatService.changeSeatStatusAvailable(seatEntity)
+
+        // then
+        assertThat(seatEntity.seatStatus).isEqualTo(SeatStatus.AVAILABLE)
+    }
+
 
     private fun stubSeatEntity(): SeatEntity {
         val concertOption = ConcertOptionEntity(

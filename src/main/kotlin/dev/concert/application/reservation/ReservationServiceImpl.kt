@@ -5,9 +5,9 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
+import dev.concert.domain.entity.status.SeatStatus
 import dev.concert.exception.ReservationNotFoundException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
@@ -18,7 +18,7 @@ class ReservationServiceImpl (
 
     @Transactional
     override fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {
-        val expiresAt = LocalDateTime.now().plusMinutes(5)
+        val expiresAt = LocalDateTime.now().plusMinutes(2)
 
         val reservation = ReservationEntity(
             user = user,
@@ -33,10 +33,11 @@ class ReservationServiceImpl (
         return reservationRepository.findById(reservationId)?: throw ReservationNotFoundException(" 예약 정보를 찾을 수 없습니다.")
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     override fun isExpired(reservation: ReservationEntity) : Boolean {
         if(LocalDateTime.now().isAfter(reservation.expiresAt)){
             reservation.changeStatus(ReservationStatus.EXPIRED)
+            reservationRepository.saveReservation(reservation)
             return true
         }
         return false
@@ -46,5 +47,14 @@ class ReservationServiceImpl (
     override fun changeReservationStatusPaid(reservation: ReservationEntity) {
         reservation.changeStatus(ReservationStatus.PAID)
         reservationRepository.saveReservation(reservation)
+    }
+
+    @Transactional
+    override fun manageReservationStatus() {
+        // 예약을 전부 가져와
+        reservationRepository.findExpiredReservations().forEach{
+            it.changeStatus(ReservationStatus.EXPIRED)
+            it.seat.changeSeatStatus(SeatStatus.AVAILABLE)
+        }
     }
 }
