@@ -20,8 +20,8 @@ import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDateTime
 
-@ExtendWith(MockitoExtension::class)
-class ReservationServiceImplTest {
+@ExtendWith(MockitoExtension::class) 
+class ReservationServiceImplTest { 
 
     @Mock
     private lateinit var reservationRepository: ReservationRepository
@@ -29,90 +29,90 @@ class ReservationServiceImplTest {
     @InjectMocks
     private lateinit var reservationService: ReservationServiceImpl
 
-    @Test
-    fun `유저정보와 좌석정보가 주어지면 예약정보를 생성해서 저장한다`() {
-        // given
-        val user = UserEntity(name = "test")
-        val seat = stubSeatEntity()
+    @Test 
+    fun `유저정보와 좌석정보가 주어지면 예약정보를 생성해서 저장한다`() { 
+        // given 
+        val user = UserEntity(name = "test") 
+        val seat = stubSeatEntity() 
+ 
+        assertDoesNotThrow { 
+            reservationService.saveReservation(user, seat) 
+        } 
+    } 
+ 
+    @Test 
+    fun `예약 ID 가 주어지면 예약 정보를 응답해준다`() { 
+        // given 
+        val reservationId = 1L 
+        val reservation = ReservationEntity( 
+            user = UserEntity(name = "test"), 
+            seat = stubSeatEntity(), 
+            expiresAt = LocalDateTime.now().plusMinutes(5) 
+        ) 
+        given(reservationRepository.findById(reservationId)).willReturn(reservation) 
+ 
+        // when 
+        val result = reservationService.getReservation(reservationId) 
+ 
+        // then 
+        assertThat(result).isEqualTo(reservation) 
+    } 
+ 
+    @Test 
+    fun `예약 ID 가 주어졌을때 값이 없으면 ReservationNotFoundException 을 터트린다`() { 
+        // given 
+        val reservationId = 1L 
+        given(reservationRepository.findById(reservationId)).willReturn(null) 
+ 
+        assertThatThrownBy { 
+            reservationService.getReservation(1L) 
+        }.isInstanceOf(ReservationNotFoundException::class.java) 
+    } 
 
-        assertDoesNotThrow {
-            reservationService.saveReservation(user, seat)
-        }
-    }
+    @Test 
+    fun `예약 만료시간이 지나면 ReservationExpiredException 에러를 터트린다`() { 
+        // given 
+        val reservation = ReservationEntity( 
+            user = UserEntity(name = "test"), 
+            seat = stubSeatEntity(), 
+            expiresAt = LocalDateTime.now().minusMinutes(5) 
+        ) 
+ 
+        val result = reservationService.isExpired(reservation) 
+ 
+        assertThat(result).isTrue() 
+    } 
 
-    @Test
-    fun `예약 ID 가 주어지면 예약 정보를 응답해준다`() {
-        // given
-        val reservationId = 1L
-        val reservation = ReservationEntity(
-            user = UserEntity(name = "test"),
-            seat = stubSeatEntity(),
-            expiresAt = LocalDateTime.now().plusMinutes(5)
-        )
-        given(reservationRepository.findById(reservationId)).willReturn(reservation)
+    @Test 
+    fun `예약 만료시간이 지나면 예약 상태를 Expired 로 변경한다`() { 
+        // given 
+        val reservation = ReservationEntity( 
+            user = UserEntity(name = "test"), 
+            seat = stubSeatEntity(), 
+            expiresAt = LocalDateTime.now().minusMinutes(5) 
+        ) 
+ 
+        // when  
+        reservationService.isExpired(reservation) 
+ 
+        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED) 
+    } 
 
-        // when
-        val result = reservationService.getReservation(reservationId)
-
-        // then
-        assertThat(result).isEqualTo(reservation)
-    }
-
-    @Test
-    fun `예약 ID 가 주어졌을때 값이 없으면 ReservationNotFoundException 을 터트린다`() {
-        // given
-        val reservationId = 1L
-        given(reservationRepository.findById(reservationId)).willReturn(null)
-
-        assertThatThrownBy {
-            reservationService.getReservation(1L)
-        }.isInstanceOf(ReservationNotFoundException::class.java)
-    }
-
-    @Test
-    fun `예약 만료시간이 지나면 ReservationExpiredException 에러를 터트린다`() {
-        // given
-        val reservation = ReservationEntity(
-            user = UserEntity(name = "test"),
-            seat = stubSeatEntity(),
-            expiresAt = LocalDateTime.now().minusMinutes(5)
-        )
-
-        val result = reservationService.isExpired(reservation)
-
-        assertThat(result).isTrue()
-    }
-
-    @Test
-    fun `예약 만료시간이 지나면 예약 상태를 Expired 로 변경한다`() {
-        // given
-        val reservation = ReservationEntity(
-            user = UserEntity(name = "test"),
-            seat = stubSeatEntity(),
-            expiresAt = LocalDateTime.now().minusMinutes(5)
-        )
-
-        // when
-        reservationService.isExpired(reservation)
-
-        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED)
-    }
-
-    @Test
-    fun `예약 상태가 주어지면 예약 상태를 변경한다`() {
-        // given
-        val reservation = ReservationEntity(
-            user = UserEntity(name = "test"),
-            seat = stubSeatEntity(),
-            expiresAt = LocalDateTime.now().plusMinutes(5)
-        )
-
-        // when
-        reservationService.changeReservationStatusPaid(reservation)
-
-        // then
-        assertThat(reservation.status).isEqualTo(ReservationStatus.PAID)
-    }
+    @Test 
+    fun `예약 상태가 주어지면 예약 상태를 변경한다`() { 
+        // given 
+        val reservation = ReservationEntity( 
+            user = UserEntity(name = "test"), 
+            seat = stubSeatEntity(), 
+            expiresAt = LocalDateTime.now().plusMinutes(5) 
+        ) 
+ 
+        // when 
+        reservationService.changeReservationStatusPaid(reservation) 
+ 
+        // then 
+        assertThat(reservation.status).isEqualTo(ReservationStatus.PAID) 
+    } 
 
     private fun stubSeatEntity(): SeatEntity {
         val concertOption = ConcertOptionEntity(
