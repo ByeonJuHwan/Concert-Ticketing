@@ -115,23 +115,23 @@ class ReservationServiceImplTest {
         assertThat(reservation.status).isEqualTo(ReservationStatus.PAID)
     }
 
-    @Test
-    fun `예약 상태가 Expired 가 되면 자리 상태를 AVAILABLE 로 변경한다`() {
-        // given
-        val reservation = ReservationEntity(
-            user = UserEntity(name = "test"),
-            seat = stubSeatEntity(),
-            expiresAt = LocalDateTime.now().minusMinutes(5)
-        )
-
-        given(reservationRepository.findExpiredReservations()).willReturn(listOf(reservation))
-        // when
-        reservationService.manageReservationStatus()
-
-        // then
-        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED)
-        assertThat(reservation.seat.seatStatus).isEqualTo(SeatStatus.AVAILABLE)
-    }
+    @Test 
+    fun `예약 상태가 Expired 가 되면 자리 상태를 AVAILABLE 로 변경한다`() { 
+        // given 
+        val reservation = ReservationEntity( 
+            user = UserEntity(name = "test"), 
+            seat = stubSeatEntity(), 
+            expiresAt = LocalDateTime.now().minusMinutes(5) 
+        ) 
+ 
+        given(reservationRepository.findExpiredReservations()).willReturn(listOf(reservation)) 
+        // when 
+        reservationService.manageReservationStatus() 
+ 
+        // then 
+        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED) 
+        assertThat(reservation.seat.seatStatus).isEqualTo(SeatStatus.AVAILABLE) 
+    } 
 
     private fun stubSeatEntity(): SeatEntity {
         val concertOption = ConcertOptionEntity(
