@@ -2,6 +2,7 @@ package dev.concert.infrastructure
 
 import dev.concert.domain.PaymentRepository
 import dev.concert.domain.entity.PaymentEntity
+import dev.concert.domain.entity.ReservationEntity
 import dev.concert.infrastructure.jpa.PaymentJpaRepository
 import org.springframework.stereotype.Repository
 
@@ -11,5 +12,9 @@ class PaymentRepositoryImpl (
 ) : PaymentRepository {
     override fun save(paymentEntity: PaymentEntity): PaymentEntity {
         return paymentRepository.save(paymentEntity)
+    }
+
+    override fun existsByReservation(reservation: ReservationEntity): Boolean {
+        return paymentRepository.existsByReservation(reservation)
     }
 }
