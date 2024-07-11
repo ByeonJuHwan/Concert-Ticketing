@@ -18,7 +18,7 @@ class ReservationServiceImpl (
 
     @Transactional
     override fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {
-        val expiresAt = LocalDateTime.now().plusMinutes(2)
+        val expiresAt = LocalDateTime.now().plusMinutes(5)
 
         val reservation = ReservationEntity(
             user = user,
