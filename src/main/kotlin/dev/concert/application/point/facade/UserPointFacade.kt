@@ -19,9 +19,9 @@ class UserPointFacade (
         pointHistoryService.saveChargePointHistory(user, request.amount)
         return point
     }
-
-    fun getCurrentPoint(userId: Long): PointResponseDto {
-        val user = userService.getUser(userId)
-        return pointService.getCurrentPoint(user)
-    }
-}
+ 
+    fun getCurrentPoint(userId: Long): PointResponseDto { 
+        val user = userService.getUser(userId) 
+        return pointService.getCurrentPoint(user) 
+    } 
+} 
