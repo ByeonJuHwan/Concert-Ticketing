@@ -98,18 +98,18 @@ class ConcertFacadeTest {
         assertThat(availableDates.size).isEqualTo(1)
     }
 
-    @Test
-    fun `콘서트 예약가능 좌석 조회 테스트`() {
-        // given
-        val concerts = concertFacade.getConcerts()
-
-        // when
-        val availableSeats = concertFacade.getAvailableSeats(concerts[0].id)
-
-        // then
-        assertNotNull(availableSeats)
-        assertThat(availableSeats.size).isEqualTo(1)
-    }
+    @Test 
+    fun `콘서트 예약가능 좌석 조회 테스트`() { 
+        // given 
+        val concerts = concertFacade.getConcerts() 
+ 
+        // when 
+        val availableSeats = concertFacade.getAvailableSeats(concerts[0].id) 
+ 
+        // then 
+        assertNotNull(availableSeats) 
+        assertThat(availableSeats.size).isEqualTo(1) 
+    } 
 
     @Test
     fun `콘서트 좌석 예약 테스트`() {
