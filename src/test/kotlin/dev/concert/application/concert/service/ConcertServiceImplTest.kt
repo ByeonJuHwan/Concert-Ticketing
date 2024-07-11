@@ -23,38 +23,38 @@ class ConcertServiceImplTest {
     @InjectMocks
     private lateinit var concertService: ConcertServiceImpl
 
-    @Test
-    fun `콘서트 목록을 조회한다`() {
-        // given
-        val concertList = listOf(
-            ConcertEntity(
-                concertName = "콘서트1",
-                singer = "가��1",
-                startDate = "20241201",
-                endDate = "20241201",
-                reserveStartDate = "20241201",
-                reserveEndDate = "20241201",
-            ),
-            ConcertEntity(
-                concertName = "콘서트2",
-                singer = "가수2",
-                startDate = "20241201",
-                endDate = "20241201",
-                reserveStartDate = "20241201",
-                reserveEndDate = "20241201",
-            ),
-        )
-        given(concertRepository.getConcerts()).willReturn(concertList)
+    @Test 
+    fun `콘서트 목록을 조회한다`() { 
+        // given 
+        val concertList = listOf( 
+            ConcertEntity( 
+                concertName = "콘서트1", 
+                singer = "가��1", 
+                startDate = "20241201", 
+                endDate = "20241201", 
+                reserveStartDate = "20241201", 
+                reserveEndDate = "20241201", 
+            ), 
+            ConcertEntity( 
+                concertName = "콘서트2", 
+                singer = "가수2", 
+                startDate = "20241201", 
+                endDate = "20241201", 
+                reserveStartDate = "20241201", 
+                reserveEndDate = "20241201", 
+            ), 
+        ) 
+        given(concertRepository.getConcerts()).willReturn(concertList) 
+ 
+        // when 
+        val concerts = concertService.getConcerts() 
 
-        // when
-        val concerts = concertService.getConcerts()
-
-        // then
-        assertNotNull(concerts)
-        assertEquals(concertList.size, concerts.size)
-        assertEquals(concertList[0].concertName, concerts[0].concertName)
-        assertEquals(concertList[0].singer, concerts[0].singer)
-    }
+        // then 
+        assertNotNull(concerts) 
+        assertEquals(concertList.size, concerts.size) 
+        assertEquals(concertList[0].concertName, concerts[0].concertName) 
+        assertEquals(concertList[0].singer, concerts[0].singer) 
+    } 
 
     @Test
     fun `콘서트 예약 가능한 날짜를 조회한다`() {
