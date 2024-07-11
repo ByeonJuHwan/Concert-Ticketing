@@ -21,9 +21,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
-@Transactional
-@SpringBootTest
-class ConcertFacadeTest {
+@Transactional 
+@SpringBootTest 
+class ConcertFacadeTest { 
 
     @Autowired
     private lateinit var concertFacade: ConcertFacade
@@ -74,15 +74,15 @@ class ConcertFacadeTest {
         )
     }
 
-    @Test
-    fun `콘서트 목록 조회 통합 테스트`() {
-        // when
-        val concerts = concertFacade.getConcerts()
-
-        // then
-        assertNotNull(concerts)
-        assertThat(concerts.size).isEqualTo(1)
-    }
+    @Test 
+    fun `콘서트 목록 조회 통합 테스트`() { 
+        // when 
+        val concerts = concertFacade.getConcerts() 
+ 
+        // then 
+        assertNotNull(concerts) 
+        assertThat(concerts.size).isEqualTo(1) 
+    } 
 
     @Test
     fun `콘서트 예약가능 날짜 조회 테스트`() {
