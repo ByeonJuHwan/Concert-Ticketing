@@ -30,4 +30,8 @@ class SeatServiceImpl(
         seatRepository.save(seat)
     }
 
+    @Transactional
+    override fun saveSeat(seatEntity: SeatEntity): SeatEntity {
+        return seatRepository.save(seatEntity)
+    }
 }
