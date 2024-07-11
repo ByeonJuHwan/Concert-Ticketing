@@ -5,7 +5,6 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
-import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -43,7 +42,8 @@ class ReservationServiceImpl (
     }
 
     @Transactional
-    override fun changeReservationStatus(reservation: ReservationEntity, status: ReservationStatus) {
-        reservation.changeStatus(status)
+    override fun changeReservationStatusPaid(reservation: ReservationEntity) {
+        reservation.changeStatus(ReservationStatus.PAID)
+        reservationRepository.saveReservation(reservation)
     }
 }
