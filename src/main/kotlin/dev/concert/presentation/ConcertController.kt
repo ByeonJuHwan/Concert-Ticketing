@@ -37,18 +37,18 @@ class ConcertController (
         val concerts = concertFacade.getConcerts()
         return ApiResult(data = ConcertsResponse(concerts))
     }
-
-    @Operation(summary = "콘서트 날짜 조회 API", description = "콘서트의 예약 가능한 날짜를 조회합니다.")
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "콘서트 날짜 조회 성공"),
-    )
-    @GetMapping("/{concertId}/available-dates")
-    fun getAvailableDates(
-        @PathVariable concertId: Long,
-    ): ApiResult<ConcertAvailableDatesResponse> {
-        val dates = concertFacade.getAvailableDates(concertId)
-        return ApiResult(data = ConcertAvailableDatesResponse(dates))
-    }
+ 
+    @Operation(summary = "콘서트 날짜 조회 API", description = "콘서트의 예약 가능한 날짜를 조회합니다.") 
+    @ApiResponses( 
+        ApiResponse(responseCode = "200", description = "콘서트 날짜 조회 성공"), 
+    ) 
+    @GetMapping("/{concertId}/available-dates") 
+    fun getAvailableDates( 
+        @PathVariable concertId: Long, 
+    ): ApiResult<ConcertAvailableDatesResponse> { 
+        val dates = concertFacade.getAvailableDates(concertId) 
+        return ApiResult(data = ConcertAvailableDatesResponse(dates)) 
+    } 
 
 
     @Operation(summary = "콘서트 예악 가능 좌석 조회 API", description = "콘서트의 예약 가능한 좌석을 조회합니다.")
