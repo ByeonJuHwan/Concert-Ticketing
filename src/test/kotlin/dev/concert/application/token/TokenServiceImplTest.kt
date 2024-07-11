@@ -4,8 +4,6 @@ import dev.concert.domain.TokenRepository
 import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
-import dev.concert.util.Base64Util
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 
@@ -35,7 +32,6 @@ class TokenServiceImplTest {
         val userId = 1L
         val user = UserEntity(name = "test")
         `when`(userRepository.findById(userId)).thenReturn(user)
-        `when`(tokenRepository.findLastQueueOrder()).thenReturn(10)
 
         // when
         val token = tokenServiceImpl.generateToken(userId)
@@ -49,15 +45,15 @@ class TokenServiceImplTest {
         // given
         val user = UserEntity(name = "test")
         val token = "test"
-        val queueTokenEntity = QueueTokenEntity(token = token, user = user, queueOrder = 1)
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
         `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
 
         // when
-        val isTokenAllowed = tokenServiceImpl.isTokenAllowed(token)
+        val isTokenAllowed = tokenServiceImpl.isTokenExpired(token)
 
         // then
-        assertTrue(isTokenAllowed)
+        assertFalse(isTokenAllowed)
     }
 
     @Test
@@ -65,7 +61,7 @@ class TokenServiceImplTest {
         // given
         val user = UserEntity(name = "test")
         val token = "test"
-        val queueTokenEntity = QueueTokenEntity(token = token, user = user, queueOrder = 1)
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
         `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
 
@@ -75,5 +71,21 @@ class TokenServiceImplTest {
         // then
         assertNotNull(tokenResponseDto)
         assertThat(tokenResponseDto.token).isEqualTo(token)
+    }
+
+    @Test
+    fun `토큰이 ACTIVE 상태인지 확인한다`() {
+        // given
+        val user = UserEntity(name = "test")
+        val token = "test"
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user)
+
+        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+
+        // when
+        val isAvailableToken = tokenServiceImpl.isAvailableToken(token)
+
+        // then
+        assertFalse(isAvailableToken)
     }
 }

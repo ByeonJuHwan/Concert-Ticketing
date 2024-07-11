@@ -5,7 +5,9 @@ import dev.concert.domain.entity.UserEntity
 
 interface TokenRepository {
     fun saveToken(tokenEntity: QueueTokenEntity): QueueTokenEntity
-    fun findLastQueueOrder(): Int
+    fun findFirstQueueOrderId(): Long
     fun findByToken(token: String): QueueTokenEntity?
     fun deleteToken(user: UserEntity)
+    fun findWaitingAndActiveTokens(): List<QueueTokenEntity>
+    fun deleteByToken(tokenEntity: QueueTokenEntity)
 }

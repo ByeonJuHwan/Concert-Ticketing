@@ -11,11 +11,19 @@ class TokenFacade (
         return tokenService.generateToken(userId)
     }
 
-    fun isTokenAllowed(token: String): Boolean {
-        return tokenService.isTokenAllowed(token)
+    fun isTokenExpired(token: String): Boolean {
+        return tokenService.isTokenExpired(token)
     }
 
     fun getToken(token: String): TokenResponseDto {
         return tokenService.getToken(token)
+    }
+
+    fun manageTokenStatus() {
+        tokenService.manageTokenStatus()
+    }
+
+    fun isAvailableToken(token: String): Boolean {
+        return tokenService.isAvailableToken(token)
     }
 }

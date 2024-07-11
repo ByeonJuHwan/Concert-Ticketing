@@ -5,7 +5,9 @@ import dev.concert.domain.entity.UserEntity
 
 interface TokenService {
     fun generateToken(userId: Long): String
-    fun isTokenAllowed(token: String): Boolean
+    fun isTokenExpired(token: String): Boolean
     fun getToken(token: String): TokenResponseDto
     fun deleteToken(user : UserEntity)
+    fun manageTokenStatus()
+    fun isAvailableToken(token: String): Boolean
 }

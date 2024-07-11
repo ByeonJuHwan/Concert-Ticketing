@@ -2,7 +2,6 @@ package dev.concert.application.token
 
 import dev.concert.application.user.UserService
 import dev.concert.domain.entity.UserEntity
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,10 +35,10 @@ class TokenIntegrationTest {
         val token = tokenFacade.generateToken(user.id)
 
         // when
-        val isTokenAllowed = tokenFacade.isTokenAllowed(token)
+        val isTokenAllowed = tokenFacade.isTokenExpired(token)
 
         // then
-        assertThat(isTokenAllowed).isTrue()
+        assertThat(isTokenAllowed).isFalse()
     }
 
     @Test

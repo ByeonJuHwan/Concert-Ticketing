@@ -9,7 +9,6 @@ import dev.concert.application.concert.service.ConcertService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
-import dev.concert.domain.entity.status.SeatStatus
 import org.springframework.stereotype.Component
 
 @Component
@@ -46,7 +45,7 @@ class ConcertFacade (
         val reservation = reservationService.saveReservation(user, seat)
 
         // 좌석 정보를 Temporary 로 변경
-        seatService.changeSeatStatus(seat, SeatStatus.TEMPORARILY_ASSIGNED)
+        seatService.changeSeatStatusTemporary(seat)
 
         return ConcertReservationResponseDto(
             status = reservation.status,

@@ -5,6 +5,7 @@ import dev.concert.domain.TokenRepository
 import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.entity.status.QueueTokenStatus
 import dev.concert.exception.TokenNotFoundException
 import dev.concert.exception.UserNotFountException
 import dev.concert.util.Base64Util
@@ -22,27 +23,17 @@ class TokenServiceImpl (
 
     @Transactional
     override fun generateToken(userId: Long): String {
-        // 유저를찾고
         val user = getUser(userId)
 
-        // userId 를 암호화해서 토큰을 생성하고
+        tokenRepository.deleteToken(user)
+
         val token = encodeUserId()
 
-        // 현재 몇번째 순서인지 확인하기 위해서 조회??
-        // 토큰 테이블에서 Pending 상태인 토큰들을 조회 후, 가장 마지막 순서를 조회
-        val queueOrder = getQueueOrder()
+        val queueToken = queueTokenEntity(user, token)
 
-        // 토큰 엔티티 생성
-        val queueToken = queueTokenEntity(user, token, queueOrder)
-
-        // 토큰 저장
         tokenRepository.saveToken(queueToken)
 
         return token
-    }
-
-    override fun isTokenAllowed(token: String): Boolean {
-        return tokenRepository.findByToken(token)?.expiresAt?.isAfter(LocalDateTime.now()) ?: false
     }
 
     @Transactional(readOnly = true)
@@ -52,7 +43,7 @@ class TokenServiceImpl (
         val remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds
 
         return TokenResponseDto(
-            queueOrder = queueToken.queueOrder,
+            queueOrder = getQueueOrder(queueToken),
             remainingTime = remainingTime,
             token = queueToken.token,
             status = queueToken.status,
@@ -60,8 +51,42 @@ class TokenServiceImpl (
     }
 
     @Transactional
+    override fun isTokenExpired(token: String): Boolean {
+        val currentToken = tokenRepository.findByToken(token) ?: return true
+        if(currentToken.expiresAt.isBefore(LocalDateTime.now())){
+            currentToken.changeStatusExpired()
+            return true
+        }
+        return false
+    }
+
+    @Transactional
     override fun deleteToken(user: UserEntity) {
         tokenRepository.deleteToken(user)
+    }
+
+    /**
+     *  토큰 상태가 waiting, Active 인 토큰들을 30명 제한으로 Active 로 변경
+     *  토큰 상태가 Active 인 토큰들 중 만료시간이 지나면 Expired 로 변경
+     */
+    @Transactional
+    override fun manageTokenStatus() {
+        val availableTokens = tokenRepository.findWaitingAndActiveTokens()
+
+        availableTokens.forEach {
+            if (it.status == QueueTokenStatus.WAITING){
+                it.changeStatusToActive()
+            }
+            if (it.status == QueueTokenStatus.ACTIVE && LocalDateTime.now().isAfter(it.expiresAt)) {
+                it.changeStatusExpired()
+            }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override fun isAvailableToken(token: String): Boolean {
+        val queueToken = getQueueToken(token)
+        return queueToken.status == QueueTokenStatus.ACTIVE
     }
 
     private fun getQueueToken(token: String) =
@@ -70,14 +95,16 @@ class TokenServiceImpl (
     private fun queueTokenEntity(
         user: UserEntity,
         token: String,
-        queueOrder: Int
     ) = QueueTokenEntity(
         user = user,
         token = token,
-        queueOrder = queueOrder,
     )
 
-    private fun getQueueOrder() = tokenRepository.findLastQueueOrder() + 1
+    private fun getQueueOrder(queueToken:QueueTokenEntity) : Int {
+        val firstQueueId = tokenRepository.findFirstQueueOrderId()
+        if(firstQueueId == 0L) return 0
+        return (queueToken.id - firstQueueId).toInt() + 1
+    }
 
     private fun encodeUserId() : String {
         val uuid = UUID.randomUUID().toString()
