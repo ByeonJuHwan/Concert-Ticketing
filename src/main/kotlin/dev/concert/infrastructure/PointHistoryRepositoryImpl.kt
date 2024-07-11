@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository
 class PointHistoryRepositoryImpl (
     private val pointHistoryJpaRepository: PointHistoryJpaRepository,
 ) : PointHistoryRepository {
-    override fun saveHistory(user: UserEntity, amount: Long) {
-        pointHistoryJpaRepository.save(PointHistoryEntity(user, amount, PointTransactionType.CHARGE))
+    override fun saveHistory(history: PointHistoryEntity) {
+        pointHistoryJpaRepository.save(history)
     }
 }
