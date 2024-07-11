@@ -21,9 +21,7 @@ import java.time.LocalDateTime
 class QueueTokenEntity (
     token : String,
     user : UserEntity,
-    queueOrder : Int,
 ) : BaseEntity() {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long = 0
@@ -37,16 +35,20 @@ class QueueTokenEntity (
     var user : UserEntity = user
         protected set
 
-    @Column(nullable = false)
-    var queueOrder: Int = queueOrder
-        protected set
-
     // 만료 시간은 1시간으로 설정
     var expiresAt: LocalDateTime = LocalDateTime.now().plusHours(1)
         protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var status: QueueTokenStatus = QueueTokenStatus.PENDING
+    var status: QueueTokenStatus = QueueTokenStatus.WAITING
         protected set
+
+    fun changeStatusToActive() {
+        this.status = QueueTokenStatus.ACTIVE
+    }
+
+    fun changeStatusExpired() {
+        this.status = QueueTokenStatus.EXPIRED
+    }
 }
