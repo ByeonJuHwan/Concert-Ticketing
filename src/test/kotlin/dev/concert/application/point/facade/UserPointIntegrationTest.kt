@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 
-@SpringBootTest
+@SpringBootTest 
 class UserPointIntegrationTest {
 
     @Autowired
@@ -37,18 +37,18 @@ class UserPointIntegrationTest {
         pointRepository.deleteAll()
     }
 
-    @Test
-    fun `1000원의 포인트를 충전한다`() {
-        // given
-        val userId = 1L
-        val amount = 1000L
+    @Test 
+    fun `1000원의 포인트를 충전한다`() { 
+        // given 
+        val userId = 1L 
+        val amount = 1000L 
 
-        // when
-        val point = userPointFacade.chargePoints(PointRequestDto(userId, amount))
+        // when 
+        val point = userPointFacade.chargePoints(PointRequestDto(userId, amount)) 
 
-        // then
-        assertEquals(1000L, point.point)
-    }
+        // then 
+        assertEquals(1000L, point.point) 
+    } 
 
     @Test
     fun `현재 포인트를 조회환다`() {
