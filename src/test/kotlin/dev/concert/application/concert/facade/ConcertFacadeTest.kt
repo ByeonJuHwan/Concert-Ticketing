@@ -111,50 +111,50 @@ class ConcertFacadeTest {
         assertThat(availableSeats.size).isEqualTo(1)
     }
 
-    @Test
-    fun `콘서트 좌석 예약 테스트`() {
-        val user = userService.saveUser(UserEntity(name = "test"))
-
-        val concert = concertRepository.saveConcert(
-            ConcertEntity(
-                concertName = "콘서트1",
-                singer = "가수1",
-                startDate = "20241201",
-                endDate = "20241201",
-                reserveStartDate = "20241201",
-                reserveEndDate = "20241201",
-            )
-        )
-
-        val concertOption = concertRepository.saveConcertOption(
-            ConcertOptionEntity(
-                concert = concert,
-                concertDate = "20241201",
-                concertTime = "12:00",
-                concertVenue = "올림픽체조경기장",
-                availableSeats = 100,
-            )
-        )
-
-        val seat = seatService.saveSeat(
-            SeatEntity(
-                concertOption = concertOption,
-                price = 10000,
-                seatNo = 1,
-            )
-        )
-
-        // when
-        val reservation = concertFacade.reserveSeat(
-            ConcertReservationDto(
-                userId = user.id,
-                seatId = seat.id,
-            )
-        )
-
-        // then
-        assertNotNull(reservation)
-        assertThat(reservation.status).isEqualTo(ReservationStatus.PENDING)
-        assertThat(reservation.reservationExpireTime).isAfter(LocalDateTime.now())
+    @Test 
+    fun `콘서트 좌석 예약 테스트`() { 
+        val user = userService.saveUser(UserEntity(name = "test")) 
+ 
+        val concert = concertRepository.saveConcert( 
+            ConcertEntity( 
+                concertName = "콘서트1", 
+                singer = "가수1", 
+                startDate = "20241201", 
+                endDate = "20241201", 
+                reserveStartDate = "20241201", 
+                reserveEndDate = "20241201", 
+            ) 
+        ) 
+  
+        val concertOption = concertRepository.saveConcertOption( 
+            ConcertOptionEntity( 
+                concert = concert, 
+                concertDate = "20241201", 
+                concertTime = "12:00", 
+                concertVenue = "올림픽체조경기장", 
+                availableSeats = 100, 
+            ) 
+        ) 
+ 
+        val seat = seatService.saveSeat( 
+            SeatEntity( 
+                concertOption = concertOption, 
+                price = 10000, 
+                seatNo = 1, 
+            ) 
+        ) 
+ 
+        // when 
+        val reservation = concertFacade.reserveSeat( 
+            ConcertReservationDto( 
+                userId = user.id, 
+                seatId = seat.id, 
+            ) 
+        ) 
+ 
+        // then 
+        assertNotNull(reservation) 
+        assertThat(reservation.status).isEqualTo(ReservationStatus.PENDING) 
+        assertThat(reservation.reservationExpireTime).isAfter(LocalDateTime.now()) 
     }
 }
