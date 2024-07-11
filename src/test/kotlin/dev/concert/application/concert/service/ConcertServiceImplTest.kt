@@ -56,45 +56,45 @@ class ConcertServiceImplTest {
         assertEquals(concertList[0].singer, concerts[0].singer)
     }
 
-    @Test
-    fun `콘서트 예약 가능한 날짜를 조회한다`() {
-        // given
-        val concertId = 1L
-        val concert = ConcertEntity(
-            concertName = "새해 콘서트",
-            singer = "에스파",
-            startDate = "20241201",
-            endDate = "20241201",
-            reserveStartDate = "20241201",
-            reserveEndDate = "20241201"
-        )
-        val concertOptions = listOf(
-            ConcertOptionEntity(
-                concert = concert,
-                availableSeats = 50,
-                concertTime = "14:00",
-                concertVenue = "올림픽공원",
-                concertDate = "20241201"
-            ),
-            ConcertOptionEntity(
-                concert = concert,
-                availableSeats = 50,
-                concertTime = "14:00",
-                concertVenue = "올림픽공원",
-                concertDate = "20241202"
-            )
-        )
+    @Test 
+    fun `콘서트 예약 가능한 날짜를 조회한다`() { 
+        // given 
+        val concertId = 1L 
+        val concert = ConcertEntity( 
+            concertName = "새해 콘서트", 
+            singer = "에스파", 
+            startDate = "20241201", 
+            endDate = "20241201", 
+            reserveStartDate = "20241201", 
+            reserveEndDate = "20241201" 
+        ) 
+        val concertOptions = listOf( 
+            ConcertOptionEntity( 
+                concert = concert, 
+                availableSeats = 50, 
+                concertTime = "14:00", 
+                concertVenue = "올림픽공원", 
+                concertDate = "20241201" 
+            ), 
+            ConcertOptionEntity( 
+                concert = concert, 
+                availableSeats = 50, 
+                concertTime = "14:00", 
+                concertVenue = "올림픽공원", 
+                concertDate = "20241202" 
+            ) 
+        ) 
 
-        given(concertRepository.getAvailableDates(concertId)).willReturn(concertOptions)
-
-        // when
-        val availableDates = concertService.getAvailableDates(concertId)
-
-        // then
-        assertEquals(2, availableDates.size)
-        assertEquals("20241201", availableDates[0].concertDate)
-        assertEquals("20241202", availableDates[1].concertDate)
-    }
+        given(concertRepository.getAvailableDates(concertId)).willReturn(concertOptions) 
+ 
+        // when 
+        val availableDates = concertService.getAvailableDates(concertId) 
+ 
+        // then 
+        assertEquals(2, availableDates.size)  
+        assertEquals("20241201", availableDates[0].concertDate) 
+        assertEquals("20241202", availableDates[1].concertDate) 
+    } 
 
     @Test
     fun `콘서트 예약 가능한 좌석을 조회한다`() {
