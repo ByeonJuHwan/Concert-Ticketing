@@ -48,13 +48,13 @@ class ReservationServiceImpl (
         reservation.changeStatus(ReservationStatus.PAID)
         reservationRepository.saveReservation(reservation)
     }
-
-    @Transactional
-    override fun manageReservationStatus() {
-        // 예약을 전부 가져와
-        reservationRepository.findExpiredReservations().forEach{
-            it.changeStatus(ReservationStatus.EXPIRED)
-            it.seat.changeSeatStatus(SeatStatus.AVAILABLE)
-        }
-    }
+ 
+    @Transactional 
+    override fun manageReservationStatus() { 
+        // 예약을 전부 가져와 
+        reservationRepository.findExpiredReservations().forEach{ 
+            it.changeStatus(ReservationStatus.EXPIRED) 
+            it.seat.changeSeatStatus(SeatStatus.AVAILABLE) 
+        } 
+    } 
 }
