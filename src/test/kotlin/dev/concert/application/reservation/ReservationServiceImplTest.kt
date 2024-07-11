@@ -7,6 +7,7 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
+import dev.concert.domain.entity.status.SeatStatus
 import dev.concert.exception.ReservationNotFoundException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
@@ -112,6 +113,24 @@ class ReservationServiceImplTest {
 
         // then
         assertThat(reservation.status).isEqualTo(ReservationStatus.PAID)
+    }
+
+    @Test
+    fun `예약 상태가 Expired 가 되면 자리 상태를 AVAILABLE 로 변경한다`() {
+        // given
+        val reservation = ReservationEntity(
+            user = UserEntity(name = "test"),
+            seat = stubSeatEntity(),
+            expiresAt = LocalDateTime.now().minusMinutes(5)
+        )
+
+        given(reservationRepository.findExpiredReservations()).willReturn(listOf(reservation))
+        // when
+        reservationService.manageReservationStatus()
+
+        // then
+        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED)
+        assertThat(reservation.seat.seatStatus).isEqualTo(SeatStatus.AVAILABLE)
     }
 
     private fun stubSeatEntity(): SeatEntity {

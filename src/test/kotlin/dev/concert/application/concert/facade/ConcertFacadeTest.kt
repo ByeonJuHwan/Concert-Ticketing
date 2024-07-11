@@ -2,6 +2,7 @@ package dev.concert.application.concert.facade
 
 import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.service.ConcertService
+import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
 import dev.concert.domain.ConcertRepository
@@ -36,6 +37,9 @@ class ConcertFacadeTest {
 
     @Autowired
     private lateinit var concertService: ConcertService
+
+    @Autowired
+    private lateinit var reservationService : ReservationService
 
     @Autowired
     private lateinit var userService : UserService
@@ -143,7 +147,6 @@ class ConcertFacadeTest {
                 seatNo = 1,
             )
         )
-
         // when
         val reservation = concertFacade.reserveSeat(
             ConcertReservationDto(
@@ -156,5 +159,51 @@ class ConcertFacadeTest {
         assertNotNull(reservation)
         assertThat(reservation.status).isEqualTo(ReservationStatus.PENDING)
         assertThat(reservation.reservationExpireTime).isAfter(LocalDateTime.now())
+    }
+
+    @Test
+    fun `콘서트 좌석 예약 스케줄러가 돌아서 바로 예약한 직후는 상태를 변경하지 않는다`() {
+        val user = userService.saveUser(UserEntity(name = "test"))
+
+        val concert = concertRepository.saveConcert(
+            ConcertEntity(
+                concertName = "콘서트1",
+                singer = "가수1",
+                startDate = "20241201",
+                endDate = "20241201",
+                reserveStartDate = "20241201",
+                reserveEndDate = "20241201",
+            )
+        )
+
+        val concertOption = concertRepository.saveConcertOption(
+            ConcertOptionEntity(
+                concert = concert,
+                concertDate = "20241201",
+                concertTime = "12:00",
+                concertVenue = "올림픽체조경기장",
+                availableSeats = 100,
+            )
+        )
+
+        val seat = seatService.saveSeat(
+            SeatEntity(
+                concertOption = concertOption,
+                price = 10000,
+                seatNo = 1,
+            )
+        )
+        // when
+        val reservation = concertFacade.reserveSeat(
+            ConcertReservationDto(
+                userId = user.id,
+                seatId = seat.id,
+            )
+        )
+
+        reservationService.manageReservationStatus()
+
+        // then
+        assertThat(reservation.status).isEqualTo(ReservationStatus.PENDING)
     }
 }
