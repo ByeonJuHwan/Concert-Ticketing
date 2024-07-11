@@ -15,7 +15,8 @@ class TokenValidateFilter (
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
-        val token = request.getHeader(HttpHeaders.AUTHORIZATION)
+        val token = getBearerToken(request)
+        print("token: $token")
         if (token == null) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "토큰이 없습니다")
             return
@@ -27,5 +28,14 @@ class TokenValidateFilter (
             return
         }
         filterChain.doFilter(request, response)
+    }
+
+    private fun getBearerToken(request: HttpServletRequest): String? {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        return if (header != null && header.startsWith("Bearer ")) {
+            header.substring(7)
+        } else {
+            null
+        }
     }
 }
