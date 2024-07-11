@@ -26,10 +26,10 @@ class ConcertRepositoryImpl (
     override fun getAvailableDates(concertId: Long): List<ConcertOptionEntity> {
         return concertOptionJpaRepository.findAvailableDates(concertId)
     }
-
-    override fun getAvailableSeats(concertOptionId: Long): List<SeatEntity> {
-        return concertSeatJpaRepository.findAvailableSeats(concertOptionId)
-    }
+ 
+    override fun getAvailableSeats(concertOptionId: Long): List<SeatEntity> { 
+        return concertSeatJpaRepository.findAvailableSeats(concertOptionId) 
+    } 
 
     override fun saveConcertOption(concertOptionEntity: ConcertOptionEntity): ConcertOptionEntity {
         return concertOptionJpaRepository.save(concertOptionEntity)
