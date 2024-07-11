@@ -30,10 +30,10 @@ class TokenRepositoryImpl(
     override fun deleteToken(user: UserEntity) {
         tokenJpaRepository.deleteByUser(user)
     }
-
-    override fun findWaitingAndActiveTokens(): List<QueueTokenEntity> {
-        return tokenJpaRepository.findAvaliableTokens()
-    }
+ 
+    override fun findWaitingAndActiveTokens(): List<QueueTokenEntity> { 
+        return tokenJpaRepository.findAvaliableTokens() 
+    } 
 
     override fun deleteByToken(tokenEntity: QueueTokenEntity) {
         tokenJpaRepository.delete(tokenEntity)
