@@ -5,12 +5,15 @@ import dev.concert.application.payment.dto.PaymentResponseDto
 import dev.concert.application.point.service.PointHistoryService
 import dev.concert.application.point.service.PointService
 import dev.concert.application.reservation.ReservationService
+import dev.concert.application.seat.SeatService
 import dev.concert.application.token.TokenService
 import dev.concert.exception.ReservationExpiredException
+import dev.concert.exception.SeatNotTemporaryReservedException
 import org.springframework.stereotype.Component
 
 @Component
 class PaymentFacade(
+    private val seatService: SeatService,
     private val pointService: PointService,
     private val reservationService: ReservationService,
     private val tokenService: TokenService,
@@ -41,6 +44,8 @@ class PaymentFacade(
 
         // 예약 정보를 업데이트한다
         reservationService.changeReservationStatusPaid(reservation)
+
+        // TODO 좌석 정보 업데이트
 
         // 토큰을 삭제한다
         tokenService.deleteToken(reservation.user)

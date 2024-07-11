@@ -6,6 +6,6 @@ import dev.concert.domain.entity.status.SeatStatus
 interface SeatService {
     fun getSeat (seatId: Long): SeatEntity
     fun checkSeatAvailable(seat: SeatEntity)
-    fun changeSeatStatus(seat: SeatEntity, temporarilyAssigned: SeatStatus)
+    fun changeSeatStatus(seat: SeatEntity, status: SeatStatus)
     fun saveSeat(seatEntity: SeatEntity) : SeatEntity
 }

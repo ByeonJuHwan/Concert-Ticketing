@@ -7,6 +7,7 @@ import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.exception.ReservationNotFoundException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
@@ -32,7 +33,7 @@ class ReservationServiceImpl (
         return reservationRepository.findById(reservationId)?: throw ReservationNotFoundException(" 예약 정보를 찾을 수 없습니다.")
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun isExpired(reservation: ReservationEntity) : Boolean {
         if(LocalDateTime.now().isAfter(reservation.expiresAt)){
             reservation.changeStatus(ReservationStatus.EXPIRED)
