@@ -13,13 +13,13 @@ class PointServiceImpl (
     private val pointRepository: PointRepository,
 ) : PointService {
 
-    @Transactional
-    override fun chargePoints(user: UserEntity, amount: Long): PointResponseDto {
-        val point = getPoint(user)
-        chargePoints(point, amount)
-
-        return PointResponseDto.from(point)
-    }
+    @Transactional 
+    override fun chargePoints(user: UserEntity, amount: Long): PointResponseDto { 
+        val point = getPoint(user) 
+        chargePoints(point, amount) 
+ 
+        return PointResponseDto.from(point) 
+    } 
 
     override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user))
 
@@ -31,11 +31,11 @@ class PointServiceImpl (
         return currentPoint
     }
 
-    @Transactional
-    override fun deductPoints(currentPoint: PointEntity, price: Long) {
-        currentPoint.deduct(price)
-        pointRepository.save(currentPoint)
-    }
+    @Transactional 
+    override fun deductPoints(currentPoint: PointEntity, price: Long) { 
+        currentPoint.deduct(price) 
+        pointRepository.save(currentPoint) 
+    } 
 
     private fun getPoint(user: UserEntity) =
         pointRepository.findByUser(user) ?: PointEntity(user, 0)
