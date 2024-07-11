@@ -21,4 +21,8 @@ class PointRepositoryImpl (
     override fun findByUserWithLock(user: UserEntity): PointEntity? {
         return pointJpaRepository.findByUserWithLock(user)
     }
+
+    override fun deleteAll() {
+        return pointJpaRepository.deleteAll()
+    }
 }
