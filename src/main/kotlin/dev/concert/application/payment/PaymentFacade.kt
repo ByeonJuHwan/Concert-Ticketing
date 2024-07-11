@@ -6,7 +6,6 @@ import dev.concert.application.point.service.PointHistoryService
 import dev.concert.application.point.service.PointService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.token.TokenService
-import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.exception.ReservationExpiredException
 import org.springframework.stereotype.Component
 
@@ -32,18 +31,16 @@ class PaymentFacade(
         val currentPoint = pointService.checkPoint(reservation.user, reservation.seat.price)
 
         // 포인트 차감 -> 결제를 진행한다 (카드 무통장등등 많지만 요구사항은 포인트 이므로 포인트로 진행)
-        // TODO 실제 차감이 안됬음
         pointService.deductPoints(currentPoint, reservation.seat.price)
 
         // 포인트 차감 히스토리 저장
-        // TODO 포인트 기록이 저장되게 변경
-        pointHistoryService.savePointHistory(reservation.user, reservation.seat.price)
+        pointHistoryService.saveUsePointHistory(reservation.user, reservation.seat.price)
 
         // 결재정보를 저장한다
         paymentService.createPayments(reservation)
 
         // 예약 정보를 업데이트한다
-        reservationService.changeReservationStatus(reservation, ReservationStatus.PAID)
+        reservationService.changeReservationStatusPaid(reservation)
 
         // 토큰을 삭제한다
         tokenService.deleteToken(reservation.user)
@@ -53,7 +50,6 @@ class PaymentFacade(
             seatNo = reservation.seat.seatNo,
             status = reservation.status,
             price = reservation.seat.price,
-            // TODO 우선여기까지 하고 테스트 후 다음 더 생각
         )
     }
 }
