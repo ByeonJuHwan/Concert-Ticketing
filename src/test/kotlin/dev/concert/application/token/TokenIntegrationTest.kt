@@ -53,17 +53,17 @@ class TokenIntegrationTest {
         // then
         assertThat(tokenResponseDto.token).isEqualTo(token)
     }
-
-    @Test
-    fun `토큰 상태를 주기적으로 바꿔준다`() {
-        val user = userService.saveUser(UserEntity("변주환"))
-        val token = tokenFacade.generateToken(user.id)
-
-        // when
-        tokenFacade.manageTokenStatus()
-
+ 
+    @Test 
+    fun `토큰 상태를 주기적으로 바꿔준다`() { 
+        val user = userService.saveUser(UserEntity("변주환")) 
+        val token = tokenFacade.generateToken(user.id) 
+ 
+        // when 
+        tokenFacade.manageTokenStatus() 
+ 
         // then
-        val tokenResponseDto = tokenFacade.getToken(token)
-        assertThat(tokenResponseDto.status).isEqualTo(QueueTokenStatus.ACTIVE)
+        val tokenResponseDto = tokenFacade.getToken(token) 
+        assertThat(tokenResponseDto.status).isEqualTo(QueueTokenStatus.ACTIVE) 
     }
 }
