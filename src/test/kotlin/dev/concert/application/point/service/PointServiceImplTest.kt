@@ -70,20 +70,20 @@ class PointServiceImplTest {
             .hasMessage("0보다 작은 값을 충전할 수 없습니다")
     }
 
-    @Test
-    fun `현재 포인트를 조회합니다`() {
-        // given
-        val userId = 1L
-        val user = UserEntity(name = "test")
-        val point = PointEntity(user, 1000L)
-
-        // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
-        val currentPoint = pointService.getCurrentPoint(user)
-
-        // then
-        assertThat(currentPoint.point).isEqualTo(1000L)
-    }
+    @Test 
+    fun `현재 포인트를 조회합니다`() { 
+        // given 
+        val userId = 1L  
+        val user = UserEntity(name = "test") 
+        val point = PointEntity(user, 1000L) 
+ 
+        // when 
+        `when`(pointRepository.findByUser(user)).thenReturn(point) 
+        val currentPoint = pointService.getCurrentPoint(user) 
+ 
+        // then 
+        assertThat(currentPoint.point).isEqualTo(1000L) 
+    } 
 
     @Test
     fun `현재 포인트가 결제 포인트 보다 작으면 NotEnoughPointException 을 터트린다`() {
