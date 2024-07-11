@@ -41,44 +41,43 @@ class PointController (
         return ApiResult(data = CurrentPointResponse.from(response))
     }
 
-    @Operation(
-        summary = "포인트 조회 API",
-        description = "포인트를 조회합니다.",
-        parameters = [
-            Parameter(
-                name = "userId",
-                description = "사용자 키 값",
-                required = true,
-                example = "1",
-            )
-        ],
-    )
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "포인트 조회 성공"),
-        ApiResponse(
-            responseCode = "404",
-            description = "사용자를 찾을 수 없음",
-            content = [Content(
-                mediaType = "application/json",
-                examples = [
-                    ExampleObject(
-                        value = """
-                                {
-                                    "code": 404
-                                    "message": "사용자를 찾을 수 없습니다."
-                                }
-                            """
-                    )
-                ]
-            )]
-        ),
-    )
-    @GetMapping("/current/{userId}")
-    fun getCurrentPoint(
-        @PathVariable userId: Long,
-    ): ApiResult<CurrentPointResponse> {
-
-        val response = userPointFacade.getCurrentPoint(userId)
-        return ApiResult(data = CurrentPointResponse.from(response))
-    }
-}
+    @Operation( 
+        summary = "포인트 조회 API", 
+        description = "포인트를 조회합니다.", 
+        parameters = [ 
+            Parameter( 
+                name = "userId", 
+                description = "사용자 키 값", 
+                required = true, 
+                example = "1", 
+            ) 
+        ], 
+    ) 
+    @ApiResponses( 
+        ApiResponse(responseCode = "200", description = "포인트 조회 성공"), 
+        ApiResponse( 
+            responseCode = "404", 
+            description = "사용자를 찾을 수 없음", 
+            content = [Content( 
+                mediaType = "application/json", 
+                examples = [ 
+                    ExampleObject(  
+                        value = """ 
+                                { 
+                                    "code": 404 
+                                    "message": "사용자를 찾을 수 없습니다." 
+                                } 
+                            """ 
+                    ) 
+                ] 
+            )] 
+        ), 
+    ) 
+    @GetMapping("/current/{userId}") 
+    fun getCurrentPoint( 
+        @PathVariable userId: Long, 
+    ): ApiResult<CurrentPointResponse> { 
+        val response = userPointFacade.getCurrentPoint(userId) 
+        return ApiResult(data = CurrentPointResponse.from(response)) 
+    } 
+} 
