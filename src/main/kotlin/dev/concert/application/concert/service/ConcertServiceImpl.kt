@@ -21,17 +21,17 @@ class ConcertServiceImpl (
             reserveEndDate = it.reserveEndDate,
         ) }
     }
-
-    override fun getAvailableDates(concertId: Long): List<ConcertDatesDto> {
-        return concertRepository.getAvailableDates(concertId).map { ConcertDatesDto(
-            concertId = it.concert.id,
-            concertName = it.concert.concertName,
-            availableSeats = it.availableSeats,
-            concertTime = it.concertTime,
-            concertVenue = it.concertVenue,
-            concertDate = it.concertDate,
-        )}
-    }
+ 
+    override fun getAvailableDates(concertId: Long): List<ConcertDatesDto> { 
+        return concertRepository.getAvailableDates(concertId).map { ConcertDatesDto( 
+            concertId = it.concert.id, 
+            concertName = it.concert.concertName, 
+            availableSeats = it.availableSeats, 
+            concertTime = it.concertTime, 
+            concertVenue = it.concertVenue, 
+            concertDate = it.concertDate, 
+        )} 
+    } 
 
     override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
         return concertRepository.getAvailableSeats(concertOptionId).map { ConcertSeatsDto(
