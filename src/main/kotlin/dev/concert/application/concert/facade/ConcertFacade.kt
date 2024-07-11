@@ -21,10 +21,10 @@ class ConcertFacade (
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts()
     }
-
-    fun getAvailableDates(concertId: Long): List<ConcertDatesDto> {
-        return concertService.getAvailableDates(concertId)
-    }
+ 
+    fun getAvailableDates(concertId: Long): List<ConcertDatesDto> { 
+        return concertService.getAvailableDates(concertId) 
+    } 
 
     fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
         return concertService.getAvailableSeats(concertOptionId)
