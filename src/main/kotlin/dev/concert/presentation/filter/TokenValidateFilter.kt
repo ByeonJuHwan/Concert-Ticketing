@@ -19,8 +19,11 @@ class TokenValidateFilter (
         if (token == null) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "토큰이 없습니다")
             return
-        }else if (!tokenFacade.isTokenAllowed(token)) {
+        }else if (tokenFacade.isTokenExpired(token)) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "토큰이 만료되었습니다")
+            return
+        } else if(!tokenFacade.isAvailableToken(token)){
+            response.sendError(HttpStatus.UNAUTHORIZED.value(), "대기열 순번 확인이 필요합니다")
             return
         }
         filterChain.doFilter(request, response)

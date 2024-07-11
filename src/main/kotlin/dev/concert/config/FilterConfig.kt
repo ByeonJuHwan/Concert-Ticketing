@@ -14,7 +14,7 @@ class FilterConfig (
     fun tokenFilterRegistration(): FilterRegistrationBean<TokenValidateFilter> {
         val registrationBean = FilterRegistrationBean<TokenValidateFilter>()
         registrationBean.filter = tokenValidateFilter
-        registrationBean.addUrlPatterns("/queue/tokens/status", "/concerts/*")
+        registrationBean.addUrlPatterns("/concerts/*", "/payment/*")
         return registrationBean
     }
 }
