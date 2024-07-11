@@ -26,20 +26,20 @@ class PointController (
     private val userPointFacade: UserPointFacade,
 ) {
 
-    @Operation(
-        summary = "포인트 충전 API",
-        description = "포인트를 충전합니다.",
-    )
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "포인트 충전 성공"),
-    )
-    @PutMapping("/charge")
-    fun pointCharge(
-        @RequestBody pointRequest: PointChargeRequest,
-    ): ApiResult<CurrentPointResponse> {
-        val response = userPointFacade.chargePoints(pointRequest.toDto())
-        return ApiResult(data = CurrentPointResponse.from(response))
-    }
+    @Operation( 
+        summary = "포인트 충전 API", 
+        description = "포인트를 충전합니다.", 
+    ) 
+    @ApiResponses( 
+        ApiResponse(responseCode = "200", description = "포인트 충전 성공"), 
+    ) 
+    @PutMapping("/charge") 
+    fun pointCharge( 
+        @RequestBody pointRequest: PointChargeRequest, 
+    ): ApiResult<CurrentPointResponse> { 
+        val response = userPointFacade.chargePoints(pointRequest.toDto()) 
+        return ApiResult(data = CurrentPointResponse.from(response)) 
+    } 
 
     @Operation(
         summary = "포인트 조회 API",
