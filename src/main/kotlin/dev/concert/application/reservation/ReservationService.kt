@@ -10,5 +10,5 @@ interface ReservationService {
     fun saveReservation(user : UserEntity, seat : SeatEntity) : ReservationEntity
     fun getReservation(reservationId: Long): ReservationEntity
     fun isExpired(reservation: ReservationEntity) : Boolean
-    fun changeReservationStatus(reservation: ReservationEntity, status: ReservationStatus)
+    fun changeReservationStatusPaid(reservation: ReservationEntity)
 }
