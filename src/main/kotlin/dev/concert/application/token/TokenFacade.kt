@@ -18,11 +18,11 @@ class TokenFacade (
     fun getToken(token: String): TokenResponseDto {
         return tokenService.getToken(token)
     }
-
-    fun manageTokenStatus() {
-        tokenService.manageTokenStatus()
-    }
-
+ 
+    fun manageTokenStatus() { 
+        tokenService.manageTokenStatus() 
+    } 
+ 
     fun isAvailableToken(token: String): Boolean {
         return tokenService.isAvailableToken(token)
     }
