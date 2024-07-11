@@ -29,27 +29,27 @@ class ConcertFacade (
     fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
         return concertService.getAvailableSeats(concertOptionId)
     }
-
-    fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
-        // 유저 정보 조회
-        val user = userService.getUser(request.userId)
-
-        // 좌석 정보 조회(with Lock)
-        val seat = seatService.getSeat(request.seatId)
-
-        // 좌석 정보가 Available 한지 확인
-        seatService.checkSeatAvailable(seat)
-
-        // 예약 정보 저장
-        // 예약 정보를 저장하고 예약 정보
-        val reservation = reservationService.saveReservation(user, seat)
-
-        // 좌석 정보를 Temporary 로 변경
-        seatService.changeSeatStatusTemporary(seat)
-
-        return ConcertReservationResponseDto(
-            status = reservation.status,
-            reservationExpireTime = reservation.expiresAt
-        )
-    }
+ 
+    fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto { 
+        // 유저 정보 조회 
+        val user = userService.getUser(request.userId) 
+ 
+        // 좌석 정보 조회(with Lock) 
+        val seat = seatService.getSeat(request.seatId) 
+ 
+        // 좌석 정보가 Available 한지 확인 
+        seatService.checkSeatAvailable(seat) 
+ 
+        // 예약 정보 저장 
+        // 예약 정보를 저장하고 예약 정보 
+        val reservation = reservationService.saveReservation(user, seat) 
+ 
+        // 좌석 정보를 Temporary 로 변경 
+        seatService.changeSeatStatusTemporary(seat) 
+ 
+        return ConcertReservationResponseDto( 
+            status = reservation.status, 
+            reservationExpireTime = reservation.expiresAt 
+        ) 
+    } 
 }
