@@ -2,6 +2,7 @@ package dev.concert.application.token
 
 import dev.concert.application.user.UserService
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.entity.status.QueueTokenStatus
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,5 +52,18 @@ class TokenIntegrationTest {
 
         // then
         assertThat(tokenResponseDto.token).isEqualTo(token)
+    }
+
+    @Test
+    fun `토큰 상태를 주기적으로 바꿔준다`() {
+        val user = userService.saveUser(UserEntity("변주환"))
+        val token = tokenFacade.generateToken(user.id)
+
+        // when
+        tokenFacade.manageTokenStatus()
+
+        // then
+        val tokenResponseDto = tokenFacade.getToken(token)
+        assertThat(tokenResponseDto.status).isEqualTo(QueueTokenStatus.ACTIVE)
     }
 }

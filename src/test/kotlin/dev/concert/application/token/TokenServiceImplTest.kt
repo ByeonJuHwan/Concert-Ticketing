@@ -4,6 +4,7 @@ import dev.concert.domain.TokenRepository
 import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.entity.status.QueueTokenStatus
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -87,5 +88,18 @@ class TokenServiceImplTest {
 
         // then
         assertFalse(isAvailableToken)
+    }
+
+    @Test
+    fun `토큰 상태가 WAITING 이면 ACTIVE 로 바꿔준다`() {
+        val user = UserEntity(name = "test")
+        val token = "test"
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user)
+
+        `when`(tokenRepository.findWaitingAndActiveTokens()).thenReturn(listOf(queueTokenEntity))
+
+        tokenServiceImpl.manageTokenStatus()
+
+        assertThat(queueTokenEntity.status).isEqualTo(QueueTokenStatus.ACTIVE)
     }
 }
