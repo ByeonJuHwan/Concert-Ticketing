@@ -32,13 +32,13 @@ class ConcertServiceImpl (
             concertDate = it.concertDate,
         )}
     }
-
-    override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
-        return concertRepository.getAvailableSeats(concertOptionId).map { ConcertSeatsDto(
-            seatId = it.id,
-            seatNo = it.seatNo,
-            price = it.price,
-            status = it.seatStatus,
-        ) }
-    }
+ 
+    override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> { 
+        return concertRepository.getAvailableSeats(concertOptionId).map { ConcertSeatsDto( 
+            seatId = it.id, 
+            seatNo = it.seatNo, 
+            price = it.price, 
+            status = it.seatStatus, 
+        ) } 
+    } 
 }
