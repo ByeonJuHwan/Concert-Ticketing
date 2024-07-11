@@ -31,8 +31,10 @@ class PointServiceImpl (
         return currentPoint
     }
 
+    @Transactional
     override fun deductPoints(currentPoint: PointEntity, price: Long) {
         currentPoint.deduct(price)
+        pointRepository.save(currentPoint)
     }
 
     private fun getPoint(user: UserEntity) =
