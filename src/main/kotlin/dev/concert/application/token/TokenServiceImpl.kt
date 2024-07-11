@@ -65,23 +65,23 @@ class TokenServiceImpl (
         tokenRepository.deleteToken(user)
     }
 
-    /**
-     *  토큰 상태가 waiting, Active 인 토큰들을 30명 제한으로 Active 로 변경
-     *  토큰 상태가 Active 인 토큰들 중 만료시간이 지나면 Expired 로 변경
-     */
+    /** 
+     *  토큰 상태가 waiting, Active 인 토큰들을 30명 제한으로 Active 로 변경 
+     *  토큰 상태가 Active 인 토큰들 중 만료시간이 지나면 Expired 로 변경 
+     */ 
     @Transactional
-    override fun manageTokenStatus() {
-        val availableTokens = tokenRepository.findWaitingAndActiveTokens()
-
-        availableTokens.forEach {
-            if (it.status == QueueTokenStatus.WAITING){
-                it.changeStatusToActive()
-            }
-            if (it.status == QueueTokenStatus.ACTIVE && LocalDateTime.now().isAfter(it.expiresAt)) {
-                it.changeStatusExpired()
-            }
-        }
-    }
+    override fun manageTokenStatus() { 
+        val availableTokens = tokenRepository.findWaitingAndActiveTokens() 
+ 
+        availableTokens.forEach { 
+            if (it.status == QueueTokenStatus.WAITING){ 
+                it.changeStatusToActive() 
+            } 
+            if (it.status == QueueTokenStatus.ACTIVE && LocalDateTime.now().isAfter(it.expiresAt)) { 
+                it.changeStatusExpired() 
+            } 
+        }  
+    } 
 
     @Transactional(readOnly = true)
     override fun isAvailableToken(token: String): Boolean {
