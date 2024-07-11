@@ -89,17 +89,17 @@ class TokenServiceImplTest {
         // then
         assertFalse(isAvailableToken)
     }
-
-    @Test
-    fun `토큰 상태가 WAITING 이면 ACTIVE 로 바꿔준다`() {
-        val user = UserEntity(name = "test")
-        val token = "test"
-        val queueTokenEntity = QueueTokenEntity(token = token, user = user)
-
-        `when`(tokenRepository.findWaitingAndActiveTokens()).thenReturn(listOf(queueTokenEntity))
-
-        tokenServiceImpl.manageTokenStatus()
-
-        assertThat(queueTokenEntity.status).isEqualTo(QueueTokenStatus.ACTIVE)
-    }
+ 
+    @Test  
+    fun `토큰 상태가 WAITING 이면 ACTIVE 로 바꿔준다`() { 
+        val user = UserEntity(name = "test") 
+        val token = "test" 
+        val queueTokenEntity = QueueTokenEntity(token = token, user = user) 
+ 
+        `when`(tokenRepository.findWaitingAndActiveTokens()).thenReturn(listOf(queueTokenEntity)) 
+ 
+        tokenServiceImpl.manageTokenStatus() 
+ 
+        assertThat(queueTokenEntity.status).isEqualTo(QueueTokenStatus.ACTIVE) 
+    }  
 }
