@@ -17,8 +17,8 @@ class ReservationRepositoryImpl (
     override fun findById(reservationId: Long): ReservationEntity? {
         return reservationJpaRepository.findReservationInfo(reservationId)
     }
-
-    override fun findExpiredReservations(): List<ReservationEntity> {
-        return reservationJpaRepository.findExpiredReservations()
-    }
-}
+ 
+    override fun findExpiredReservations(): List<ReservationEntity> { 
+        return reservationJpaRepository.findExpiredReservations() 
+    } 
+} 
