@@ -47,8 +47,13 @@ class TokenController (
     ) 
     @GetMapping("/status") 
     fun getToken( 
-        @RequestHeader(HttpHeaders.AUTHORIZATION) token: String 
-    ) : ApiResult<TokenInfoResponse> { 
-        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(token))) 
-    } 
+        @RequestHeader(HttpHeaders.AUTHORIZATION) authorizationHeader: String
+    ) : ApiResult<TokenInfoResponse> {
+        val token = getBearerToken(authorizationHeader)
+        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(token)))
+    }
+
+    fun getBearerToken(authorizationHeader: String): String {
+        return authorizationHeader.substring(7)
+    }
 }

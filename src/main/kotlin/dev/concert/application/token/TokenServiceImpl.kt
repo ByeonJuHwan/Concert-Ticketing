@@ -1,6 +1,7 @@
 package dev.concert.application.token
 
 import dev.concert.application.token.dto.TokenResponseDto
+import dev.concert.application.token.dto.TokenValidationResult
 import dev.concert.domain.TokenRepository
 import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
@@ -48,16 +49,6 @@ class TokenServiceImpl (
             token = queueToken.token, 
             status = queueToken.status, 
         ) 
-    } 
-
-    @Transactional
-    override fun isTokenExpired(token: String): Boolean {
-        val currentToken = tokenRepository.findByToken(token) ?: return true
-        if(currentToken.expiresAt.isBefore(LocalDateTime.now())){
-            currentToken.changeStatusExpired()
-            return true
-        }
-        return false
     }
 
     @Transactional
@@ -83,11 +74,17 @@ class TokenServiceImpl (
         }
     }
 
-    @Transactional(readOnly = true) 
-    override fun isAvailableToken(token: String): Boolean { 
-        val queueToken = getQueueToken(token) 
-        return queueToken.status == QueueTokenStatus.ACTIVE 
-    } 
+    @Transactional
+    override fun validateToken(token: String): TokenValidationResult {
+        val tokenEntity = tokenRepository.findByToken(token)
+
+        return when {
+            tokenEntity == null -> TokenValidationResult.INVALID
+            tokenEntity.isExpired() -> TokenValidationResult.EXPIRED
+            !tokenEntity.isAvailable() -> TokenValidationResult.NOT_AVAILABLE
+            else -> TokenValidationResult.VALID
+        }
+    }
 
     private fun getQueueToken(token: String) = 
         tokenRepository.findByToken(token) ?: throw TokenNotFoundException("토큰이 존재하지 않습니다") 
