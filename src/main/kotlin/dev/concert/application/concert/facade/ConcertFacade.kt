@@ -10,6 +10,7 @@ import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class ConcertFacade (
@@ -29,7 +30,8 @@ class ConcertFacade (
     fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
         return concertService.getAvailableSeats(concertOptionId)
     }
- 
+
+    @Transactional
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto { 
         // 유저 정보 조회 
         val user = userService.getUser(request.userId) 
