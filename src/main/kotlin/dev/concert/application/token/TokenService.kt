@@ -10,4 +10,5 @@ interface TokenService {
     fun deleteToken(user : UserEntity)
     fun manageTokenStatus()
     fun isAvailableToken(token: String): Boolean
+    fun manageExpiredTokens()
 }

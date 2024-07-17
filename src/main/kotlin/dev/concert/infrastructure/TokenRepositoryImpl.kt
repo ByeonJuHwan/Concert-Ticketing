@@ -38,4 +38,8 @@ class TokenRepositoryImpl(
     override fun deleteByToken(tokenEntity: QueueTokenEntity) {
         tokenJpaRepository.delete(tokenEntity)
     }
+
+    override fun deleteExpiredTokens() {
+        tokenJpaRepository.deleteExpiredTokens()
+    }
 }

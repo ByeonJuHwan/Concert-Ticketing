@@ -26,4 +26,8 @@ class TokenFacade (
     fun isAvailableToken(token: String): Boolean {
         return tokenService.isAvailableToken(token)
     }
+
+    fun manageExpiredTokens() {
+        tokenService.manageExpiredTokens()
+    }
 }
