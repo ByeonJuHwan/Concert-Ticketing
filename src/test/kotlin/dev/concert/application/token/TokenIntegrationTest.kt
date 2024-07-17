@@ -3,6 +3,7 @@ package dev.concert.application.token
 import dev.concert.application.user.UserService
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
+import dev.concert.infrastructure.jpa.TokenJpaRepository
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,9 @@ class TokenIntegrationTest {
 
     @Autowired
     private lateinit var tokenFacade: TokenFacade
+
+    @Autowired
+    private lateinit var tokenJpaRepository: TokenJpaRepository
 
     @Autowired
     private lateinit var userService: UserService
@@ -65,5 +69,21 @@ class TokenIntegrationTest {
         // then
         val tokenResponseDto = tokenFacade.getToken(token) 
         assertThat(tokenResponseDto.status).isEqualTo(QueueTokenStatus.ACTIVE) 
+    }
+
+    @Test
+    fun `토큰 상태가 만료상태이면 삭제한다`() {
+        // given
+        val user = userService.saveUser(UserEntity("변주환"))
+        val generateToken = tokenFacade.generateToken(user.id)
+
+        // when
+        val token = tokenJpaRepository.findByToken(generateToken)
+        token!!.changeStatusExpired()
+        tokenFacade.manageExpiredTokens()
+
+        // then
+        val list = tokenJpaRepository.findAll()
+        assertThat(list).isEmpty()
     }
 }
