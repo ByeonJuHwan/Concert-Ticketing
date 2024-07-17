@@ -14,6 +14,7 @@ class UserPointFacade (
     private val pointService: PointService,
     private val pointHistoryService: PointHistoryService,
 ){
+    @Transactional
     fun chargePoints(request: PointRequestDto): PointResponseDto { 
         val user = userService.getUser(request.userId) 
         val point = pointService.chargePoints(user, request.amount) 
