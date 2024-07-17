@@ -6,6 +6,7 @@ import dev.concert.application.point.service.PointHistoryService
 import dev.concert.application.point.service.PointService
 import dev.concert.application.user.UserService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserPointFacade (
@@ -20,6 +21,7 @@ class UserPointFacade (
         return point 
     }
 
+    @Transactional(readOnly = true)
     fun getCurrentPoint(userId: Long): PointResponseDto {
         val user = userService.getUser(userId)
         return pointService.getCurrentPoint(user)
