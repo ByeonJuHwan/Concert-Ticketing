@@ -7,6 +7,8 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
+import dev.concert.exception.ReservationAlreadyPaidException
+import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
@@ -112,6 +114,38 @@ class ReservationServiceImplTest {
 
         // then
         assertThat(reservation.status).isEqualTo(ReservationStatus.PAID)
+    }
+
+    @Test
+    fun `현재 예약상태가 Pending 이 아니고 결제 완료 상태라면 ReservationAlreadyPaidException 예외를 발생시킨다`() {
+        // given
+        val reservation = ReservationEntity(
+            user = UserEntity(name = "test"),
+            seat = stubSeatEntity(),
+            expiresAt = LocalDateTime.now().plusMinutes(5),
+        )
+
+        reservation.changeStatus(ReservationStatus.PAID)
+
+        assertThatThrownBy {
+            reservationService.isPending(reservation)
+        }.isInstanceOf(ReservationAlreadyPaidException::class.java)
+    }
+
+    @Test
+    fun `현재 예약상태가 Pending 이 아니고 만료 상태라면 ReservationExpiredException 예외를 발생시킨다`() {
+        // given
+        val reservation = ReservationEntity(
+            user = UserEntity(name = "test"),
+            seat = stubSeatEntity(),
+            expiresAt = LocalDateTime.now().plusMinutes(5),
+        )
+
+        reservation.changeStatus(ReservationStatus.EXPIRED)
+
+        assertThatThrownBy {
+            reservationService.isPending(reservation)
+        }.isInstanceOf(ReservationExpiredException::class.java)
     }
 
     private fun stubSeatEntity(): SeatEntity {

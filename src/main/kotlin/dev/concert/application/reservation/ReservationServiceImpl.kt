@@ -6,6 +6,8 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.exception.ReservationAlreadyPaidException
+import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -55,6 +57,14 @@ class ReservationServiceImpl (
         reservationRepository.findExpiredReservations().forEach{
             it.changeStatus(ReservationStatus.EXPIRED)
             it.seat.changeSeatStatus(SeatStatus.AVAILABLE)
+        }
+    }
+
+    override fun isPending(reservation: ReservationEntity) {
+        when (reservation.status) {
+            ReservationStatus.PAID -> throw ReservationAlreadyPaidException("이미 결제된 예약입니다.")
+            ReservationStatus.EXPIRED -> throw ReservationExpiredException("만료된 예약입니다.")
+            else -> return
         }
     }
 }
