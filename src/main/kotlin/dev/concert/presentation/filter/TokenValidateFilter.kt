@@ -16,7 +16,6 @@ class TokenValidateFilter (
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         val token = getBearerToken(request)
-        print("token: $token")
         if (token == null) {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "토큰이 없습니다")
             return
