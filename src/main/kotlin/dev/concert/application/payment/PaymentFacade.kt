@@ -9,6 +9,7 @@ import dev.concert.application.seat.SeatService
 import dev.concert.application.token.TokenService
 import dev.concert.exception.ReservationExpiredException
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class PaymentFacade(
@@ -19,6 +20,7 @@ class PaymentFacade(
     private val paymentService: PaymentService,
     private val pointHistoryService: PointHistoryService,
 ) {
+    @Transactional
     fun pay(request: PaymentDto) : PaymentResponseDto { 
         // 예약 정보를 가져온다 
         val reservation = reservationService.getReservation(request.reservationId) 
