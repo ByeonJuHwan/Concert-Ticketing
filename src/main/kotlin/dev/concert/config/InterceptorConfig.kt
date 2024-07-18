@@ -12,6 +12,6 @@ class InterceptorConfig (
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(tokenValidateInterceptor)
-            .addPathPatterns("/concerts/*", "/payment/*")
+            .addPathPatterns("/concerts/**", "/payment/**")
     }
 }
