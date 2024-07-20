@@ -23,6 +23,7 @@ class PointServiceImpl (
 
     override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user))
 
+    @Transactional(readOnly = true)
     override fun checkPoint(user: UserEntity, price: Long) : PointEntity {
         val currentPoint = getPoint(user)
         if(currentPoint.point < price){

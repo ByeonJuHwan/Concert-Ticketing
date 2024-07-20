@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 
-@Transactional
-@SpringBootTest
+@Transactional 
+@SpringBootTest 
 class PaymentIntegrationTest {
 
     @Autowired
@@ -86,16 +86,16 @@ class PaymentIntegrationTest {
 
     }
 
-    @Test
-    fun `예약 정보 결제 테스트`() {
-        // when
-        val payment = paymentFacade.pay(PaymentDto(reservationId = 1))
-
-        // then
-        assertThat(payment).isNotNull
-        assertThat(payment.reservationId).isEqualTo(1)
-        assertThat(payment.seatNo).isEqualTo(1)
-        assertThat(payment.status.toString()).isEqualTo("PAID")
-        assertThat(payment.price).isEqualTo(10000)
-    }
-}
+    @Test 
+    fun `예약 정보 결제 테스트`() { 
+        // when 
+        val payment = paymentFacade.pay(PaymentDto(reservationId = 1)) 
+ 
+        // then 
+        assertThat(payment).isNotNull 
+        assertThat(payment.reservationId).isEqualTo(1) 
+        assertThat(payment.seatNo).isEqualTo(1) 
+        assertThat(payment.status.toString()).isEqualTo("PAID") 
+        assertThat(payment.price).isEqualTo(10000) 
+    } 
+} 

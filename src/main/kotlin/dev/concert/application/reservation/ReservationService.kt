@@ -12,4 +12,5 @@ interface ReservationService {
     fun isExpired(reservation: ReservationEntity) : Boolean
     fun changeReservationStatusPaid(reservation: ReservationEntity)
     fun manageReservationStatus()
+    fun isPending(reservation: ReservationEntity)
 }
