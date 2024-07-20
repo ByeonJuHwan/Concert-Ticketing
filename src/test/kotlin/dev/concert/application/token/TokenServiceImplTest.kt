@@ -1,9 +1,11 @@
 package dev.concert.application.token
 
+import dev.concert.application.token.dto.TokenValidationResult
 import dev.concert.domain.TokenRepository
 import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
+import org.assertj.core.api.Assertions
 import dev.concert.domain.entity.status.QueueTokenStatus
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -51,10 +53,10 @@ class TokenServiceImplTest {
         `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
 
         // when
-        val isTokenAllowed = tokenServiceImpl.isTokenExpired(token)
+        val tokenResult = tokenServiceImpl.validateToken(token)
 
         // then
-        assertFalse(isTokenAllowed)
+        assertThat(tokenResult).isNotEqualTo(TokenValidationResult.VALID)
     }
 
     @Test
@@ -75,7 +77,7 @@ class TokenServiceImplTest {
     }
 
     @Test
-    fun `토큰이 ACTIVE 상태인지 확인한다`() {
+    fun `토큰이 WAITING 상태인지 확인한다`() {
         // given
         val user = UserEntity(name = "test")
         val token = "test"
@@ -84,10 +86,10 @@ class TokenServiceImplTest {
         `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
 
         // when
-        val isAvailableToken = tokenServiceImpl.isAvailableToken(token)
+        val tokenResult = tokenServiceImpl.validateToken(token)
 
         // then
-        assertFalse(isAvailableToken)
+        assertThat(tokenResult).isEqualTo(TokenValidationResult.NOT_AVAILABLE)
     }
 
     @Test

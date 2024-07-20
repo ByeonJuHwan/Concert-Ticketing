@@ -5,16 +5,16 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-@Configuration
+//@Configuration
 class FilterConfig (
     private val tokenValidateFilter: TokenValidateFilter,
 ) {
 
-    @Bean
-    fun tokenFilterRegistration(): FilterRegistrationBean<TokenValidateFilter> {
-        val registrationBean = FilterRegistrationBean<TokenValidateFilter>()
-        registrationBean.filter = tokenValidateFilter
-        registrationBean.addUrlPatterns("/concerts/*", "/payment/*")
-        return registrationBean
-    }
+//    @Bean
+//    fun tokenFilterRegistration(): FilterRegistrationBean<TokenValidateFilter> {
+//        val registrationBean = FilterRegistrationBean<TokenValidateFilter>()
+//        registrationBean.filter = tokenValidateFilter
+//        registrationBean.addUrlPatterns("/concerts/*", "/payment/*")
+//        return registrationBean
+//    }
 }

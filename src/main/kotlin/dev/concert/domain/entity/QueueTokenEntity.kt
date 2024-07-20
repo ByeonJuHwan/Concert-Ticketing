@@ -24,7 +24,7 @@ class QueueTokenEntity (
 ) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id : Long = 0
+    val id: Long = 0
 
     @Column(nullable = false)
     var token: String = token
@@ -32,7 +32,7 @@ class QueueTokenEntity (
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    var user : UserEntity = user
+    var user: UserEntity = user
         protected set
 
     // 만료 시간은 1시간으로 설정
@@ -50,5 +50,17 @@ class QueueTokenEntity (
 
     fun changeStatusExpired() {
         this.status = QueueTokenStatus.EXPIRED
+    }
+
+    fun isExpired(): Boolean {
+        if (this.expiresAt.isBefore(LocalDateTime.now())) {
+            this.changeStatusExpired()
+            return true
+        }
+        return false
+    }
+
+    fun isAvailable(): Boolean {
+        return this.status == QueueTokenStatus.ACTIVE
     }
 }

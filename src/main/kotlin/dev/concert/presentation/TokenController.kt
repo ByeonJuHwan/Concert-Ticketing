@@ -20,35 +20,40 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "토큰 발급 API", description = "토큰 발급 API를 제공합니다")
 @RestController
 @RequestMapping("/queue/tokens")
-class TokenController (
-    private val tokenFacade: TokenFacade,
-) {
-
-    @Operation(
-        summary = "토큰 발급 API",
-        description = "유저 아이디를 받아 토큰을 발급합니다",
-    )
-    @ApiResponses(
+class TokenController ( 
+    private val tokenFacade: TokenFacade, 
+) { 
+ 
+    @Operation( 
+        summary = "토큰 발급 API", 
+        description = "유저 아이디를 받아 토큰을 발급합니다", 
+    ) 
+    @ApiResponses( 
         ApiResponse(responseCode = "200", description = "토큰 발급 성공"),
-    )
-    @PostMapping
-    fun createToken(
-        @RequestBody tokenRequest: TokenRequest
-    ) : ApiResult<TokenResponse> {
-        return ApiResult(TokenResponse.of(tokenFacade.generateToken(tokenRequest.userId)))
+    )  
+    @PostMapping 
+    fun createToken( 
+        @RequestBody tokenRequest: TokenRequest 
+    ) : ApiResult<TokenResponse> { 
+        return ApiResult(TokenResponse.of(tokenFacade.generateToken(tokenRequest.userId))) 
+    } 
+ 
+    @Operation( 
+        summary = "토큰 조회 API", 
+        description = "토큰을 조회합니다", 
+    ) 
+    @ApiResponses( 
+        ApiResponse(responseCode = "200", description = "토큰 조회 성공"), 
+    ) 
+    @GetMapping("/status") 
+    fun getToken( 
+        @RequestHeader(HttpHeaders.AUTHORIZATION) authorizationHeader: String
+    ) : ApiResult<TokenInfoResponse> {
+        val token = getBearerToken(authorizationHeader)
+        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(token)))
     }
 
-    @Operation(
-        summary = "토큰 조회 API",
-        description = "토큰을 조회합니다",
-    )
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "토큰 조회 성공"),
-    )
-    @GetMapping("/status")
-    fun getToken(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) token: String
-    ) : ApiResult<TokenInfoResponse> {
-        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(token)))
+    fun getBearerToken(authorizationHeader: String): String {
+        return authorizationHeader.substring(7)
     }
 }
