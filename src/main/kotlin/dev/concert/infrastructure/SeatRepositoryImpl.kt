@@ -1,6 +1,6 @@
 package dev.concert.infrastructure
 
-import dev.concert.domain.SeatRepository
+import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.infrastructure.jpa.SeatJpaRepository
 import org.springframework.stereotype.Repository
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
 @Repository
 class SeatRepositoryImpl (
     private val seatJpaRepository: SeatJpaRepository,
-) : SeatRepository{
+) : SeatRepository {
     override fun getSeatWithLock(seatId: Long): SeatEntity? {
         return seatJpaRepository.getSeatWithLock(seatId)
     }

@@ -1,13 +1,12 @@
 package dev.concert.application.point.service
 
-import dev.concert.domain.PointRepository
+import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.exception.NotEnoughPointException
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -40,7 +39,6 @@ class PointServiceImplTest {
     @Test
     fun `기존의 회원이 1000원의 포인트를 가지고 있으면 1000원 충전히 2000 포인트가 되어야한다`() {
         // given
-        val userId = 1L
         val amount = 1000L
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 1000L)
@@ -56,7 +54,6 @@ class PointServiceImplTest {
     @Test
     fun `0이하의 포인트를 넣으면 IllegalArgumentException 이 발생한다`() {
         // given
-        val userId = 1L
         val amount = -1000L
         val user = UserEntity(name = "test")
         val point = PointEntity(user,0)
@@ -73,7 +70,6 @@ class PointServiceImplTest {
     @Test
     fun `현재 포인트를 조회합니다`() {
         // given
-        val userId = 1L
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 1000L)
 

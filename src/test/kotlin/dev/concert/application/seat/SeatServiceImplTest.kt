@@ -1,11 +1,10 @@
 package dev.concert.application.seat
 
-import dev.concert.domain.SeatRepository
+import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.status.SeatStatus
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 

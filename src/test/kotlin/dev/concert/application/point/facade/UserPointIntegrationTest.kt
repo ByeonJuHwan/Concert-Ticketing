@@ -2,10 +2,8 @@ package dev.concert.application.point.facade
 
 import dev.concert.application.point.dto.PointRequestDto
 import dev.concert.application.user.UserService
-import dev.concert.domain.PointRepository
+import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.UserEntity
-import dev.concert.infrastructure.jpa.PointJpaRepository
-import dev.concert.infrastructure.jpa.UserJpaRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest 
 class UserPointIntegrationTest {

@@ -1,6 +1,6 @@
 package dev.concert.application.payment
 
-import dev.concert.domain.PaymentRepository
+import dev.concert.domain.repository.PaymentRepository
 import dev.concert.domain.entity.PaymentEntity
 import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.status.PaymentStatus
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service 
 class PaymentServiceImpl( 
-    private val paymentRepository : PaymentRepository 
+    private val paymentRepository : PaymentRepository
 ) : PaymentService { 
  
     @Transactional 

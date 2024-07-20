@@ -1,7 +1,7 @@
 package dev.concert.application.point.service
 
 import dev.concert.application.point.dto.PointResponseDto
-import dev.concert.domain.PointRepository
+import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.exception.NotEnoughPointException

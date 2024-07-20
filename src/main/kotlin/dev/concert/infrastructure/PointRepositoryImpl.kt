@@ -1,6 +1,6 @@
 package dev.concert.infrastructure
 
-import dev.concert.domain.PointRepository
+import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.infrastructure.jpa.PointJpaRepository
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 @Repository
 class PointRepositoryImpl (
     private val pointJpaRepository: PointJpaRepository,
-) : PointRepository { 
+) : PointRepository {
     override fun findByUser(user: UserEntity): PointEntity? { 
         return pointJpaRepository.findByUser(user) 
     } 

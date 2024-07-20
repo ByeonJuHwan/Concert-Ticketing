@@ -1,6 +1,6 @@
 package dev.concert.application.reservation
 
-import dev.concert.domain.ReservationRepository
+import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.ReservationEntity
@@ -11,7 +11,6 @@ import dev.concert.domain.entity.status.SeatStatus
 import dev.concert.exception.ReservationAlreadyPaidException
 import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 

@@ -1,6 +1,6 @@
 package dev.concert.infrastructure
 
-import dev.concert.domain.UserRepository
+import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.UserEntity
 import dev.concert.infrastructure.jpa.UserJpaRepository
 import org.springframework.data.repository.findByIdOrNull

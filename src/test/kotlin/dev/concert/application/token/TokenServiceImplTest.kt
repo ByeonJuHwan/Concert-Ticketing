@@ -1,11 +1,10 @@
 package dev.concert.application.token
 
 import dev.concert.application.token.dto.TokenValidationResult
-import dev.concert.domain.TokenRepository
-import dev.concert.domain.UserRepository
+import dev.concert.domain.repository.TokenRepository
+import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
-import org.assertj.core.api.Assertions
 import dev.concert.domain.entity.status.QueueTokenStatus
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -37,7 +36,7 @@ class TokenServiceImplTest {
         `when`(userRepository.findById(userId)).thenReturn(user)
 
         // when
-        val token = tokenServiceImpl.generateToken(userId)
+        val token = tokenServiceImpl.generateToken(user)
 
         // then
         assertNotNull(token)

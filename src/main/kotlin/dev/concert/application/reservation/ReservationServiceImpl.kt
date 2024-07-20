@@ -1,6 +1,6 @@
 package dev.concert.application.reservation
 
-import dev.concert.domain.ReservationRepository
+import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity

@@ -1,18 +1,16 @@
 package dev.concert.application.concert.facade
 
 import dev.concert.application.concert.dto.ConcertReservationDto
-import dev.concert.application.concert.service.ConcertService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
-import dev.concert.domain.ConcertRepository
+import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -34,9 +32,6 @@ class ConcertFacadeTest {
 
     @Autowired
     private lateinit var seatService: SeatService
-
-    @Autowired
-    private lateinit var concertService: ConcertService
 
     @Autowired
     private lateinit var reservationService: ReservationService
@@ -169,9 +164,6 @@ class ConcertFacadeTest {
         assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
     }
 
-    @Test
-    fun `콘서트 좌석 예약 스케줄러가 돌아서 바로 예약한 직후는 상태를 변경하지 않는다`() {
-        val user = userService.saveUser(UserEntity(name = "test"))
     @Test
     fun `콘서트 좌석 예약 스케줄러가 돌아서 바로 예약한 직후는 상태를 변경하지 않는다`() {
         val user = userService.saveUser(UserEntity(name = "test"))

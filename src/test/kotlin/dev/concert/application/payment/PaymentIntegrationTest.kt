@@ -1,21 +1,18 @@
 package dev.concert.application.payment
 
-import dev.concert.application.concert.service.ConcertService
 import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.application.point.service.PointService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
-import dev.concert.domain.ConcertRepository
+import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

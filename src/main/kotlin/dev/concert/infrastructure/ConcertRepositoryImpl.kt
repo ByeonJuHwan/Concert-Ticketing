@@ -1,6 +1,6 @@
 package dev.concert.infrastructure
 
-import dev.concert.domain.ConcertRepository
+import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity

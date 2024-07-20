@@ -2,7 +2,7 @@ package dev.concert.application.token
 
 import dev.concert.application.token.dto.TokenResponseDto
 import dev.concert.application.token.dto.TokenValidationResult
-import dev.concert.domain.TokenRepository
+import dev.concert.domain.repository.TokenRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus

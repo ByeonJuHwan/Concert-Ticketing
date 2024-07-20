@@ -1,4 +1,4 @@
-package dev.concert.domain
+package dev.concert.domain.repository
 
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity

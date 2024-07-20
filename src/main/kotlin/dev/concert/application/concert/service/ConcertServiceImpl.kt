@@ -3,7 +3,7 @@ package dev.concert.application.concert.service
 import dev.concert.application.concert.dto.ConcertDatesDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
-import dev.concert.domain.ConcertRepository
+import dev.concert.domain.repository.ConcertRepository
 import org.springframework.stereotype.Service
 
 @Service

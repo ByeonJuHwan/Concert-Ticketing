@@ -1,6 +1,6 @@
 package dev.concert.application.user
 
-import dev.concert.domain.UserRepository
+import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.UserEntity
 import dev.concert.exception.UserNotFountException
 import org.springframework.stereotype.Service
