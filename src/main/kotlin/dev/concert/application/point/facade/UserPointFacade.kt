@@ -6,6 +6,7 @@ import dev.concert.application.point.service.PointHistoryService
 import dev.concert.application.point.service.PointService
 import dev.concert.application.user.UserService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserPointFacade (
@@ -13,13 +14,15 @@ class UserPointFacade (
     private val pointService: PointService,
     private val pointHistoryService: PointHistoryService,
 ){
-    fun chargePoints(request: PointRequestDto): PointResponseDto {
-        val user = userService.getUser(request.userId)
-        val point = pointService.chargePoints(user, request.amount)
-        pointHistoryService.saveChargePointHistory(user, request.amount)
-        return point
+    @Transactional
+    fun chargePoints(request: PointRequestDto): PointResponseDto { 
+        val user = userService.getUser(request.userId) 
+        val point = pointService.chargePoints(user, request.amount) 
+        pointHistoryService.saveChargePointHistory(user, request.amount) 
+        return point 
     }
 
+    @Transactional(readOnly = true)
     fun getCurrentPoint(userId: Long): PointResponseDto {
         val user = userService.getUser(userId)
         return pointService.getCurrentPoint(user)
