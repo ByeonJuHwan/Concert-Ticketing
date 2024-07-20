@@ -36,6 +36,9 @@ class ConcertFacadeTest {
     private lateinit var seatService: SeatService
 
     @Autowired
+    private lateinit var concertService: ConcertService
+
+    @Autowired
     private lateinit var reservationService: ReservationService
 
     @Autowired
@@ -166,6 +169,9 @@ class ConcertFacadeTest {
         assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
     }
 
+    @Test
+    fun `콘서트 좌석 예약 스케줄러가 돌아서 바로 예약한 직후는 상태를 변경하지 않는다`() {
+        val user = userService.saveUser(UserEntity(name = "test"))
     @Test
     fun `콘서트 좌석 예약 스케줄러가 돌아서 바로 예약한 직후는 상태를 변경하지 않는다`() {
         val user = userService.saveUser(UserEntity(name = "test"))

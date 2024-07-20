@@ -5,6 +5,7 @@ import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 interface TokenJpaRepository : JpaRepository<QueueTokenEntity, Long>, TokenJpaRepositoryCustom {
@@ -16,6 +17,7 @@ interface TokenJpaRepository : JpaRepository<QueueTokenEntity, Long>, TokenJpaRe
 interface TokenJpaRepositoryCustom {
     fun findAvaliableTokens(): List<QueueTokenEntity>
     fun findFirstIdInQueueOrderStatusWating(waiting: QueueTokenStatus): QueueTokenEntity?
+    fun deleteExpiredTokens()
 }
 
 class TokenJpaRepositoryImpl : TokenJpaRepositoryCustom, QuerydslRepositorySupport(QueueTokenEntity::class.java) {
@@ -30,5 +32,12 @@ class TokenJpaRepositoryImpl : TokenJpaRepositoryCustom, QuerydslRepositorySuppo
         return from(queueTokenEntity)
             .where(queueTokenEntity.status.eq(waiting))
             .fetchFirst()
+    }
+
+    @Modifying
+    override fun deleteExpiredTokens() {
+        delete(queueTokenEntity)
+            .where(queueTokenEntity.status.eq(QueueTokenStatus.EXPIRED))
+            .execute()
     }
 }

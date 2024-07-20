@@ -16,39 +16,49 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
-@Service 
-class TokenServiceImpl ( 
-    private val tokenRepository: TokenRepository, 
-    private val userRepository: UserRepository, 
-) : TokenService { 
- 
-    @Transactional 
-    override fun generateToken(userId: Long): String { 
-        val user = getUser(userId) 
- 
-        tokenRepository.deleteToken(user) 
- 
-        val token = encodeUserId() 
+@Service
+class TokenServiceImpl (
+    private val tokenRepository: TokenRepository,
+    private val userRepository: UserRepository,
+) : TokenService {
 
-        val queueToken = queueTokenEntity(user, token) 
+    @Transactional
+    override fun generateToken(userId: Long): String {
+        val user = getUser(userId)
 
-        tokenRepository.saveToken(queueToken) 
+        tokenRepository.deleteToken(user)
 
-        return token 
-    } 
+        val token = encodeUserId()
 
-    @Transactional(readOnly = true) 
-    override fun getToken(token: String): TokenResponseDto { 
-        val queueToken = getQueueToken(token) 
+        val queueToken = queueTokenEntity(user, token)
 
-        val remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds 
+        tokenRepository.saveToken(queueToken)
 
-        return TokenResponseDto( 
-            queueOrder = getQueueOrder(queueToken), 
-            remainingTime = remainingTime, 
-            token = queueToken.token, 
-            status = queueToken.status, 
-        ) 
+        return token
+    }
+
+    @Transactional(readOnly = true)
+    override fun getToken(token: String): TokenResponseDto {
+        val queueToken = getQueueToken(token)
+
+        val remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds
+
+        return TokenResponseDto(
+            queueOrder = getQueueOrder(queueToken),
+            remainingTime = remainingTime,
+            token = queueToken.token,
+            status = queueToken.status,
+        )
+    }
+
+    @Transactional
+    override fun isTokenExpired(token: String): Boolean {
+        val currentToken = tokenRepository.findByToken(token) ?: return true
+        if(currentToken.expiresAt.isBefore(LocalDateTime.now())){
+            currentToken.changeStatusExpired()
+            return true
+        }
+        return false
     }
 
     @Transactional
@@ -86,30 +96,35 @@ class TokenServiceImpl (
         }
     }
 
-    private fun getQueueToken(token: String) = 
-        tokenRepository.findByToken(token) ?: throw TokenNotFoundException("토큰이 존재하지 않습니다") 
+    @Transactional
+    override fun manageExpiredTokens() {
+        tokenRepository.deleteExpiredTokens()
+    }
 
-    private fun queueTokenEntity( 
-        user: UserEntity, 
-        token: String, 
-    ) = QueueTokenEntity( 
-        user = user, 
-        token = token, 
-    ) 
+    private fun getQueueToken(token: String) =
+        tokenRepository.findByToken(token) ?: throw TokenNotFoundException("토큰이 존재하지 않습니다")
 
-    private fun getQueueOrder(queueToken:QueueTokenEntity) : Int { 
-        val firstQueueId = tokenRepository.findFirstQueueOrderId() 
-        if(firstQueueId == 0L) return 0 
-        return (queueToken.id - firstQueueId).toInt() + 1 
-    } 
+    private fun queueTokenEntity(
+        user: UserEntity,
+        token: String,
+    ) = QueueTokenEntity(
+        user = user,
+        token = token,
+    )
 
-    private fun encodeUserId() : String { 
-        val uuid = UUID.randomUUID().toString() 
-        val timeStamp = System.currentTimeMillis().toString() 
-        return Base64Util.encode((uuid + timeStamp).toByteArray()) 
-    } 
+    private fun getQueueOrder(queueToken:QueueTokenEntity) : Int {
+        val firstQueueId = tokenRepository.findFirstQueueOrderId()
+        if(firstQueueId == 0L) return 0
+        return (queueToken.id - firstQueueId).toInt() + 1
+    }
 
-    private fun getUser(userId: Long) = 
-        userRepository.findById(userId) ?: throw UserNotFountException("존재하는 회원이 없습니다") 
+    private fun encodeUserId() : String {
+        val uuid = UUID.randomUUID().toString()
+        val timeStamp = System.currentTimeMillis().toString()
+        return Base64Util.encode((uuid + timeStamp).toByteArray())
+    }
+
+    private fun getUser(userId: Long) =
+        userRepository.findById(userId) ?: throw UserNotFountException("존재하는 회원이 없습니다")
 }
 
