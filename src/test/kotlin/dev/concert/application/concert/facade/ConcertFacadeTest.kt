@@ -147,6 +147,7 @@ class ConcertFacadeTest {
                 seatNo = 1,
             )
         )
+
         // when
         val reservation = concertFacade.reserveSeat(
             ConcertReservationDto(

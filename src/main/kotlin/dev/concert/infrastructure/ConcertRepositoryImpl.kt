@@ -15,9 +15,9 @@ class ConcertRepositoryImpl (
     private val concertOptionJpaRepository: ConcertOptionJpaRepository,
     private val concertSeatJpaRepository: ConcertSeatJpaRepository,
 ) : ConcertRepository {
-    override fun getConcerts(): List<ConcertEntity> {
-        return concertJpaRepository.findAllByStartDateAfter()
-    }
+    override fun getConcerts(): List<ConcertEntity> { 
+        return concertJpaRepository.findAllByStartDateAfter() 
+    } 
 
     override fun saveConcert(concertEntity: ConcertEntity): ConcertEntity {
         return concertJpaRepository.save(concertEntity)
