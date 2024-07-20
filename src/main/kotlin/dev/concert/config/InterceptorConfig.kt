@@ -1,6 +1,6 @@
 package dev.concert.config
 
-import dev.concert.presentation.interceptor.TokenValidateInterceptor
+import dev.concert.interfaces.presentation.interceptor.TokenValidateInterceptor
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer

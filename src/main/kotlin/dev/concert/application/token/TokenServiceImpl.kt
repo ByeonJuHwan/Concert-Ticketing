@@ -3,12 +3,10 @@ package dev.concert.application.token
 import dev.concert.application.token.dto.TokenResponseDto
 import dev.concert.application.token.dto.TokenValidationResult
 import dev.concert.domain.TokenRepository
-import dev.concert.domain.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
 import dev.concert.exception.TokenNotFoundException
-import dev.concert.exception.UserNotFountException
 import dev.concert.util.Base64Util
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,51 +17,32 @@ import java.util.*
 @Service
 class TokenServiceImpl (
     private val tokenRepository: TokenRepository,
-    private val userRepository: UserRepository,
 ) : TokenService {
 
     @Transactional
-    override fun generateToken(userId: Long): String {
-        val user = getUser(userId)
+    override fun generateToken(user : UserEntity): String {
+        tokenRepository.deleteByUser(user)
 
-        tokenRepository.deleteToken(user)
-
-        val token = encodeUserId()
-
-        val queueToken = queueTokenEntity(user, token)
-
-        tokenRepository.saveToken(queueToken)
-
-        return token
+        return encodeUserId().also { token ->
+            tokenRepository.saveToken(queueTokenEntity(user, token))
+        }
     }
 
     @Transactional(readOnly = true)
     override fun getToken(token: String): TokenResponseDto {
         val queueToken = getQueueToken(token)
 
-        val remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds
-
         return TokenResponseDto(
             queueOrder = getQueueOrder(queueToken),
-            remainingTime = remainingTime,
+            remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds,
             token = queueToken.token,
             status = queueToken.status,
         )
     }
 
     @Transactional
-    override fun isTokenExpired(token: String): Boolean {
-        val currentToken = tokenRepository.findByToken(token) ?: return true
-        if(currentToken.expiresAt.isBefore(LocalDateTime.now())){
-            currentToken.changeStatusExpired()
-            return true
-        }
-        return false
-    }
-
-    @Transactional
     override fun deleteToken(user: UserEntity) {
-        tokenRepository.deleteToken(user)
+        tokenRepository.deleteByUser(user)
     }
 
     /**
@@ -114,8 +93,7 @@ class TokenServiceImpl (
 
     private fun getQueueOrder(queueToken:QueueTokenEntity) : Int {
         val firstQueueId = tokenRepository.findFirstQueueOrderId()
-        if(firstQueueId == 0L) return 0
-        return (queueToken.id - firstQueueId).toInt() + 1
+        return if(firstQueueId == 0L) 0 else (queueToken.id - firstQueueId).toInt() + 1
     }
 
     private fun encodeUserId() : String {
@@ -123,8 +101,5 @@ class TokenServiceImpl (
         val timeStamp = System.currentTimeMillis().toString()
         return Base64Util.encode((uuid + timeStamp).toByteArray())
     }
-
-    private fun getUser(userId: Long) =
-        userRepository.findById(userId) ?: throw UserNotFountException("존재하는 회원이 없습니다")
 }
 

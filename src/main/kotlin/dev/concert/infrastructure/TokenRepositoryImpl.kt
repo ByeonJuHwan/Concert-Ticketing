@@ -17,7 +17,7 @@ class TokenRepositoryImpl(
     }
 
     override fun findFirstQueueOrderId(): Long {
-        tokenJpaRepository.findFirstIdInQueueOrderStatusWating(QueueTokenStatus.WAITING)?.let{
+        tokenJpaRepository.findFirstIdInQueueOrderStatusWaiting(QueueTokenStatus.WAITING)?.let{
             return it.id
         }
         return 0
@@ -27,12 +27,12 @@ class TokenRepositoryImpl(
         return tokenJpaRepository.findByToken(token)
     }
 
-    override fun deleteToken(user: UserEntity) {
+    override fun deleteByUser(user: UserEntity) {
         tokenJpaRepository.deleteByUser(user)
     }
 
     override fun findWaitingAndActiveTokens(): List<QueueTokenEntity> {
-        return tokenJpaRepository.findAvaliableTokens()
+        return tokenJpaRepository.findAvailableTokens()
     }
 
     override fun deleteByToken(tokenEntity: QueueTokenEntity) {
