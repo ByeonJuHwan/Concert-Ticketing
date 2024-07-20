@@ -11,7 +11,7 @@ import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
-import dev.concert.infrastructure.jpa.ConcertJpaRepository
+import dev.concert.domain.entity.status.SeatStatus
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Assertions.*
@@ -19,10 +19,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.concurrent.CompletableFuture
 
-@Transactional
+//@Transactional
 @SpringBootTest
 class ConcertFacadeTest {
 
@@ -36,17 +36,15 @@ class ConcertFacadeTest {
     private lateinit var seatService: SeatService
 
     @Autowired
-    private lateinit var concertService: ConcertService
-
-    @Autowired
-    private lateinit var reservationService : ReservationService
+    private lateinit var reservationService: ReservationService
 
     @Autowired
     private lateinit var userService : UserService
 
     @BeforeEach
     fun setUp() {
-        userService.saveUser(UserEntity(name = "test"))
+        userService.saveUser(UserEntity(name = "user1"))
+        userService.saveUser(UserEntity(name = "user2"))
 
         val concert = concertRepository.saveConcert(
             ConcertEntity(
@@ -117,42 +115,11 @@ class ConcertFacadeTest {
 
     @Test
     fun `콘서트 좌석 예약 테스트`() {
-        val user = userService.saveUser(UserEntity(name = "test"))
-
-        val concert = concertRepository.saveConcert(
-            ConcertEntity(
-                concertName = "콘서트1",
-                singer = "가수1",
-                startDate = "20241201",
-                endDate = "20241201",
-                reserveStartDate = "20241201",
-                reserveEndDate = "20241201",
-            )
-        )
-
-        val concertOption = concertRepository.saveConcertOption(
-            ConcertOptionEntity(
-                concert = concert,
-                concertDate = "20241201",
-                concertTime = "12:00",
-                concertVenue = "올림픽체조경기장",
-                availableSeats = 100,
-            )
-        )
-
-        val seat = seatService.saveSeat(
-            SeatEntity(
-                concertOption = concertOption,
-                price = 10000,
-                seatNo = 1,
-            )
-        )
-
         // when
         val reservation = concertFacade.reserveSeat(
             ConcertReservationDto(
-                userId = user.id,
-                seatId = seat.id,
+                userId = 1L,
+                seatId = 1L,
             )
         )
 
@@ -160,6 +127,43 @@ class ConcertFacadeTest {
         assertNotNull(reservation)
         assertThat(reservation.status).isEqualTo(ReservationStatus.PENDING)
         assertThat(reservation.reservationExpireTime).isAfter(LocalDateTime.now())
+    }
+
+    @Test
+    fun `콘서트 좌석 예약 동시성 테스트`() {
+        // given
+        val request1 = ConcertReservationDto(
+            userId = 1L,
+            seatId = 1L,
+        )
+
+        val request2 = ConcertReservationDto(
+            userId = 2L,
+            seatId = 1L,
+        )
+
+        // when
+        CompletableFuture.allOf(
+            CompletableFuture.runAsync{
+                try{
+                    concertFacade.reserveSeat(request1)
+                }catch (e: Exception){
+                    println(e.message)
+                }
+            },
+            CompletableFuture.runAsync{
+                try{
+                    concertFacade.reserveSeat(request2)
+                }catch (e: Exception){
+                    println(e.message)
+                }
+            },
+        ).join()
+
+        // then
+        val seat = seatService.getSeat(1L)
+        assertThat(seat).isNotNull
+        assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
     }
 
     @Test
