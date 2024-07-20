@@ -21,7 +21,7 @@ class PointServiceImpl (
         return PointResponseDto.from(point) 
     } 
 
-    override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user))
+    override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user)) 
 
     @Transactional(readOnly = true)
     override fun checkPoint(user: UserEntity, price: Long) : PointEntity {

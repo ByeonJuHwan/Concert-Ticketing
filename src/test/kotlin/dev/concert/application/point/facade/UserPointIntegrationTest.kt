@@ -50,17 +50,17 @@ class UserPointIntegrationTest {
         assertEquals(1000L, point.point) 
     } 
 
-    @Test
-    fun `현재 포인트를 조회환다`() {
-        val userId = 1L
-        val amount = 1000L
+    @Test 
+    fun `현재 포인트를 조회환다`() { 
+        val userId = 1L 
+        val amount = 1000L 
+ 
+        userPointFacade.chargePoints(PointRequestDto(userId, amount)) 
 
-        userPointFacade.chargePoints(PointRequestDto(userId, amount))
+        // when 
+        val currentPoint = userPointFacade.getCurrentPoint(userId) 
 
-        // when
-        val currentPoint = userPointFacade.getCurrentPoint(userId)
-
-        // then
-        assertEquals(1000L, currentPoint.point)
+        // then 
+        assertEquals(1000L, currentPoint.point) 
     }
 }

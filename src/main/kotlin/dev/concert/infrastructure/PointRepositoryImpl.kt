@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository
 @Repository
 class PointRepositoryImpl (
     private val pointJpaRepository: PointJpaRepository,
-) : PointRepository {
-    override fun findByUser(user: UserEntity): PointEntity? {
-        return pointJpaRepository.findByUser(user)
-    }
+) : PointRepository { 
+    override fun findByUser(user: UserEntity): PointEntity? { 
+        return pointJpaRepository.findByUser(user) 
+    } 
 
     override fun save(point: PointEntity): PointEntity {
         return pointJpaRepository.save(point)
