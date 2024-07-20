@@ -18,9 +18,9 @@ class ConcertFacade (
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
 ){
-    fun getConcerts(): List<ConcertsDto> { 
-        return concertService.getConcerts() 
-    } 
+    fun getConcerts(): List<ConcertsDto> {
+        return concertService.getConcerts()
+    }
 
     fun getAvailableDates(concertId: Long): List<ConcertDatesDto> {
         return concertService.getAvailableDates(concertId)
