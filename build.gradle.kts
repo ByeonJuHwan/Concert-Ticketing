@@ -54,3 +54,12 @@ kotlin {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+allOpen {
+	annotation("jakarta.persistence.Entity")
+	annotation("jakarta.persistence.MappedSuperclass")
+	annotation("jakarta.persistence.Embeddable")
+	annotation("org.springframework.stereotype.Component")
+	annotation("org.springframework.stereotype.Service")
+	annotation("org.springframework.stereotype.Repository")
+}
