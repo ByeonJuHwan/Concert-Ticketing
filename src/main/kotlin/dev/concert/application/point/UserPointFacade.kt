@@ -2,7 +2,6 @@ package dev.concert.application.point
 
 import dev.concert.application.point.dto.PointRequestDto
 import dev.concert.application.point.dto.PointResponseDto
-import dev.concert.domain.service.point.PointHistoryService
 import dev.concert.domain.service.point.PointService
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Service
@@ -11,13 +10,10 @@ import org.springframework.stereotype.Service
 class UserPointFacade (
     private val userService: UserService,
     private val pointService: PointService,
-    private val pointHistoryService: PointHistoryService,
 ){
     fun chargePoints(request: PointRequestDto): PointResponseDto {
         val user = userService.getUser(request.userId) 
-        val point = pointService.chargePoints(user, request.amount).also {
-            pointHistoryService.saveChargePointHistory(user, request.amount)
-        }
+        val point = pointService.chargePoints(user, request.amount)
         return PointResponseDto(point.point)
     }
 
