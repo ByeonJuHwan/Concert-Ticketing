@@ -1,4 +1,4 @@
-package dev.concert.application.payment
+package dev.concert.domain.service.payment
 
 import dev.concert.domain.entity.ReservationEntity
 

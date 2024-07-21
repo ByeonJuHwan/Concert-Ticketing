@@ -1,4 +1,4 @@
-package dev.concert.application.payment
+package dev.concert.domain.service.payment
 
 import dev.concert.domain.repository.PaymentRepository
 import dev.concert.domain.entity.PaymentEntity
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service 
 class PaymentServiceImpl( 
     private val paymentRepository : PaymentRepository
-) : PaymentService { 
+) : PaymentService {
  
     @Transactional 
     override fun createPayments(reservation: ReservationEntity) { 
