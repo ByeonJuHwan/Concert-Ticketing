@@ -34,4 +34,8 @@ class ConcertRepositoryImpl (
     override fun saveConcertOption(concertOptionEntity: ConcertOptionEntity): ConcertOptionEntity {
         return concertOptionJpaRepository.save(concertOptionEntity)
     }
+
+    override fun deleteAll() {
+        concertJpaRepository.deleteAll()
+    }
 }

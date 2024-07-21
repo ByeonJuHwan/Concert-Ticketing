@@ -3,13 +3,13 @@ package dev.concert.application.payment
 import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.domain.service.point.PointService
 import dev.concert.domain.service.reservation.ReservationService
-import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.repository.SeatRepository
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -35,7 +35,7 @@ class PaymentIntegrationTest {
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
-    private lateinit var seatService: SeatService
+    private lateinit var seatRepository: SeatRepository
 
     @Autowired
     private lateinit var pointService : PointService
@@ -66,7 +66,7 @@ class PaymentIntegrationTest {
             )
         )
 
-        val seat = seatService.saveSeat(
+        val seat = seatRepository.save(
             SeatEntity(
                 concertOption = concertOption,
                 price = 10000,

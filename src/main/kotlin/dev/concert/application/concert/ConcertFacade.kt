@@ -10,7 +10,6 @@ import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 
 @Component
 class ConcertFacade (
@@ -55,23 +54,15 @@ class ConcertFacade (
         }
     }
 
-    @Transactional
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         // 유저 정보 조회
         val user = userService.getUser(request.userId)
 
-        // 좌석 정보 조회(with Lock)
-        val seat = seatService.getSeat(request.seatId)
+        //예약가능인지 확인하고 좌석 임시배정해 잠근다.
+        val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
 
-        // 좌석 정보가 Available 한지 확인
-        seatService.checkSeatAvailable(seat)
-
-        // 예약 정보 저장
-        // 예약 정보를 저장하고 예약 정보
+        //예약한다.
         val reservation = reservationService.saveReservation(user, seat)
-
-        // 좌석 정보를 Temporary 로 변경
-        seatService.changeSeatStatusTemporary(seat)
 
         return ConcertReservationResponseDto(
             status = reservation.status,

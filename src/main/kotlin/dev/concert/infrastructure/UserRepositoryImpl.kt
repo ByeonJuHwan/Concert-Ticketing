@@ -11,5 +11,8 @@ class UserRepositoryImpl (
     private val userJpaRepository: UserJpaRepository
 ) : UserRepository {
     override fun findById(id: Long) = userJpaRepository.findByIdOrNull(id)
-    override fun save(user: UserEntity): UserEntity = userJpaRepository.save(user)
+    override fun save(user: UserEntity): UserEntity = userJpaRepository.saveAndFlush(user)
+    override fun deleteAll() {
+        userJpaRepository.deleteAll()
+    }
 }

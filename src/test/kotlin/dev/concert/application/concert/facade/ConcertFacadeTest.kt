@@ -3,7 +3,6 @@ package dev.concert.application.concert.facade
 import dev.concert.application.concert.ConcertFacade
 import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.domain.service.reservation.ReservationService
-import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
@@ -12,7 +11,10 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.repository.SeatRepository
+import dev.concert.domain.repository.UserRepository
 import org.assertj.core.api.Assertions.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 
-//@Transactional
 @SpringBootTest
 class ConcertFacadeTest {
 
@@ -32,13 +33,16 @@ class ConcertFacadeTest {
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
-    private lateinit var seatService: SeatService
+    private lateinit var userRepository : UserRepository
 
     @Autowired
     private lateinit var reservationService: ReservationService
 
     @Autowired
     private lateinit var userService : UserService
+
+    @Autowired
+    private lateinit var seatRepository: SeatRepository
 
     @BeforeEach
     fun setUp() {
@@ -66,13 +70,20 @@ class ConcertFacadeTest {
             )
         )
 
-        seatService.saveSeat(
+        seatRepository.save(
             SeatEntity(
                 concertOption = concertOption,
                 price = 10000,
                 seatNo = 1,
             )
         )
+    }
+
+    @AfterEach
+    fun tearDown() {
+        concertRepository.deleteAll()
+        seatRepository.deleteAll()
+        userRepository.deleteAll()
     }
 
     @Test
@@ -160,7 +171,7 @@ class ConcertFacadeTest {
         ).join()
 
         // then
-        val seat = seatService.getSeat(1L)
+        val seat = seatRepository.findById(1L)?: throw Exception("seat not found")
         assertThat(seat).isNotNull
         assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
     }
@@ -190,7 +201,7 @@ class ConcertFacadeTest {
             )
         )
 
-        val seat = seatService.saveSeat(
+        val seat = seatRepository.save(
             SeatEntity(
                 concertOption = concertOption,
                 price = 10000,

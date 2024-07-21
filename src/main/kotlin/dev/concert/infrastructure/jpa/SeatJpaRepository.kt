@@ -10,6 +10,6 @@ import org.springframework.data.repository.query.Param
 
 interface SeatJpaRepository : JpaRepository<SeatEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM SeatEntity s JOIN FETCH s.concertOption co JOIN FETCH co.concert c WHERE s.id = :seatId")
+    @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId")
     fun getSeatWithLock(@Param("seatId") seatId: Long): SeatEntity?
 }

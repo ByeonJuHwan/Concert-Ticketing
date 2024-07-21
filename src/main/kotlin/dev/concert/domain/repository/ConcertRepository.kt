@@ -10,4 +10,5 @@ interface ConcertRepository {
     fun getAvailableDates(concertId: Long): List<ConcertOptionEntity>
     fun getAvailableSeats(concertOptionId: Long): List<SeatEntity>
     fun saveConcertOption(concertOptionEntity: ConcertOptionEntity): ConcertOptionEntity
+    fun deleteAll()
 }

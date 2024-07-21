@@ -26,29 +26,15 @@ class SeatServiceImplTest {
     lateinit var seatService: SeatServiceImpl
 
     @Test
-    fun `좌석 Id 가 주어지면 좌석정보를 반환한다`() {
-        // given
-        val seatEntity = stubSeatEntity()
-
-        val seatId  =1L
-
-        given(seatRepository.getSeatWithLock(seatId)).willReturn(seatEntity)
-        // when
-        val seat = seatService.getSeat(seatId)
-
-        // then
-        assertNotNull(seat)
-        assertEquals(seatEntity.id, seat.id)
-    }
-
-    @Test
     fun `좌석이 주어지면 예약 가능한 좌석인지 확인한다`() {
         // given
         val seatEntity = stubSeatEntity()
 
+        given(seatRepository.getSeatWithLock(seatEntity.id)).willReturn(seatEntity)
+
         // when
         assertDoesNotThrow {
-            seatService.checkSeatAvailable(seatEntity)
+            seatService.checkAndReserveSeatTemporarily(seatEntity.id)
         }
     }
 
@@ -56,9 +42,10 @@ class SeatServiceImplTest {
     fun `좌성정보가 주어지면 좌석의 상태를 임시 예약으로 변경한다`() {
         // given
         val seatEntity = stubSeatEntity()
+        given(seatRepository.getSeatWithLock(seatEntity.id)).willReturn(seatEntity)
 
         // when
-        seatService.changeSeatStatusTemporary(seatEntity)
+        seatService.checkAndReserveSeatTemporarily(seatEntity.id)
 
         // then
         assertThat(seatEntity.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)

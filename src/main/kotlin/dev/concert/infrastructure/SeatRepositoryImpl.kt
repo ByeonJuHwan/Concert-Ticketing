@@ -3,6 +3,7 @@ package dev.concert.infrastructure
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.infrastructure.jpa.SeatJpaRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -15,5 +16,13 @@ class SeatRepositoryImpl (
 
     override fun save(seat: SeatEntity): SeatEntity {
         return seatJpaRepository.save(seat)
+    }
+
+    override fun findById(seatId: Long): SeatEntity? {
+        return seatJpaRepository.findByIdOrNull(seatId)
+    }
+
+    override fun deleteAll() {
+        seatJpaRepository.deleteAll()
     }
 }
