@@ -5,7 +5,7 @@ import dev.concert.application.payment.dto.PaymentResponseDto
 import dev.concert.domain.service.point.PointHistoryService
 import dev.concert.domain.service.point.PointService
 import dev.concert.application.reservation.ReservationService
-import dev.concert.application.seat.SeatService
+import dev.concert.domain.service.seat.SeatService
 import dev.concert.application.token.TokenService
 import dev.concert.exception.ReservationExpiredException
 import org.springframework.stereotype.Component

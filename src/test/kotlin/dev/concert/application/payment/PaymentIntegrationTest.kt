@@ -3,7 +3,7 @@ package dev.concert.application.payment
 import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.domain.service.point.PointService
 import dev.concert.application.reservation.ReservationService
-import dev.concert.application.seat.SeatService
+import dev.concert.domain.service.seat.SeatService
 import dev.concert.application.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity

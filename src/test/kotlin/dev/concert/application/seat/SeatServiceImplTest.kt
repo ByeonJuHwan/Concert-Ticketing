@@ -5,6 +5,7 @@ import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.service.seat.SeatServiceImpl
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 

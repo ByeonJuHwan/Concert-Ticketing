@@ -1,4 +1,4 @@
-package dev.concert.application.seat
+package dev.concert.domain.service.seat
 
 import dev.concert.domain.entity.SeatEntity
 
