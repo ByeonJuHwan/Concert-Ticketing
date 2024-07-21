@@ -1,7 +1,7 @@
 package dev.concert.domain.service.payment
 
-import dev.concert.domain.entity.ReservationEntity
+import dev.concert.domain.entity.PaymentEntity
 
 interface PaymentService {
-    fun createPayments(reservation: ReservationEntity)
+    fun processReservationPayment(reservationId: Long) : PaymentEntity
 }

@@ -22,8 +22,6 @@ class ReservationJpaRepositoryImpl : ReservationJpaRepositoryCustom, QuerydslRep
         return from(reservationEntity)
             .join(reservationEntity.seat, seatEntity).fetchJoin()
             .join(reservationEntity.user, userEntity).fetchJoin()
-            .join(seatEntity.concertOption, concertOptionEntity).fetchJoin()
-            .join(concertOptionEntity.concert, concertEntity).fetchJoin()
             .where(reservationEntity.id.eq(reservationId))
             .fetchOne()
     }

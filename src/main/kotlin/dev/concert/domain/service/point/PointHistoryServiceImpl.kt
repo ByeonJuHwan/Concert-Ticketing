@@ -16,11 +16,6 @@ class PointHistoryServiceImpl (
         val history = createHistoryEntity(user, amount, PointTransactionType.CHARGE)
         return pointHistoryRepository.saveHistory(history)
     }
-    @Transactional
-    override fun saveUsePointHistory(user: UserEntity, amount: Long) {
-        val history = createHistoryEntity(user, amount, PointTransactionType.USE)
-        return pointHistoryRepository.saveHistory(history)
-    }
 
     private fun createHistoryEntity(
         user: UserEntity,
