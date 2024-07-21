@@ -11,14 +11,11 @@ import dev.concert.domain.entity.status.PaymentStatus
 import dev.concert.domain.entity.status.PaymentType
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.repository.PaymentRepository
 import dev.concert.domain.repository.PointHistoryRepository
 import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.repository.ReservationRepository
-import dev.concert.domain.exception.NotEnoughPointException
-import dev.concert.domain.exception.ReservationAlreadyPaidException
-import dev.concert.domain.exception.ReservationExpiredException
-import dev.concert.domain.exception.ReservationNotFoundException
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -54,10 +51,10 @@ class PaymentServiceImplTest {
         given(reservationRepository.findById(reservationId)).willReturn(null)
 
         // when & then
-        assertThrows(ReservationNotFoundException::class.java) {
+        assertThrows(ConcertException::class.java) {
             paymentService.processReservationPayment(reservationId)
         }.also {
-            assertEquals("예약 정보를 찾을 수 없습니다.", it.message)
+            assertEquals("존재하는 예약이 없습니다", it.message)
         }
     }
 
@@ -71,10 +68,10 @@ class PaymentServiceImplTest {
         given(reservationRepository.findById(reservationId)).willReturn(reservation)
 
         // when & then
-        assertThrows(ReservationAlreadyPaidException::class.java) {
+        assertThrows(ConcertException::class.java) {
             paymentService.processReservationPayment(reservationId)
         }.also {
-            assertEquals("이미 결제된 예약입니다.", it.message)
+            assertEquals("이미 결제된 예약입니다", it.message)
         }
     }
 
@@ -88,10 +85,10 @@ class PaymentServiceImplTest {
         given(reservationRepository.findById(reservationId)).willReturn(reservation)
 
         // when & then
-        assertThrows(ReservationExpiredException::class.java) {
+        assertThrows(ConcertException::class.java) {
             paymentService.processReservationPayment(reservationId)
         }.also {
-            assertEquals("만료된 예약입니다.", it.message)
+            assertEquals("예약이 만료되었습니다", it.message)
         }
     }
 
@@ -104,10 +101,10 @@ class PaymentServiceImplTest {
         given(reservationRepository.findById(reservationId)).willReturn(reservation)
 
         // when & then
-        assertThrows(ReservationExpiredException::class.java) {
+        assertThrows(ConcertException::class.java) {
             paymentService.processReservationPayment(reservationId)
         }.also {
-            assertEquals("예약이 만료되었습니다.", it.message)
+            assertEquals("예약이 만료되었습니다", it.message)
         }
     }
 
@@ -122,10 +119,10 @@ class PaymentServiceImplTest {
         given(pointRepository.findByUser(user)).willReturn(null)
 
         // when & then
-        assertThrows(NotEnoughPointException::class.java) {
+        assertThrows(ConcertException::class.java) {
             paymentService.processReservationPayment(reservationId)
         }.also {
-            assertEquals("포인트가 부족합니다.", it.message)
+            assertEquals("포인트가 부족합니다", it.message)
         }
     }
 

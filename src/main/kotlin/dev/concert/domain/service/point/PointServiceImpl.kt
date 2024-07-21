@@ -5,8 +5,9 @@ import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.PointHistoryEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.PointTransactionType
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import dev.concert.domain.repository.PointHistoryRepository
-import dev.concert.domain.exception.NotEnoughPointException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,7 +32,7 @@ class PointServiceImpl (
     override fun checkPoint(user: UserEntity, price: Long) : PointEntity {
         val currentPoint = getPoint(user)
         if(currentPoint.point < price){
-            throw NotEnoughPointException("포인트가 부족합니다.")
+            throw ConcertException(ErrorCode.NOT_ENOUGH_POINTS)
         }
         return currentPoint
     }

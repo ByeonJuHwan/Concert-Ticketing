@@ -1,13 +1,7 @@
 package dev.concert.interfaces
 
-import dev.concert.domain.exception.NotEnoughPointException
-import dev.concert.domain.exception.NotFoundSeatException
-import dev.concert.domain.exception.ReservationAlreadyPaidException
-import dev.concert.domain.exception.ReservationExpiredException
-import dev.concert.domain.exception.ReservationNotFoundException
-import dev.concert.domain.exception.SeatIsNotAvailableException
-import dev.concert.domain.exception.TokenNotFoundException
-import dev.concert.domain.exception.UserNotFountException
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -22,6 +16,16 @@ data class ErrorResponse(val code: String, val message: String)
 class ApiControllerAdvice : ResponseEntityExceptionHandler() {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
+    @ExceptionHandler(ConcertException::class)
+    fun handleCustomException(e: ConcertException): ResponseEntity<ErrorResponse> {
+        val errorCode = e.errorCode
+        logger.error("[${errorCode.name}] [code : ${errorCode.status}] [message : ${e.message}]")
+        return ResponseEntity(
+            ErrorResponse(errorCode.code, e.message ?: errorCode.message),
+            errorCode.status
+        )
+    }
+
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgumentException(e: IllegalArgumentException): ResponseEntity<ErrorResponse> {
         logger.error("[IllegalArgumentException] [code : ${HttpStatus.BAD_REQUEST}] [message : ${e.message}]")
@@ -31,83 +35,12 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
         )
     }
 
-    @ExceptionHandler(UserNotFountException::class)
-    fun handleUserNotFountException(e: UserNotFountException): ResponseEntity<ErrorResponse> {
-        logger.error("[UserNotFountException] [code : ${HttpStatus.NOT_FOUND}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("404", e.message ?: "존재하는 회원이 없습니다"),
-            HttpStatus.NOT_FOUND
-        )
-    }
-
-    @ExceptionHandler(TokenNotFoundException::class)
-    fun handleTokenNotFoundException(e: TokenNotFoundException): ResponseEntity<ErrorResponse> {
-        logger.error("[TokenNotFoundException] [code : ${HttpStatus.UNAUTHORIZED}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("401", e.message ?: "토큰이 존재하지 않습니다"),
-            HttpStatus.UNAUTHORIZED
-        )
-    }
-
-    @ExceptionHandler(NotFoundSeatException::class)
-    fun handleNotFoundSeatException(e: NotFoundSeatException): ResponseEntity<ErrorResponse> {
-        logger.error("[NotFoundSeatException] [code : ${HttpStatus.NOT_FOUND}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("404", e.message ?: "존재하는 좌석이 없습니다"),
-            HttpStatus.NOT_FOUND
-        )
-    }
-
-    @ExceptionHandler(SeatIsNotAvailableException::class)
-    fun handleSeatIsNotAvailableException(e: SeatIsNotAvailableException): ResponseEntity<ErrorResponse> {
-        logger.error("[SeatIsNotAvailableException] [code : ${HttpStatus.CONFLICT}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("409", e.message ?: "예약 가능한 상태가 아닙니다"),
-            HttpStatus.CONFLICT
-        )
-    }
-    @ExceptionHandler(ReservationNotFoundException::class)
-    fun handleReservationNotFoundException(e: ReservationNotFoundException): ResponseEntity<ErrorResponse> {
-        logger.error("[ReservationNotFoundException] [code : ${HttpStatus.NOT_FOUND}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("404", e.message ?: "존재하는 예약이 없습니다"),
-            HttpStatus.NOT_FOUND
-        )
-    }
-
-    @ExceptionHandler(ReservationExpiredException::class)
-    fun handleReservationExpiredException(e: ReservationExpiredException): ResponseEntity<ErrorResponse> {
-        logger.error("[ReservationExpiredException] [code : ${HttpStatus.GONE}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("410", e.message ?: "예약이 만료되었습니다"),
-            HttpStatus.GONE
-        )
-    }
-
-    @ExceptionHandler(NotEnoughPointException::class)
-    fun handleNotEnoughPointException(e: NotEnoughPointException): ResponseEntity<ErrorResponse> {
-        logger.error("[NotEnoughPointException] [code : ${HttpStatus.BAD_REQUEST}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("400", e.message ?: "포인트가 부족합니다"),
-            HttpStatus.BAD_REQUEST
-        )
-    }
-
-    @ExceptionHandler(ReservationAlreadyPaidException::class)
-    fun handleReservationAlreadyPaidException(e: ReservationAlreadyPaidException): ResponseEntity<ErrorResponse> {
-        logger.error("[ReservationAlreadyPaidException] [code : ${HttpStatus.CONFLICT}] [message : ${e.message}]")
-        return ResponseEntity(
-            ErrorResponse("409", e.message ?: "이미 결제된 예약입니다"),
-            HttpStatus.CONFLICT
-        )
-    }
-
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         logger.error("[Exception] [code : ${HttpStatus.INTERNAL_SERVER_ERROR}] [message : ${e.message}]")
         return ResponseEntity(
-            ErrorResponse("500", "에러가 발생했습니다"),
-            HttpStatus.INTERNAL_SERVER_ERROR,
+            ErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR.code, "에러가 발생했습니다"),
+            HttpStatus.INTERNAL_SERVER_ERROR
         )
     }
 }

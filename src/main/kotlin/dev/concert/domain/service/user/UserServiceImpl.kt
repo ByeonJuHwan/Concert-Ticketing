@@ -2,7 +2,8 @@ package dev.concert.domain.service.user
 
 import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.UserEntity
-import dev.concert.domain.exception.UserNotFountException
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -13,7 +14,7 @@ class UserServiceImpl (
 
     @Transactional(readOnly = true)
     override fun getUser(userId: Long): UserEntity {
-        return userRepository.findById(userId) ?: throw UserNotFountException("존재하는 회원이 없습니다")
+        return userRepository.findById(userId) ?: throw ConcertException(ErrorCode.USER_NOT_FOUND)
     }
 
     @Transactional

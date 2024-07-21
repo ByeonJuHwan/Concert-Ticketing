@@ -3,8 +3,8 @@ package dev.concert.domain.service.seat
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.status.SeatStatus
-import dev.concert.domain.exception.NotFoundSeatException
-import dev.concert.domain.exception.SeatIsNotAvailableException
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -33,7 +33,7 @@ class SeatServiceImpl(
     }
 
     private fun getSeat(seatId: Long): SeatEntity {
-        return seatRepository.getSeatWithLock(seatId) ?: throw NotFoundSeatException("해당 좌석이 존재하지 않습니다.")
+        return seatRepository.getSeatWithLock(seatId) ?: throw ConcertException(ErrorCode.SEAT_NOT_FOUND)
     }
 
     private fun changeSeatStatusTemporary(seat: SeatEntity) {
@@ -43,7 +43,7 @@ class SeatServiceImpl(
 
     private fun checkSeatAvailable(seat: SeatEntity) {
         if (seat.seatStatus != SeatStatus.AVAILABLE){
-            throw SeatIsNotAvailableException("해당 좌석은 이미 예약되었습니다.")
+            throw ConcertException(ErrorCode.SEAT_NOT_AVAILABLE)
         }
     }
 }

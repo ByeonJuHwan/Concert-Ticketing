@@ -3,8 +3,9 @@ package dev.concert.application.point.service
 import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.repository.PointHistoryRepository
 import dev.concert.domain.service.point.PointServiceImpl
-import dev.concert.domain.exception.NotEnoughPointException
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -20,6 +21,9 @@ class PointServiceImplTest {
 
     @Mock
     private lateinit var pointRepository: PointRepository
+
+    @Mock
+    private lateinit var pointHistoryRepository: PointHistoryRepository
 
     @InjectMocks
     private lateinit var pointService: PointServiceImpl
@@ -99,7 +103,7 @@ class PointServiceImplTest {
         // when & then
         assertThatThrownBy {
             pointService.checkPoint(user, 1000L)
-        }.isInstanceOf(NotEnoughPointException::class.java)
+        }.isInstanceOf(ConcertException::class.java)
     }
 
     @Test

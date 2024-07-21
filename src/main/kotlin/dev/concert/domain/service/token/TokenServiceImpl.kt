@@ -6,7 +6,8 @@ import dev.concert.domain.repository.TokenRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
-import dev.concert.domain.exception.TokenNotFoundException
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import dev.concert.util.Base64Util
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -81,7 +82,7 @@ class TokenServiceImpl (
     }
 
     private fun getQueueToken(token: String) =
-        tokenRepository.findByToken(token) ?: throw TokenNotFoundException("토큰이 존재하지 않습니다")
+        tokenRepository.findByToken(token) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
 
     private fun queueTokenEntity(
         user: UserEntity,
