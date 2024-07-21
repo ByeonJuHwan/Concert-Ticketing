@@ -6,8 +6,7 @@ import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
-import dev.concert.domain.entity.status.ReservationStatus
-import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.service.reservation.ReservationServiceImpl
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.given
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDateTime
 
@@ -25,6 +25,9 @@ class ReservationServiceImplTest {
 
     @Mock
     private lateinit var reservationRepository: ReservationRepository
+
+    @Mock
+    private lateinit var seatRepository: SeatRepository
 
     @InjectMocks
     private lateinit var reservationService: ReservationServiceImpl
@@ -42,7 +45,7 @@ class ReservationServiceImplTest {
 
 
     @Test 
-    fun `예약 상태가 Expired 가 되면 자리 상태를 AVAILABLE 로 변경한다`() { 
+    fun `예약 상태를 변경하는 스케줄러가 돌면 상테를 바꿔주는 쿼리가 호출된다`() {
         // given 
         val reservation = ReservationEntity( 
             user = UserEntity(name = "test"), 
@@ -50,13 +53,14 @@ class ReservationServiceImplTest {
             expiresAt = LocalDateTime.now().minusMinutes(5) 
         ) 
  
-        given(reservationRepository.findExpiredReservations()).willReturn(listOf(reservation)) 
+        given(reservationRepository.findExpiredReservations()).willReturn(listOf(reservation))
+
         // when 
         reservationService.manageReservationStatus() 
  
         // then 
-        assertThat(reservation.status).isEqualTo(ReservationStatus.EXPIRED) 
-        assertThat(reservation.seat.seatStatus).isEqualTo(SeatStatus.AVAILABLE) 
+        verify(reservationRepository).updateReservationStatusToExpired(listOf(reservation.id))
+        verify(seatRepository).updateSeatStatusToAvailable(listOf(reservation.seat.id))
     } 
 
 
