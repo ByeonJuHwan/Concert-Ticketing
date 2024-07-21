@@ -2,15 +2,16 @@ package dev.concert.application.token
 
 import dev.concert.application.token.dto.TokenValidationResult
 import dev.concert.domain.repository.TokenRepository
-import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
+import dev.concert.domain.service.token.TokenServiceImpl
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.BDDMockito.given
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.*
@@ -22,18 +23,13 @@ class TokenServiceImplTest {
     @Mock
     lateinit var tokenRepository: TokenRepository
 
-    @Mock
-    lateinit var userRepository: UserRepository
-
     @InjectMocks
     lateinit var tokenServiceImpl: TokenServiceImpl
 
     @Test
     fun `특정 유저에 대해서 토큰이 생성 되어야 한다`() {
         // given
-        val userId = 1L
         val user = UserEntity(name = "test")
-        `when`(userRepository.findById(userId)).thenReturn(user)
 
         // when
         val token = tokenServiceImpl.generateToken(user)
@@ -49,7 +45,7 @@ class TokenServiceImplTest {
         val token = "test"
         val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
-        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+        given(tokenRepository.findByToken(token)).willReturn(queueTokenEntity)
 
         // when
         val tokenResult = tokenServiceImpl.validateToken(token)
@@ -65,7 +61,7 @@ class TokenServiceImplTest {
         val token = "test"
         val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
-        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+        given(tokenRepository.findByToken(token)).willReturn(queueTokenEntity)
 
         // when
         val tokenResponseDto = tokenServiceImpl.getToken(token)
@@ -82,7 +78,7 @@ class TokenServiceImplTest {
         val token = "test"
         val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
-        `when`(tokenRepository.findByToken(token)).thenReturn(queueTokenEntity)
+        given(tokenRepository.findByToken(token)).willReturn(queueTokenEntity)
 
         // when
         val tokenResult = tokenServiceImpl.validateToken(token)

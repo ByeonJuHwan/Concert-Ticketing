@@ -1,4 +1,4 @@
-package dev.concert.application.token
+package dev.concert.domain.service.token
 
 import dev.concert.application.token.dto.TokenResponseDto
 import dev.concert.application.token.dto.TokenValidationResult

@@ -3,8 +3,8 @@ package dev.concert.application.token
 import dev.concert.application.token.dto.TokenResponseDto
 import dev.concert.application.token.dto.TokenValidationResult
 import dev.concert.application.user.UserService
+import dev.concert.domain.service.token.TokenService
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class TokenFacade (
