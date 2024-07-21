@@ -1,11 +1,11 @@
-package dev.concert.application.concert.facade
+package dev.concert.application.concert
 
 import dev.concert.application.concert.dto.ConcertDatesDto
 import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
-import dev.concert.application.concert.service.ConcertService
+import dev.concert.domain.service.concert.ConcertService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.user.UserService
@@ -20,15 +20,39 @@ class ConcertFacade (
     private val reservationService: ReservationService,
 ){
     fun getConcerts(): List<ConcertsDto> {
-        return concertService.getConcerts()
+        return concertService.getConcerts().map { ConcertsDto(
+            id = it.id,
+            concertName = it.concertName,
+            singer = it.singer,
+            startDate = it.startDate,
+            endDate = it.endDate,
+            reserveStartDate = it.reserveStartDate,
+            reserveEndDate = it.reserveEndDate,
+        ) }
     }
 
     fun getAvailableDates(concertId: Long): List<ConcertDatesDto> {
-        return concertService.getAvailableDates(concertId)
+        return concertService.getAvailableDates(concertId).map {
+            ConcertDatesDto(
+                concertId = it.concert.id,
+            concertName = it.concert.concertName,
+            availableSeats = it.availableSeats,
+            concertTime = it.concertTime,
+            concertVenue = it.concertVenue,
+            concertDate = it.concertDate,
+            )
+        }
     }
 
     fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatsDto> {
-        return concertService.getAvailableSeats(concertOptionId)
+        return concertService.getAvailableSeats(concertOptionId).map {
+            ConcertSeatsDto(
+                seatId = it.id,
+                seatNo = it.seatNo,
+                price = it.price,
+                status = it.seatStatus,
+            )
+        }
     }
 
     @Transactional

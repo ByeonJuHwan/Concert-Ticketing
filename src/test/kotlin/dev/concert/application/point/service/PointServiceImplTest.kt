@@ -3,11 +3,13 @@ package dev.concert.application.point.service
 import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.service.point.PointServiceImpl
 import dev.concert.exception.NotEnoughPointException
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.BDDMockito.given
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
@@ -29,8 +31,10 @@ class PointServiceImplTest {
         val user = UserEntity(name = "test")
         val point = PointEntity(user,0)
 
+        given(pointRepository.findByUser(user)).willReturn(point)
+        given(pointRepository.save(point)).willReturn(point)
+
         // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
         val chargePoints = pointService.chargePoints(user , amount)
         // then
         assertThat(chargePoints.point).isEqualTo(1000L)
@@ -43,8 +47,10 @@ class PointServiceImplTest {
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 1000L)
 
+        given(pointRepository.findByUser(user)).willReturn(point)
+        given(pointRepository.save(point)).willReturn(point)
+
         // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
         val chargePoints = pointService.chargePoints(user , amount)
 
         // then
@@ -73,8 +79,9 @@ class PointServiceImplTest {
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 1000L)
 
+        given(pointRepository.findByUser(user)).willReturn(point)
+
         // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
         val currentPoint = pointService.getCurrentPoint(user)
 
         // then
@@ -87,9 +94,9 @@ class PointServiceImplTest {
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 0)
 
-        // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
+        given(pointRepository.findByUser(user)).willReturn(point)
 
+        // when & then
         assertThatThrownBy {
             pointService.checkPoint(user, 1000L)
         }.isInstanceOf(NotEnoughPointException::class.java)
@@ -100,9 +107,9 @@ class PointServiceImplTest {
         // given
         val user = UserEntity(name = "test")
         val point = PointEntity(user, 1000)
+        given(pointRepository.findByUser(user)).willReturn(point)
 
         // when
-        `when`(pointRepository.findByUser(user)).thenReturn(point)
         val currentPoint = pointService.checkPoint(user, 1000L)
 
         // then

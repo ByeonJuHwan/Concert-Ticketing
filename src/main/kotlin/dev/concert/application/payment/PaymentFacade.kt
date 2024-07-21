@@ -2,8 +2,8 @@ package dev.concert.application.payment
 
 import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.application.payment.dto.PaymentResponseDto
-import dev.concert.application.point.service.PointHistoryService
-import dev.concert.application.point.service.PointService
+import dev.concert.domain.service.point.PointHistoryService
+import dev.concert.domain.service.point.PointService
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService
 import dev.concert.application.token.TokenService

@@ -1,7 +1,7 @@
 package dev.concert.interfaces.presentation.controller
 
 import dev.concert.interfaces.ApiResult
-import dev.concert.application.point.facade.UserPointFacade
+import dev.concert.application.point.UserPointFacade
 import dev.concert.interfaces.presentation.request.PointChargeRequest
 import dev.concert.interfaces.presentation.request.toDto
 import dev.concert.interfaces.presentation.response.point.CurrentPointResponse

@@ -4,6 +4,7 @@ import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
+import dev.concert.domain.service.concert.ConcertServiceImpl
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

@@ -1,4 +1,4 @@
-package dev.concert.application.point.service
+package dev.concert.domain.service.point
 
 import dev.concert.domain.repository.PointHistoryRepository
 import dev.concert.domain.entity.PointHistoryEntity

@@ -1,5 +1,6 @@
 package dev.concert.application.point.facade
 
+import dev.concert.application.point.UserPointFacade
 import dev.concert.application.point.dto.PointRequestDto
 import dev.concert.application.user.UserService
 import dev.concert.domain.repository.PointRepository

@@ -1,7 +1,7 @@
 package dev.concert.interfaces.presentation.controller
 
 import dev.concert.interfaces.ApiResult
-import dev.concert.application.concert.facade.ConcertFacade
+import dev.concert.application.concert.ConcertFacade
 import dev.concert.interfaces.presentation.response.concert.ConcertAvailableDatesResponse
 import dev.concert.interfaces.presentation.response.concert.ConcertAvailableSeatsResponse
 import dev.concert.interfaces.presentation.request.ReserveSeatRequest

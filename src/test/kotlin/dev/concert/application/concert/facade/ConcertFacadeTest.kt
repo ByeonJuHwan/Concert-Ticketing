@@ -1,5 +1,6 @@
 package dev.concert.application.concert.facade
 
+import dev.concert.application.concert.ConcertFacade
 import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.reservation.ReservationService
 import dev.concert.application.seat.SeatService

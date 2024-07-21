@@ -1,6 +1,5 @@
-package dev.concert.application.point.service
+package dev.concert.domain.service.point
 
-import dev.concert.application.point.dto.PointResponseDto
 import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
@@ -14,14 +13,13 @@ class PointServiceImpl (
 ) : PointService {
 
     @Transactional 
-    override fun chargePoints(user: UserEntity, amount: Long): PointResponseDto { 
+    override fun chargePoints(user: UserEntity, amount: Long): PointEntity {
         val point = getPoint(user) 
-        chargePoints(point, amount) 
- 
-        return PointResponseDto.from(point) 
+        return chargePoints(point, amount)
     } 
 
-    override fun getCurrentPoint(user: UserEntity): PointResponseDto = PointResponseDto.from(getPoint(user)) 
+    @Transactional(readOnly = true)
+    override fun getCurrentPoint(user: UserEntity): PointEntity = getPoint(user)
 
     @Transactional(readOnly = true)
     override fun checkPoint(user: UserEntity, price: Long) : PointEntity {
@@ -38,14 +36,14 @@ class PointServiceImpl (
         pointRepository.save(currentPoint) 
     } 
 
-    private fun getPoint(user: UserEntity) =
+    private fun getPoint(user: UserEntity) : PointEntity =
         pointRepository.findByUser(user) ?: PointEntity(user, 0)
 
     private fun chargePoints(
         point: PointEntity,
         amount : Long
-    ) {
+    ) : PointEntity {
         point.charge(amount)
-        pointRepository.save(point)
+        return pointRepository.save(point)
     }
 }
