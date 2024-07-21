@@ -8,6 +8,7 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.service.reservation.ReservationServiceImpl
 import dev.concert.exception.ReservationAlreadyPaidException
 import dev.concert.exception.ReservationExpiredException
 import dev.concert.exception.ReservationNotFoundException
@@ -160,8 +161,10 @@ class ReservationServiceImplTest {
             expiresAt = LocalDateTime.now().plusMinutes(5),
         )
 
+        // when
         reservation.changeStatus(ReservationStatus.EXPIRED)
 
+        // then
         assertThatThrownBy {
             reservationService.isPending(reservation)
         }.isInstanceOf(ReservationExpiredException::class.java)

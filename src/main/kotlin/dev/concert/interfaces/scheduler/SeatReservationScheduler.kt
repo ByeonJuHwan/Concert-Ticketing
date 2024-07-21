@@ -1,12 +1,12 @@
 package dev.concert.interfaces.scheduler
 
-import dev.concert.application.reservation.ReservationService
+import dev.concert.domain.service.reservation.ReservationService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
 @Component 
 class SeatReservationScheduler ( 
-    private val reservationService: ReservationService 
+    private val reservationService: ReservationService
 ) { 
 
     /** 

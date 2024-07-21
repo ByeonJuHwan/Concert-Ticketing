@@ -1,4 +1,4 @@
-package dev.concert.application.reservation
+package dev.concert.domain.service.reservation
 
 import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.entity.ReservationEntity
@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 @Service
 class ReservationServiceImpl (
     private val reservationRepository : ReservationRepository,
-) : ReservationService{
+) : ReservationService {
 
     @Transactional
     override fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {

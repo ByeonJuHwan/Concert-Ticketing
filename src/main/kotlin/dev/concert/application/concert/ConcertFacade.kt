@@ -6,7 +6,7 @@ import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
 import dev.concert.domain.service.concert.ConcertService
-import dev.concert.application.reservation.ReservationService
+import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.application.user.UserService
 import org.springframework.stereotype.Component

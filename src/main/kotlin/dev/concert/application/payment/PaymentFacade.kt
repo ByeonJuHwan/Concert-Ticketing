@@ -4,7 +4,7 @@ import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.application.payment.dto.PaymentResponseDto
 import dev.concert.domain.service.point.PointHistoryService
 import dev.concert.domain.service.point.PointService
-import dev.concert.application.reservation.ReservationService
+import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.token.TokenService
 import dev.concert.exception.ReservationExpiredException
