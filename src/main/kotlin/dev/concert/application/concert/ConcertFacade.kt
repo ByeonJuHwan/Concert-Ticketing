@@ -8,7 +8,7 @@ import dev.concert.application.concert.dto.ConcertsDto
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
-import dev.concert.application.user.UserService
+import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 

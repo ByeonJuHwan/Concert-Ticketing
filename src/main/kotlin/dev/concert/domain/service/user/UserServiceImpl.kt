@@ -1,4 +1,4 @@
-package dev.concert.application.user
+package dev.concert.domain.service.user
 
 import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.UserEntity

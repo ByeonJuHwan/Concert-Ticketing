@@ -4,7 +4,7 @@ import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.domain.service.point.PointService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
-import dev.concert.application.user.UserService
+import dev.concert.domain.service.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
@@ -75,7 +75,7 @@ class PaymentIntegrationTest {
         )
 
         // 예약 정보를 저장한다
-        val reservation = reservationService.saveReservation(user, seat)
+        reservationService.saveReservation(user, seat)
 
 
         // 포인트 저장

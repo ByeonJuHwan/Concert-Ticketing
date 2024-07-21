@@ -4,7 +4,7 @@ import dev.concert.application.concert.ConcertFacade
 import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
-import dev.concert.application.user.UserService
+import dev.concert.domain.service.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity

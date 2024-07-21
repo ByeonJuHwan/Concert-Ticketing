@@ -4,7 +4,7 @@ import dev.concert.application.point.dto.PointRequestDto
 import dev.concert.application.point.dto.PointResponseDto
 import dev.concert.domain.service.point.PointHistoryService
 import dev.concert.domain.service.point.PointService
-import dev.concert.application.user.UserService
+import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Service
 
 @Service
