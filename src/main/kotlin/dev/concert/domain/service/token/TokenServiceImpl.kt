@@ -6,7 +6,7 @@ import dev.concert.domain.repository.TokenRepository
 import dev.concert.domain.entity.QueueTokenEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
-import dev.concert.exception.TokenNotFoundException
+import dev.concert.domain.exception.TokenNotFoundException
 import dev.concert.util.Base64Util
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

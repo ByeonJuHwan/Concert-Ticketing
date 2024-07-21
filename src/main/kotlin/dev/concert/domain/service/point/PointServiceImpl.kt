@@ -6,7 +6,7 @@ import dev.concert.domain.entity.PointHistoryEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.PointTransactionType
 import dev.concert.domain.repository.PointHistoryRepository
-import dev.concert.exception.NotEnoughPointException
+import dev.concert.domain.exception.NotEnoughPointException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

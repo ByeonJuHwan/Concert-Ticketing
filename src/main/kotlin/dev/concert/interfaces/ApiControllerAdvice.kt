@@ -1,13 +1,13 @@
 package dev.concert.interfaces
 
-import dev.concert.exception.NotEnoughPointException
-import dev.concert.exception.NotFoundSeatException
-import dev.concert.exception.ReservationAlreadyPaidException
-import dev.concert.exception.ReservationExpiredException
-import dev.concert.exception.ReservationNotFoundException
-import dev.concert.exception.SeatIsNotAvailableException
-import dev.concert.exception.TokenNotFoundException
-import dev.concert.exception.UserNotFountException
+import dev.concert.domain.exception.NotEnoughPointException
+import dev.concert.domain.exception.NotFoundSeatException
+import dev.concert.domain.exception.ReservationAlreadyPaidException
+import dev.concert.domain.exception.ReservationExpiredException
+import dev.concert.domain.exception.ReservationNotFoundException
+import dev.concert.domain.exception.SeatIsNotAvailableException
+import dev.concert.domain.exception.TokenNotFoundException
+import dev.concert.domain.exception.UserNotFountException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus

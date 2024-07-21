@@ -4,7 +4,7 @@ import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.entity.PointEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.service.point.PointServiceImpl
-import dev.concert.exception.NotEnoughPointException
+import dev.concert.domain.exception.NotEnoughPointException
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 

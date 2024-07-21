@@ -3,8 +3,8 @@ package dev.concert.domain.service.seat
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.status.SeatStatus
-import dev.concert.exception.NotFoundSeatException
-import dev.concert.exception.SeatIsNotAvailableException
+import dev.concert.domain.exception.NotFoundSeatException
+import dev.concert.domain.exception.SeatIsNotAvailableException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

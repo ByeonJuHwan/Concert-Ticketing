@@ -1,3 +1,3 @@
-package dev.concert.exception
+package dev.concert.domain.exception
 
 class NotEnoughPointException(message: String) : RuntimeException(message)

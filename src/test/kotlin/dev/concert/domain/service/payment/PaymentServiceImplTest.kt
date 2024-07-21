@@ -15,10 +15,10 @@ import dev.concert.domain.repository.PaymentRepository
 import dev.concert.domain.repository.PointHistoryRepository
 import dev.concert.domain.repository.PointRepository
 import dev.concert.domain.repository.ReservationRepository
-import dev.concert.exception.NotEnoughPointException
-import dev.concert.exception.ReservationAlreadyPaidException
-import dev.concert.exception.ReservationExpiredException
-import dev.concert.exception.ReservationNotFoundException
+import dev.concert.domain.exception.NotEnoughPointException
+import dev.concert.domain.exception.ReservationAlreadyPaidException
+import dev.concert.domain.exception.ReservationExpiredException
+import dev.concert.domain.exception.ReservationNotFoundException
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*

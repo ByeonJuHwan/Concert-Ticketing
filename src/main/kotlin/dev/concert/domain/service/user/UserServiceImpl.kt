@@ -2,7 +2,7 @@ package dev.concert.domain.service.user
 
 import dev.concert.domain.repository.UserRepository
 import dev.concert.domain.entity.UserEntity
-import dev.concert.exception.UserNotFountException
+import dev.concert.domain.exception.UserNotFountException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
