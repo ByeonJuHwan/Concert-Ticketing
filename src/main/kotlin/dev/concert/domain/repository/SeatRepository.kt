@@ -7,4 +7,5 @@ interface SeatRepository {
     fun save(seat: SeatEntity) : SeatEntity
     fun findById(seatId: Long): SeatEntity?
     fun deleteAll()
+    fun updateSeatStatusToAvailable(seatIds: List<Long>)
 }

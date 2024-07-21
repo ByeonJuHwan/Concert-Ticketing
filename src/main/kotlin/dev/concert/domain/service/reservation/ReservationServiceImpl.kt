@@ -4,8 +4,7 @@ import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
-import dev.concert.domain.entity.status.ReservationStatus
-import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.repository.SeatRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -13,6 +12,7 @@ import java.time.LocalDateTime
 @Service
 class ReservationServiceImpl (
     private val reservationRepository : ReservationRepository,
+    private val seatRepository: SeatRepository,
 ) : ReservationService {
 
     @Transactional
@@ -29,10 +29,14 @@ class ReservationServiceImpl (
 
     @Transactional
     override fun manageReservationStatus() {
-        // 예약을 전부 가져와
-        reservationRepository.findExpiredReservations().forEach{
-            it.changeStatus(ReservationStatus.EXPIRED)
-            it.seat.changeSeatStatus(SeatStatus.AVAILABLE)
+        val expiredReservations = reservationRepository.findExpiredReservations()
+
+        val reservationIds = expiredReservations.map { it.id }
+        val seatIds = expiredReservations.map { it.seat.id }
+
+        if (reservationIds.isNotEmpty() && seatIds.isNotEmpty()) {
+            reservationRepository.updateReservationStatusToExpired(reservationIds)
+            seatRepository.updateSeatStatusToAvailable(seatIds)
         }
     }
 }

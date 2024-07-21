@@ -25,4 +25,8 @@ class SeatRepositoryImpl (
     override fun deleteAll() {
         seatJpaRepository.deleteAll()
     }
+
+    override fun updateSeatStatusToAvailable(seatIds: List<Long>) {
+        seatJpaRepository.updateSeatStatusToAvailable(seatIds)
+    }
 }

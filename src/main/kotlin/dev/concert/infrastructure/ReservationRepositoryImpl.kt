@@ -20,4 +20,8 @@ class ReservationRepositoryImpl (
     override fun findExpiredReservations(): List<ReservationEntity> {
         return reservationJpaRepository.findExpiredReservations()
     }
+
+    override fun updateReservationStatusToExpired(reservationIds: List<Long>) {
+        reservationJpaRepository.updateReservationStatusToExpired(reservationIds)
+    }
 }
