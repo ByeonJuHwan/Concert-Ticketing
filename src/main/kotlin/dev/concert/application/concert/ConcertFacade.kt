@@ -12,6 +12,7 @@ import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,6 +23,8 @@ class ConcertFacade (
     private val reservationService: ReservationService,
     private val redisLockManager: RedisLockManager,
 ){
+    private val logger = LoggerFactory.getLogger(ConcertFacade::class.java)
+
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(
             id = it.id,
@@ -61,22 +64,33 @@ class ConcertFacade (
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         val user = userService.getUser(request.userId)
 
-        val lockValue = redisLockManager.lock(request.seatId)
+        val maxRetries = 3
+        val retryDelay = 100L
 
-        if (lockValue != null) {
-            try{
-                val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
-                val reservation = reservationService.saveReservation(user, seat)
-                return ConcertReservationResponseDto(
-                    status = reservation.status,
-                    reservationExpireTime = reservation.expiresAt
-                )
-            } finally {
-                redisLockManager.unlock(request.seatId, lockValue)
-                println("락반환 성공!!")
+        for (retryCount in 1..maxRetries) {
+            val lockValue = redisLockManager.lock(request.seatId)
+
+            if (lockValue != null) {
+                try {
+                    val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
+                    val reservation = reservationService.saveReservation(user, seat)
+                    return ConcertReservationResponseDto(
+                        status = reservation.status,
+                        reservationExpireTime = reservation.expiresAt
+                    )
+                } finally {
+                    redisLockManager.unlock(request.seatId, lockValue)
+                    logger.info("락 반환 성공 !")
+                }
+            } else {
+                if (retryCount < maxRetries) {
+                    logger.info("락 획득 실패!! 재시도 중.. $retryCount")
+                    Thread.sleep(retryDelay)
+                } else {
+                    throw ConcertException(ErrorCode.LOCK_ERROR)
+                }
             }
-        } else {
-            throw  ConcertException(ErrorCode.LOCK_ERROR)
         }
+        throw ConcertException(ErrorCode.RESERVATION_FAILED)
     }
 }

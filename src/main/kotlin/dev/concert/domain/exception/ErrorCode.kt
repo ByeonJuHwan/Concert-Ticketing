@@ -12,5 +12,6 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
     NOT_ENOUGH_POINTS("400", "포인트가 부족합니다", HttpStatus.BAD_REQUEST),
     RESERVATION_ALREADY_PAID("409", "이미 결제된 예약입니다", HttpStatus.CONFLICT),
     INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
-    LOCK_ERROR("500", "락 획득에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
+    LOCK_ERROR("500", "락 획득에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    RESERVATION_FAILED("500", "예약에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
 }
