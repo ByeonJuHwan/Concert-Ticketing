@@ -11,7 +11,8 @@ class SeatRepositoryImpl (
     private val seatJpaRepository: SeatJpaRepository,
 ) : SeatRepository {
     override fun getSeatWithLock(seatId: Long): SeatEntity? {
-        return seatJpaRepository.getSeatWithLock(seatId)
+        //return seatJpaRepository.getSeatWithLock(seatId)
+        return seatJpaRepository.findByIdOrNull(seatId)
     }
 
     override fun save(seat: SeatEntity): SeatEntity {
