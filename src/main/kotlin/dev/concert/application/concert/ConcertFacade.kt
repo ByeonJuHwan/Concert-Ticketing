@@ -5,6 +5,9 @@ import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
+import dev.concert.application.redis.RedisLockManager
+import dev.concert.domain.exception.ConcertException
+import dev.concert.domain.exception.ErrorCode
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
@@ -17,6 +20,7 @@ class ConcertFacade (
     private val seatService : SeatService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
+    private val redisLockManager: RedisLockManager,
 ){
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(
@@ -55,18 +59,24 @@ class ConcertFacade (
     }
 
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
-        // 유저 정보 조회
         val user = userService.getUser(request.userId)
 
-        //예약가능인지 확인하고 좌석 임시배정해 잠근다.
-        val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
+        val lockValue = redisLockManager.lock(request.seatId)
 
-        //예약한다.
-        val reservation = reservationService.saveReservation(user, seat)
-
-        return ConcertReservationResponseDto(
-            status = reservation.status,
-            reservationExpireTime = reservation.expiresAt
-        )
+        if (lockValue != null) {
+            try{
+                val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
+                val reservation = reservationService.saveReservation(user, seat)
+                return ConcertReservationResponseDto(
+                    status = reservation.status,
+                    reservationExpireTime = reservation.expiresAt
+                )
+            } finally {
+                redisLockManager.unlock(request.seatId, lockValue)
+                println("락반환 성공!!")
+            }
+        } else {
+            throw  ConcertException(ErrorCode.LOCK_ERROR)
+        }
     }
 }

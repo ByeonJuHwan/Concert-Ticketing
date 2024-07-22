@@ -11,6 +11,7 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.ReservationStatus
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.repository.UserRepository
 import org.assertj.core.api.Assertions.*
@@ -44,10 +45,21 @@ class ConcertFacadeTest {
     @Autowired
     private lateinit var seatRepository: SeatRepository
 
+    @Autowired
+    private lateinit var reservationRepository: ReservationRepository
+
     @BeforeEach
     fun setUp() {
         userService.saveUser(UserEntity(name = "user1"))
         userService.saveUser(UserEntity(name = "user2"))
+        userService.saveUser(UserEntity(name = "user3"))
+        userService.saveUser(UserEntity(name = "user4"))
+        userService.saveUser(UserEntity(name = "user5"))
+        userService.saveUser(UserEntity(name = "user6"))
+        userService.saveUser(UserEntity(name = "user7"))
+        userService.saveUser(UserEntity(name = "user8"))
+        userService.saveUser(UserEntity(name = "user9"))
+        userService.saveUser(UserEntity(name = "user10"))
 
         val concert = concertRepository.saveConcert(
             ConcertEntity(
@@ -172,8 +184,50 @@ class ConcertFacadeTest {
 
         // then
         val seat = seatRepository.findById(1L)?: throw Exception("seat not found")
+        val reservations = reservationRepository.findAll()
         assertThat(seat).isNotNull
         assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
+        assertThat(reservations).hasSize(1)
+    }
+
+    @Test
+    fun `콘서트 좌석 예약 10명 동시성 테스트`() {
+        // given
+        val seatId = 1L
+        val userIds = (1L..10L).toList() // 10명의 사용자 ID 리스트
+
+        // 10개의 예약 요청 생성
+        val requests = userIds.map { userId ->
+            ConcertReservationDto(
+                userId = userId,
+                seatId = seatId
+            )
+        }
+
+        // when
+        val startTime = System.currentTimeMillis() // 시간 측정 시작
+        requests.map { request ->
+            CompletableFuture.runAsync {
+                try {
+                    concertFacade.reserveSeat(request)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        }.forEach { it.join() }
+
+        val endTime = System.currentTimeMillis() // 시간 측정 종료
+
+        // 소요 시간 계산
+        val elapsedTime = endTime - startTime
+        println("Elapsed time: $elapsedTime ms")
+
+        // then
+        val seat = seatRepository.findById(1L)?: throw Exception("seat not found")
+        val reservations = reservationRepository.findAll()
+        assertThat(seat).isNotNull
+        assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
+        assertThat(reservations).hasSize(1)
     }
 
     @Test
