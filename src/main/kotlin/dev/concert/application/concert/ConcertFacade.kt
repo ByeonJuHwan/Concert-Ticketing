@@ -11,7 +11,7 @@ import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
-import dev.concert.domain.service.util.DistributedLockStore
+import dev.concert.domain.service.util.DistributedLockManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -22,7 +22,7 @@ class ConcertFacade (
     private val seatService : SeatService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
-    private val distributedLockStore: DistributedLockStore,
+    private val distributedLockManager: DistributedLockManager,
 ){
     private val log : Logger = LoggerFactory.getLogger(ConcertFacade::class.java)
 
@@ -69,7 +69,7 @@ class ConcertFacade (
         val retryDelay = 100L
 
         for (retryCount in 1..maxRetries) {
-            val lockValue = distributedLockStore.lock(request.seatId)
+            val lockValue = distributedLockManager.lock(request.seatId)
 
             if (lockValue != null) {
                 try {
@@ -80,7 +80,7 @@ class ConcertFacade (
                         reservationExpireTime = reservation.expiresAt
                     )
                 } finally {
-                    distributedLockStore.unlock(request.seatId, lockValue)
+                    distributedLockManager.unlock(request.seatId, lockValue)
                     log.info("락 반환 성공!")
                 }
             } else {
