@@ -1,15 +1,16 @@
-package dev.concert.application.redis
+package dev.concert.infrastructure.redis
 
+import dev.concert.domain.service.util.DistributedLockStore
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 
 @Component
-class RedisLockManager (
+class RedisLockStore (
     private val redisTemplate: RedisTemplate<String, String>
-) {
-    fun lock(key: Long): String? {
+) : DistributedLockStore{
+    override fun lock(key: Long): String? {
         val value = UUID.randomUUID().toString()
         val lockAcquired = redisTemplate
             .opsForValue()
@@ -18,7 +19,7 @@ class RedisLockManager (
         return if (lockAcquired == true) value else null
     }
 
-    fun unlock(key: Long, value: String): Boolean {
+    override fun unlock(key: Long, value: String): Boolean {
         val redisKey = generateKey(key)
         val currentValue = redisTemplate.opsForValue().get(redisKey)
         if (currentValue == value) {

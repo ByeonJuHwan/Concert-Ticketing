@@ -50,16 +50,9 @@ class ConcertFacadeTest {
 
     @BeforeEach
     fun setUp() {
-        userService.saveUser(UserEntity(name = "user1"))
-        userService.saveUser(UserEntity(name = "user2"))
-        userService.saveUser(UserEntity(name = "user3"))
-        userService.saveUser(UserEntity(name = "user4"))
-        userService.saveUser(UserEntity(name = "user5"))
-        userService.saveUser(UserEntity(name = "user6"))
-        userService.saveUser(UserEntity(name = "user7"))
-        userService.saveUser(UserEntity(name = "user8"))
-        userService.saveUser(UserEntity(name = "user9"))
-        userService.saveUser(UserEntity(name = "user10"))
+        for (i in 1..100) {
+            userService.saveUser(UserEntity(name = "user$i"))
+        }
 
         val concert = concertRepository.saveConcert(
             ConcertEntity(
@@ -195,6 +188,43 @@ class ConcertFacadeTest {
         // given
         val seatId = 1L
         val userIds = (1L..10L).toList() // 10명의 사용자 ID 리스트
+
+        // 10개의 예약 요청 생성
+        val requests = userIds.map { userId ->
+            ConcertReservationDto(
+                userId = userId,
+                seatId = seatId
+            )
+        }
+
+        // when
+        val startTime = System.currentTimeMillis() // 시간 측정 시작
+        requests.map { request ->
+            CompletableFuture.runAsync {
+                try {
+                    concertFacade.reserveSeat(request)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        }.forEach { it.join() }
+
+        val endTime = System.currentTimeMillis() // 시간 측정 종료
+
+        // 소요 시간 계산
+        val elapsedTime = endTime - startTime
+        println("Elapsed time: $elapsedTime ms")
+
+        // then
+        val seat = seatRepository.findById(seatId) ?: throw Exception("seat not found")
+        assertThat(seat.seatStatus).isEqualTo(SeatStatus.TEMPORARILY_ASSIGNED)
+    }
+
+    @Test
+    fun `콘서트 좌석 예약 100명 동시성 테스트`() {
+        // given
+        val seatId = 1L
+        val userIds = (1L..100L).toList() // 10명의 사용자 ID 리스트
 
         // 10개의 예약 요청 생성
         val requests = userIds.map { userId ->

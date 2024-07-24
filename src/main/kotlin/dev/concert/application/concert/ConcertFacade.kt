@@ -5,13 +5,14 @@ import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
-import dev.concert.application.redis.RedisLockManager
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
+import dev.concert.domain.service.util.DistributedLockStore
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -21,9 +22,9 @@ class ConcertFacade (
     private val seatService : SeatService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
-    private val redisLockManager: RedisLockManager,
+    private val distributedLockStore: DistributedLockStore,
 ){
-    private val logger = LoggerFactory.getLogger(ConcertFacade::class.java)
+    private val log : Logger = LoggerFactory.getLogger(ConcertFacade::class.java)
 
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(
@@ -68,7 +69,7 @@ class ConcertFacade (
         val retryDelay = 100L
 
         for (retryCount in 1..maxRetries) {
-            val lockValue = redisLockManager.lock(request.seatId)
+            val lockValue = distributedLockStore.lock(request.seatId)
 
             if (lockValue != null) {
                 try {
@@ -79,12 +80,12 @@ class ConcertFacade (
                         reservationExpireTime = reservation.expiresAt
                     )
                 } finally {
-                    redisLockManager.unlock(request.seatId, lockValue)
-                    logger.info("락 반환 성공 !")
+                    distributedLockStore.unlock(request.seatId, lockValue)
+                    log.info("락 반환 성공!")
                 }
             } else {
                 if (retryCount < maxRetries) {
-                    logger.info("락 획득 실패!! 재시도 중.. $retryCount")
+                    log.info("락 획득 실패!! 재시도 중.. $retryCount")
                     Thread.sleep(retryDelay)
                 } else {
                     throw ConcertException(ErrorCode.LOCK_ERROR)
