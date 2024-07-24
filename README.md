@@ -751,11 +751,40 @@ erDiagram
 * 비관적 락
 * 낙관적 락
 * 분산락
-  *  `Simple Lock` :  key 선점에 의한 lock 획득 실패 시, 비즈니스 로직을 수행하지 않음
-  * `Spin Lock` :  lock 획득 실패 시, 일정 시간/횟수 동안 Lock 획득을 재시도
-  * `Pub/Sub` : redis pub/sub 구독 기능을 이용해 lock 을 제어
+    *  `Simple Lock` :  key 선점에 의한 lock 획득 실패 시, 비즈니스 로직을 수행하지 않음
+    * `Spin Lock` :  lock 획득 실패 시, 일정 시간/횟수 동안 Lock 획득을 재시도
+    * `Pub/Sub` : redis pub/sub 구독 기능을 이용해 lock 을 제어
 
 **스프링 부트 3.3.1 + 코틀린 환경에서 진행했고, 콘서트 좌석 예약시 동일 좌석에 여러명이 좌석 예약을 보내는 환경으로 진행했습니다**
+
+---
+# 트랜잭션 범위
+```
+좌석 검색
+좌석 검증
+좌석 상태변경
+예약 생성
+```
+위 로직 순서대로 로직을 진행한다고 했을때 동일 좌석에 대해서 접근을 하므로 트랜잭션을 좌석으로만 묶을수도 있습니다.
+```
+-- 락 획득
+tx {
+  좌석 검색
+  좌석 검증
+  좌석 상태변경
+}
+-- 락 반환
+
+tx {
+  예약 생성
+}
+```
+
+트랜잭션의 범위를 줄이고 트랜잭션의 범위를 줄이게 된다면, 만약 위 로직은 정상적으로 실행이 되서 커밋이 됬지만 예약생성 로직 실행중에서 예외가 터진다면??
+
+이때는 좌석 상태변경을 다시 rollback 해주는 로직이 별도로 구현이 되어야합니다 (보상 트랜잭션). 따라서 구현의 난이도가 높아지고 관리포인트가 높아진다고 생각해서 **락 범위 를 짧게 가져가고자 트랜잭션의 범위를 줄이기만 하는것도 좋은 방법이 아닐수도 있습니다.**
+
+따라서 저는 위 4단계의 로직을 한 트랜잭션에 묶어서 예외 발생시 Rollback 을 트랜잭션이 해줄 수 있도록 진행했습니다.
 
 ---
 
@@ -782,6 +811,9 @@ erDiagram
 스프링 데이터 JPA 환경에서는 비관적 락을 간단하게 구현이 가능한데 `@Lock(LockModeType.PESSIMISTIC_READ)` 을 붙여주면 구현이 가능합니다.
 
 ![](https://velog.velcdn.com/images/asdcz11/post/2388756d-12d9-48b4-bf35-1ad13ad3b09f/image.png)
+
+![](https://velog.velcdn.com/images/asdcz11/post/3d34ea81-6df3-4e37-97b0-256f55947b7c/image.png)
+
 
 **성능, 시간 테스트**
 
@@ -857,6 +889,9 @@ erDiagram
 
 ![](https://velog.velcdn.com/images/asdcz11/post/9eacd70f-1fe8-4cb3-9473-a9a051700a64/image.png)
 
+![](https://velog.velcdn.com/images/asdcz11/post/3d34ea81-6df3-4e37-97b0-256f55947b7c/image.png)
+
+
 **성능, 시간 테스트**
 
 `@Lock(LockModeType.PESSIMISTIC_WRITE)` 은 트랜잭션이 들어오면 어떻게 될까요?
@@ -930,7 +965,8 @@ JPA에서 낙관적 락도 비관적 락처럼 쉽게 구현할 수 있습니다
 
 while 문을 통해 락 획득을 시도하고 3번의 재시도를 합니다.
 
-![](https://velog.velcdn.com/images/asdcz11/post/29bc075b-4727-4403-820b-3f24f77afae1/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/9c3ce4d5-f853-4107-ba32-c787917fb7a1/image.png)
+
 
 **성능, 시간 테스트**
 
@@ -1011,7 +1047,7 @@ else {
 
 ![](https://velog.velcdn.com/images/asdcz11/post/2f87fabf-2e3d-427c-bf6d-dfafc5d32772/image.png)
 
-![](https://velog.velcdn.com/images/asdcz11/post/0d55a673-052a-4abf-84f7-3ef4002e43b3/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/eae61098-e538-482f-b4cb-e298e90f80ea/image.png)
 
 이 Simple Lock의 경우는 락을 획득하기 위한 재시도 로직이 없기 때문에, 만약 락 획득에 실패하면 제일 아래줄의 락 획득 실패 에러가 발생합니다. 따라서 충돌이 자주 일어나는 로직에 적용하면 비즈니스 로직상 에러가 빈번하게 발생할 우려가 있습니다.
 
@@ -1076,7 +1112,7 @@ else {
 
 **구현 코드 **
 
-![](https://velog.velcdn.com/images/asdcz11/post/c7fbcd50-b378-49c4-b636-8d6def2605fa/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/3d959c91-b35d-4a0e-b2b0-15297992bd5c/image.png)
 
 재시도 횟수는 3번이며, 락 획득을 재시도하기 위해 스레드는 0.1초 동안 sleep 후 다시 락 획득을 시도하게 구현했습니다. `Simple Lock`에 재시도 로직을 추가하여 구현하는 데 있어서는 좀 더 복잡했습니다.
 
@@ -1111,7 +1147,7 @@ implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
 
 확실히 락관련 로직도 엄청 짧아집니다.
 
-![](https://velog.velcdn.com/images/asdcz11/post/26aed1a3-7c2a-4816-8b17-561738862d87/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/bc9365cb-4ab5-499f-923e-af41b565f906/image.png)
 
 3초동안 락 획득을 시도하고, 락 획득후 3초동안 락을 유지합니다. 3초후에는 락은 자동으로 해제됩니다.
 
@@ -1138,6 +1174,7 @@ implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
 TX1 {1,3}
 TX2 {3,1}
 ```
+
 1. 데드락 이슈
    당연하겠지만 서로다른 스레드가 1,3 / 3,1 에 대한 락 획득을 대기 하므로 데드락 이슈가 발생합니다.
 2. 키값 을 정하기 어렵다
