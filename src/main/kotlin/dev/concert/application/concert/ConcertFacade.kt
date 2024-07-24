@@ -7,14 +7,12 @@ import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
-import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
 
 @Component
 class ConcertFacade (
     private val userService: UserService,
-    private val seatService : SeatService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
 ){
@@ -59,10 +57,7 @@ class ConcertFacade (
         val user = userService.getUser(request.userId)
 
         //예약가능인지 확인하고 좌석 임시배정해 잠근다.
-        val seat = seatService.checkAndReserveSeatTemporarily(request.seatId)
-
-        //예약한다.
-        val reservation = reservationService.saveReservation(user, seat)
+        val reservation = reservationService.createSeatReservation(user, request.seatId)
 
         return ConcertReservationResponseDto(
             status = reservation.status,

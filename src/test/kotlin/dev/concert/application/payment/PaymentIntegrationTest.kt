@@ -2,13 +2,14 @@ package dev.concert.application.payment
 
 import dev.concert.application.payment.dto.PaymentDto
 import dev.concert.domain.service.point.PointService
-import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.user.UserService
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
+import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.repository.ReservationRepository
 import dev.concert.domain.repository.SeatRepository
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Transactional 
 @SpringBootTest 
@@ -29,9 +31,6 @@ class PaymentIntegrationTest {
     private lateinit var userService : UserService
 
     @Autowired
-    private lateinit var reservationService: ReservationService
-
-    @Autowired
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
@@ -39,6 +38,9 @@ class PaymentIntegrationTest {
 
     @Autowired
     private lateinit var pointService : PointService
+
+    @Autowired
+    private lateinit var reservationRepository: ReservationRepository
 
 
     @BeforeEach
@@ -74,8 +76,16 @@ class PaymentIntegrationTest {
             )
         )
 
+        val expiresAt = LocalDateTime.now().plusMinutes(5)
+
+        val reservation = ReservationEntity(
+            user = user,
+            seat = seat,
+            expiresAt = expiresAt,
+        )
+
         // 예약 정보를 저장한다
-        reservationService.saveReservation(user, seat)
+        reservationRepository.saveReservation(reservation)
 
 
         // 포인트 저장

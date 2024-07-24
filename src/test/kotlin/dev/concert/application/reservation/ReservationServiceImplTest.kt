@@ -38,8 +38,10 @@ class ReservationServiceImplTest {
         val user = UserEntity(name = "test")
         val seat = stubSeatEntity()
 
+        given(seatRepository.getSeatWithLock(seat.id)).willReturn(seat)
+
         assertDoesNotThrow {
-            reservationService.saveReservation(user, seat)
+            reservationService.createSeatReservation(user, seat.id)
         }
     }
 
