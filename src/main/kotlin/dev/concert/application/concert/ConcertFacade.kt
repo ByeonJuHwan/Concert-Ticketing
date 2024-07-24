@@ -5,13 +5,13 @@ import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
-import dev.concert.application.redis.RedisLockManager
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.seat.SeatService
 import dev.concert.domain.service.user.UserService
+import dev.concert.domain.service.util.DistributedLockManager
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,7 +20,7 @@ class ConcertFacade (
     private val seatService : SeatService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
-    private val redisLockManager: RedisLockManager,
+    private val distributedLockManager: DistributedLockManager,
 ){
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(
@@ -61,7 +61,7 @@ class ConcertFacade (
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         val user = userService.getUser(request.userId)
 
-        val lockValue = redisLockManager.lock(request.seatId)
+        val lockValue = distributedLockManager.lock(request.seatId)
 
         if (lockValue != null) {
             try{
@@ -72,7 +72,7 @@ class ConcertFacade (
                     reservationExpireTime = reservation.expiresAt
                 )
             } finally {
-                redisLockManager.unlock(request.seatId, lockValue)
+                distributedLockManager.unlock(request.seatId, lockValue)
                 println("락반환 성공!!")
             }
         } else {
