@@ -45,7 +45,8 @@ dependencies {
 	kapt("org.springframework.boot:spring-boot-configuration-processor")
 
 	// redis
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	//implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.redisson:redisson-spring-boot-starter:3.33.0")
 }
 
 kotlin {
