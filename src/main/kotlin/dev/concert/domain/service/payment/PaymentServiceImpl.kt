@@ -50,14 +50,17 @@ class PaymentServiceImpl(
         val user = reservation.user
         val price = reservation.seat.price
 
-        val currentPoint = checkPoint(user, price)
-        currentPoint.deduct(price)
-        savePointUseHistory(user, price)
+        usePoints(user, price)
 
         reservation.changeStatus(ReservationStatus.PAID)
         reservation.seat.changeSeatStatus(SeatStatus.RESERVED)
 
         return createPayments(reservation)
+    }
+
+    private fun usePoints(user: UserEntity, price: Long) {
+        checkPoint(user, price).deduct(price)
+        savePointUseHistory(user, price)
     }
 
     private fun savePointUseHistory(user: UserEntity, price: Long) {
