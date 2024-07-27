@@ -10,9 +10,9 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface SeatJpaRepository : JpaRepository<SeatEntity, Long> {
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId")
-    fun getSeatWithLock(@Param("seatId") seatId: Long): SeatEntity?
+    @Lock(LockModeType.PESSIMISTIC_WRITE) 
+    @Query("SELECT s FROM SeatEntity s WHERE s.id = :seatId") 
+    fun getSeatWithLock(@Param("seatId") seatId: Long): SeatEntity? 
 
     @Modifying(clearAutomatically = true)
     @Query("UPDATE SeatEntity s SET s.seatStatus = 'AVAILABLE' WHERE s.id IN :seatIds")
