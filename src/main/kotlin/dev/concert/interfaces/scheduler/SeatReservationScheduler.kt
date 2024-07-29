@@ -4,7 +4,7 @@ import dev.concert.domain.service.reservation.ReservationService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-@Component 
+//@Component
 class SeatReservationScheduler ( 
     private val reservationService: ReservationService
 ) { 

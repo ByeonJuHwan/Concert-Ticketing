@@ -11,4 +11,5 @@ interface TokenRepository {
     fun findWaitingAndActiveTokens(): List<QueueTokenEntity>
     fun deleteByToken(tokenEntity: QueueTokenEntity)
     fun deleteExpiredTokens()
+    fun findByUser(user: UserEntity): QueueTokenEntity?
 }

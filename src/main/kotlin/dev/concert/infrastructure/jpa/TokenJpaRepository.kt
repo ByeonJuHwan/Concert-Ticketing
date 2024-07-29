@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 interface TokenJpaRepository : JpaRepository<QueueTokenEntity, Long>, TokenJpaRepositoryCustom {
     fun findByToken(token : String): QueueTokenEntity?
+    fun findByUser(user: UserEntity): QueueTokenEntity?
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from QueueTokenEntity q where q.user = :user")

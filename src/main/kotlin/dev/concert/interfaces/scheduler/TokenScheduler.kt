@@ -4,7 +4,7 @@ import dev.concert.application.token.TokenFacade
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 
-@Component 
+//@Component
 class TokenScheduler ( 
     private val tokenFacade: TokenFacade, 
 ) { 

@@ -16,8 +16,9 @@ class TokenFacade (
         return tokenService.generateToken(user)
     }
 
-    fun getToken(token: String): TokenResponseDto {
-        return tokenService.getToken(token)
+    fun getToken(userId: Long): TokenResponseDto {
+        val user = userService.getUser(userId)
+        return tokenService.getToken(user)
     }
 
     fun manageTokenStatus() {

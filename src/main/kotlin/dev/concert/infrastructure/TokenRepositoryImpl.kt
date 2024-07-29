@@ -42,4 +42,8 @@ class TokenRepositoryImpl(
     override fun deleteExpiredTokens() {
         tokenJpaRepository.deleteExpiredTokens()
     }
+
+    override fun findByUser(user: UserEntity): QueueTokenEntity? {
+        return tokenJpaRepository.findByUser(user)
+    }
 }

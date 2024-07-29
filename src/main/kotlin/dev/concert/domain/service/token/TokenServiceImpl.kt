@@ -30,9 +30,8 @@ class TokenServiceImpl (
     }
 
     @Transactional(readOnly = true)
-    override fun getToken(token: String): TokenResponseDto {
-        val queueToken = getQueueToken(token)
-
+    override fun getToken(user: UserEntity): TokenResponseDto {
+        val queueToken = getQueueToken(user)
         return TokenResponseDto(
             queueOrder = getQueueOrder(queueToken),
             remainingTime = Duration.between(LocalDateTime.now(), queueToken.expiresAt).seconds,
@@ -81,8 +80,8 @@ class TokenServiceImpl (
         tokenRepository.deleteExpiredTokens()
     }
 
-    private fun getQueueToken(token: String) =
-        tokenRepository.findByToken(token) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+    private fun getQueueToken(user: UserEntity) =
+        tokenRepository.findByUser(user) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
 
     private fun queueTokenEntity(
         user: UserEntity,
