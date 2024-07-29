@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -45,15 +46,10 @@ class TokenController (
     @ApiResponses( 
         ApiResponse(responseCode = "200", description = "토큰 조회 성공"), 
     ) 
-    @GetMapping("/status") 
+    @GetMapping("/status/{userId}")
     fun getToken( 
-        @RequestHeader(HttpHeaders.AUTHORIZATION) authorizationHeader: String
+        @PathVariable userId: Long,
     ) : ApiResult<TokenInfoResponse> {
-        val token = getBearerToken(authorizationHeader)
-        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(token)))
-    }
-
-    fun getBearerToken(authorizationHeader: String): String {
-        return authorizationHeader.substring(7)
+        return ApiResult(TokenInfoResponse.from(tokenFacade.getToken(userId)))
     }
 }

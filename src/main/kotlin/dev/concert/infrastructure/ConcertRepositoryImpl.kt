@@ -7,6 +7,7 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.infrastructure.jpa.ConcertJpaRepository
 import dev.concert.infrastructure.jpa.ConcertOptionJpaRepository
 import dev.concert.infrastructure.jpa.ConcertSeatJpaRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -37,5 +38,9 @@ class ConcertRepositoryImpl (
 
     override fun deleteAll() {
         concertJpaRepository.deleteAll()
+    }
+
+    override fun findById(id: Long): ConcertEntity? {
+        return concertJpaRepository.findByIdOrNull(id)
     }
 }
