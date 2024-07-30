@@ -257,11 +257,32 @@ concerts 캐시를 삭제하는 스케줄러 로직은 삭제 후 마지막 3번
 ### WaitingQueue 구현
 
 ```kotlin
+     fun generateToken(user: UserEntity): String { 
+         // 토큰이 존재 한다면 기존 토큰 리턴
+        val userKey = generateUserKey(user.id)
+        val existingToken = redisTemplate.opsForValue().get(userKey)
+   
+        return existingToken ?: run {
+            val token = encodeUserId()
+            val userJson = objectMapper.writeValueAsString(user)
+            val currentTime = System.currentTimeMillis().toDouble()
+
+            // 토큰이 없다면 WAITING_QUEUE 에 등록 후 토큰 발급
+            redisTemplate.opsForZSet().add(WAITING_QUEUE, userJson, currentTime)
+            redisTemplate.opsForValue().set(userKey, token, 1, TimeUnit.HOURS)
+            token
+        }
+    }
 ```
+
+기존에 발급 받은 토큰이 존재한다면 기존 토큰을 반환합니다. 
+
+기존에 발급 받은 토큰이 없다면 `WAITING_QUEUE` 에 유저 정보를 등록하고, 토큰을 발급합니다.
 
 ### WaitingQueue 에서 ActiveQueue 로 이동
 
 ```kotlin
+
 ```
 
 ### ActiveQueue 구현
