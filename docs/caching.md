@@ -308,7 +308,13 @@ concerts 캐시를 삭제하는 스케줄러 로직은 삭제 후 마지막 3번
 ### ActiveQueue 구현
 
 ```kotlin
-
+    fun validateToken(token: String): TokenValidationResult {
+        return  when {
+            // ActiveQueue 에 넘어온 토큰값이 존재하면 VALID 상태를 리턴해줍니다
+            redisTemplate.opsForSet().isMember(ACTIVE_QUEUE,token) == false -> TokenValidationResult.NOT_AVAILABLE
+            else -> TokenValidationResult.VALID
+        }
+    }
 ```
 
 이후 Interceptor 에서 토큰을 검증할때 기존에는 DB 로 조회쿼리를 매번 날렸지만
