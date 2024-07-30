@@ -9,7 +9,9 @@ import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
-import dev.concert.domain.util.LockKeyGenerator
+import dev.concert.domain.util.consts.ACTIVE_QUEUE
+import dev.concert.domain.util.consts.WAITING_QUEUE
+import dev.concert.domain.util.lock.LockKeyGenerator
 import dev.concert.util.Base64Util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,9 +20,6 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.TimeUnit
-
-const val WAITING_QUEUE = "waiting_queue"
-const val ACTIVE_QUEUE = "active_queue"
 
 @Service
 @Primary
@@ -102,7 +101,9 @@ class TokenRedisServiceImpl(
     }
 
     override fun validateToken(token: String): TokenValidationResult {
-        TODO("Not yet implemented")
+        redisTemplate.op
+
+
     }
 
     private fun encodeUserId() : String {

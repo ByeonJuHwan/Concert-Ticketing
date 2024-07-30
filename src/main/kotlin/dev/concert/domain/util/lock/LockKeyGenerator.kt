@@ -1,4 +1,4 @@
-package dev.concert.domain.util
+package dev.concert.domain.util.lock
 
 interface LockKeyGenerator {
 

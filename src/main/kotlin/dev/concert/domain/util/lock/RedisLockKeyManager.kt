@@ -1,4 +1,4 @@
-package dev.concert.domain.util
+package dev.concert.domain.util.lock
 
 import org.springframework.stereotype.Component
 

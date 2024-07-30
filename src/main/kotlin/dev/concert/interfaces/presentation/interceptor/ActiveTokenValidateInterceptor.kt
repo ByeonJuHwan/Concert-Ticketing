@@ -1,11 +1,11 @@
 package dev.concert.interfaces.presentation.interceptor
 
-import dev.concert.domain.service.token.ACTIVE_QUEUE
+import dev.concert.application.token.dto.TokenValidationResult
+import dev.concert.domain.service.token.TokenService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor
 
 @Component
 class ActiveTokenValidateInterceptor (
-    private val redisTemplate: RedisTemplate<String, String>
+    private val tokenService : TokenService,
 ) : HandlerInterceptor {
 
     private val log : Logger = LoggerFactory.getLogger(ActiveTokenValidateInterceptor::class.java)
@@ -24,12 +24,14 @@ class ActiveTokenValidateInterceptor (
             return false
         }
 
-        val isActive = redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, token) ?: throw IllegalArgumentException("유효한 토큰이 아닙니다 : $token")
-        if(!isActive) {
-            log.warn("active queue 에 토큰이 존재하지 않습니다 : $token")
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), "유효한 토큰이 아닙니다")
-            return false
-        }
+        val tokenStatus = tokenService.validateToken(token)
+
+//        val isActive = redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, token) ?: throw IllegalArgumentException("유효한 토큰이 아닙니다 : $token")
+//        if(!isActive) {
+//            log.warn("active queue 에 토큰이 존재하지 않습니다 : $token")
+//            response.sendError(HttpStatus.UNAUTHORIZED.value(), "유효한 토큰이 아닙니다")
+//            return false
+//        }
 
         return true
     }
