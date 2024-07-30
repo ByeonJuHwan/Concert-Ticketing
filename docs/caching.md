@@ -282,12 +282,33 @@ concerts 캐시를 삭제하는 스케줄러 로직은 삭제 후 마지막 3번
 ### WaitingQueue 에서 ActiveQueue 로 이동
 
 ```kotlin
-
+    fun manageTokenStatus() {
+        // 10 개의 데이터를 WaitingQueue 에서 조회합니다
+        val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 9)
+        tokenList?.forEach { userJson ->
+            runCatching {
+                val user: UserEntity = objectMapper.readValue(userJson)
+                val userKey = generateUserKey(user.id)
+                val token = redisTemplate.opsForValue().get(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+                // ACTIVE_QUEUE 로 이동하고 WaitingQueue 에서 삭제합니다
+                redisTemplate.opsForSet().add(ACTIVE_QUEUE, token)
+                redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
+            }.onFailure { e->
+                log.error("WaitingQueue -> ActiveQueue Error : $userJson", e)
+            }
+        }
+    }
 ```
+
+스케줄러를 통해서 1분에 10개의 데이터를 `WaitingQueue` 에서 `ActiveQueue` 로 이동시킵니다.
+
+토큰 검색및 이동중에 1개의 토큰이 예외가 발생해도 나머지 토큰의 이동이 영향을 받지 않도록 
+`runCatching` 으로 감싸서 실패한 토큰은 로그를 남겨줍니다.
 
 ### ActiveQueue 구현
 
 ```kotlin
+
 ```
 
 이후 Interceptor 에서 토큰을 검증할때 기존에는 DB 로 조회쿼리를 매번 날렸지만
