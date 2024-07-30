@@ -57,11 +57,7 @@ class TokenRedisServiceImpl(
         val status = checkQueueTokenStatus(userJson)
 
         // 순서 조회
-        val queueOrder = if (status == QueueTokenStatus.WAITING) {
-            redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson)?.toInt() ?: -1
-        } else {
-            0
-        }
+        val queueOrder = calcQueueOrder(status, userJson)
 
         return TokenResponseDto(
             token = token,
@@ -70,6 +66,7 @@ class TokenRedisServiceImpl(
             remainingTime = remainingTime
         )
     }
+
 
     override fun deleteToken(user: UserEntity) {
         val token = (redisTemplate.opsForValue()
@@ -88,11 +85,15 @@ class TokenRedisServiceImpl(
     override fun manageTokenStatus() {
         val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 9)
         tokenList?.forEach { userJson ->
-            val user: UserEntity = objectMapper.readValue(userJson)
-            val userKey = generateUserKey(user.id)
-            val token = redisTemplate.opsForValue().get(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
-            redisTemplate.opsForSet().add(ACTIVE_QUEUE, token)
-            redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
+            runCatching {
+                val user: UserEntity = objectMapper.readValue(userJson)
+                val userKey = generateUserKey(user.id)
+                val token = redisTemplate.opsForValue().get(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+                redisTemplate.opsForSet().add(ACTIVE_QUEUE, token)
+                redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
+            }.onFailure { e->
+                log.error("WaitingQueue -> ActiveQueue Error : $userJson", e)
+            }
         }
     }
 
@@ -101,9 +102,10 @@ class TokenRedisServiceImpl(
     }
 
     override fun validateToken(token: String): TokenValidationResult {
-        redisTemplate.op
-
-
+        return  when {
+            redisTemplate.opsForSet().isMember(ACTIVE_QUEUE,token) == false -> TokenValidationResult.NOT_AVAILABLE
+            else -> TokenValidationResult.VALID
+        }
     }
 
     private fun encodeUserId() : String {
@@ -113,13 +115,18 @@ class TokenRedisServiceImpl(
     }
 
     private fun checkQueueTokenStatus(userJson: String): QueueTokenStatus {
-        val status = when {
-            redisTemplate.opsForZSet().rank(ACTIVE_QUEUE, userJson) != null -> QueueTokenStatus.ACTIVE
+        return when {
+            redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, userJson) == true -> QueueTokenStatus.ACTIVE
             redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson) != null -> QueueTokenStatus.WAITING
             else -> throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
         }
-        return status
     }
+    private fun calcQueueOrder(status: QueueTokenStatus, userJson: String) =
+        if (status == QueueTokenStatus.WAITING) {
+            redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson)?.toInt() ?: -1
+        } else {
+            0
+        }
 
     /**
      * 사용자 ID로 유저 키 생성
