@@ -1,5 +1,6 @@
-package dev.concert.domain.util.lock
+package dev.concert.infrastructure.redis
 
+import dev.concert.domain.util.lock.LockKeyGenerator
 import org.springframework.stereotype.Component
 
 @Component

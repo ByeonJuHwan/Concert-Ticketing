@@ -9,22 +9,19 @@ import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.QueueTokenStatus
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
-import dev.concert.domain.util.consts.ACTIVE_QUEUE
-import dev.concert.domain.util.consts.WAITING_QUEUE
+import dev.concert.domain.repository.QueueTokenRepository
 import dev.concert.domain.util.lock.LockKeyGenerator
 import dev.concert.util.Base64Util
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Primary
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 @Service
 @Primary
 class TokenRedisServiceImpl(
-    private val redisTemplate: RedisTemplate<String, String>,
+    private val queueTokenRepository: QueueTokenRepository,
     private val lockKeyGenerator: LockKeyGenerator,
 ) : TokenService {
 
@@ -34,15 +31,15 @@ class TokenRedisServiceImpl(
 
     override fun generateToken(user: UserEntity): String {
         val userKey = generateUserKey(user.id)
-        val existingToken = redisTemplate.opsForValue().get(userKey)
+        val existingToken = queueTokenRepository.findTokenByKey(userKey)
 
         return existingToken ?: run {
             val token = encodeUserId()
             val userJson = objectMapper.writeValueAsString(user)
             val currentTime = System.currentTimeMillis().toDouble()
 
-            redisTemplate.opsForZSet().add(WAITING_QUEUE, userJson, currentTime)
-            redisTemplate.opsForValue().set(userKey, token, 1, TimeUnit.HOURS)
+            queueTokenRepository.addWaitingQueue(userJson, currentTime)
+            queueTokenRepository.createToken(userKey, token)
             token
         }
     }
@@ -50,11 +47,11 @@ class TokenRedisServiceImpl(
     override fun getToken(user: UserEntity): TokenResponseDto {
         val userKey = generateUserKey(user.id)
         val userJson = objectMapper.writeValueAsString(user)
-        val remainingTime = redisTemplate.getExpire(userKey, TimeUnit.SECONDS)
-        val token = redisTemplate.opsForValue().get(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+        val remainingTime = queueTokenRepository.getTokenExpireTime(userKey) ?: 0
+        val token = queueTokenRepository.findTokenByKey(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
 
         // 큐에서 상태 확인
-        val status = checkQueueTokenStatus(userJson)
+        val status = checkQueueTokenStatus(userJson, token)
 
         // 순서 조회
         val queueOrder = calcQueueOrder(status, userJson)
@@ -69,11 +66,10 @@ class TokenRedisServiceImpl(
 
 
     override fun deleteToken(user: UserEntity) {
-        val token = (redisTemplate.opsForValue()
-            .get(generateUserKey(user.id))
-            ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND))
-        redisTemplate.opsForSet().remove(ACTIVE_QUEUE, token)
-        redisTemplate.delete(generateUserKey(user.id))
+        val token = queueTokenRepository.findTokenByKey(generateUserKey(user.id))
+            ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+        queueTokenRepository.deleteTokenActiveQueue(token)
+        queueTokenRepository.deleteToken(generateUserKey(user.id))
         log.info("토큰 삭제 완료")
     }
 
@@ -83,14 +79,14 @@ class TokenRedisServiceImpl(
      * 1분마다 10 명씩 이동
      */
     override fun manageTokenStatus() {
-        val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 9)
+        val tokenList = queueTokenRepository.findTopWaitingTokens(0, 1999)
         tokenList?.forEach { userJson ->
             runCatching {
                 val user: UserEntity = objectMapper.readValue(userJson)
                 val userKey = generateUserKey(user.id)
-                val token = redisTemplate.opsForValue().get(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
-                redisTemplate.opsForSet().add(ACTIVE_QUEUE, token)
-                redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
+                val token = queueTokenRepository.findTokenByKey(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+                queueTokenRepository.addActiveQueue(token)
+                queueTokenRepository.removeWaitingQueueToken(userJson)
             }.onFailure { e->
                 log.error("WaitingQueue -> ActiveQueue Error : $userJson", e)
             }
@@ -103,7 +99,7 @@ class TokenRedisServiceImpl(
 
     override fun validateToken(token: String): TokenValidationResult {
         return  when {
-            redisTemplate.opsForSet().isMember(ACTIVE_QUEUE,token) == false -> TokenValidationResult.NOT_AVAILABLE
+            !queueTokenRepository.isTokenInActiveQueue(token) -> TokenValidationResult.NOT_AVAILABLE
             else -> TokenValidationResult.VALID
         }
     }
@@ -114,16 +110,16 @@ class TokenRedisServiceImpl(
         return Base64Util.encode((uuid + timeStamp).toByteArray())
     }
 
-    private fun checkQueueTokenStatus(userJson: String): QueueTokenStatus {
+    private fun checkQueueTokenStatus(userJson: String, token: String): QueueTokenStatus {
         return when {
-            redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, userJson) == true -> QueueTokenStatus.ACTIVE
-            redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson) != null -> QueueTokenStatus.WAITING
+            queueTokenRepository.isTokenInActiveQueue(token) -> QueueTokenStatus.ACTIVE
+            queueTokenRepository.getRankInWaitingQueue(userJson) != null -> QueueTokenStatus.WAITING
             else -> throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
         }
     }
     private fun calcQueueOrder(status: QueueTokenStatus, userJson: String) =
         if (status == QueueTokenStatus.WAITING) {
-            redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson)?.toInt() ?: -1
+            queueTokenRepository.getRankInWaitingQueue(userJson)?.toInt() ?: -1
         } else {
             0
         }
