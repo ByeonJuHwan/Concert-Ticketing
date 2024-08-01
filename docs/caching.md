@@ -309,8 +309,8 @@ fun generateToken(user: UserEntity): String {
 
 ```kotlin
 fun manageTokenStatus() {
-   // 10 개의 데이터를 WaitingQueue 에서 조회합니다
-   val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 9)
+   // 2000 개의 데이터를 WaitingQueue 에서 조회합니다
+   val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 1999)
    tokenList?.forEach { userJson ->
       runCatching {
          val user: UserEntity = objectMapper.readValue(userJson)
