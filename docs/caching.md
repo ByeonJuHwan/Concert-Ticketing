@@ -287,7 +287,7 @@ concerts 캐시를 삭제하는 스케줄러 로직은 삭제 후 마지막 3번
 
 ### 결론
 
-캐싱을 사용하였을때와 사용하지 않았을때의 처리량 및 평균 응답 시간을 비교해보면 캐싱을 사용하였을때 성능이 향상되는 것을 확인할 수 있습니다.
+캐싱을 사용하였을때와 사용하지 않았을때의 처리량 및 평균 응답 시간을 비교해보면 캐싱을 사용하였을때 성능이 엄청나게 향상되는 것을 확인할 수 있습니다.
 이를 통해서 캐싱을 통해 서버의 부하를 줄이고 성능을 향상시킬 수 있다는 것을 알 수 있었습니다.
 
 ---
@@ -360,8 +360,8 @@ fun generateToken(user: UserEntity): String {
 
 ```kotlin
 fun manageTokenStatus() {
-   // 2000 개의 데이터를 WaitingQueue 에서 조회합니다
-   val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 1999)
+   // 1000 개의 데이터를 WaitingQueue 에서 조회합니다
+   val tokenList = redisTemplate.opsForZSet().range(WAITING_QUEUE, 0, 999)
    tokenList?.forEach { userJson ->
       runCatching {
          val user: UserEntity = objectMapper.readValue(userJson)
