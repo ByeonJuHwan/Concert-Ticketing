@@ -377,7 +377,7 @@ fun manageTokenStatus() {
 }
 ```
 
-스케줄러를 통해서 10초에 2000개의 토큰을 `WaitingQueue` 에서 `ActiveQueue` 로 이동시킵니다.
+스케줄러를 통해서 10초에 1,000개의 토큰을 `WaitingQueue` 에서 `ActiveQueue` 로 이동시킵니다.
 
 토큰 검색및 이동중에 1개의 토큰이 예외가 발생해도 나머지 토큰의 이동이 영향을 받지 않도록 
 `runCatching` 으로 감싸서 실패한 토큰은 로그를 남겨줍니다.
