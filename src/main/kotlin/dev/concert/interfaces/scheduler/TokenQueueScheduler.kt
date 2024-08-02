@@ -12,7 +12,7 @@ class TokenQueueScheduler (
     /**
      * 토큰을 Waiting Queue 에서 Active Queue 로 이동시키는 스케줄러
      */
-    @Scheduled(fixedRate = 60000) // 1분 마다 실행
+    @Scheduled(fixedRate = 10000) // 10초 마다 실행
     fun tokenScheduler() {
         tokenFacade.manageTokenStatus()
     }
