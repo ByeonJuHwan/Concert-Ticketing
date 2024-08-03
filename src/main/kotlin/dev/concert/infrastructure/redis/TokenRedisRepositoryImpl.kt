@@ -49,12 +49,15 @@ class TokenRedisRepositoryImpl(
         redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson) 
     } 
 
-    override fun isTokenInActiveQueue(userJson: String): Boolean { 
-        return redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, userJson) ?: false 
+    override fun isTokenInActiveQueue(token: String): Boolean {
+        return redisTemplate.opsForSet().isMember(ACTIVE_QUEUE, token) ?: false
     } 
 
     override fun getRankInWaitingQueue(userJson: String): Long? { 
         return redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson) 
-    } 
+    }
 
+    override fun deleteAllActiveTokens() : Boolean {
+        return redisTemplate.delete(ACTIVE_QUEUE)
+    }
 }

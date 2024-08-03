@@ -10,6 +10,7 @@ interface QueueTokenRepository {
     fun findTopWaitingTokens(start: Long, end: Long): Set<String>? 
     fun addActiveQueue(token: String) 
     fun removeWaitingQueueToken(userJson: String) 
-    fun isTokenInActiveQueue(userJson : String) : Boolean 
-    fun getRankInWaitingQueue(userJson: String) : Long? 
+    fun isTokenInActiveQueue(token : String) : Boolean
+    fun getRankInWaitingQueue(userJson: String) : Long?
+    fun deleteAllActiveTokens() : Boolean
 } 

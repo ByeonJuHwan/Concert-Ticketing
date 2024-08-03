@@ -84,17 +84,24 @@ class TokenRedisServiceImpl(
             runCatching { 
                 val user: UserEntity = objectMapper.readValue(userJson) 
                 val userKey = generateUserKey(user.id) 
-                val token = queueTokenRepository.findTokenByKey(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND) 
-                queueTokenRepository.addActiveQueue(token) 
+                val token = queueTokenRepository.findTokenByKey(userKey) ?: throw ConcertException(ErrorCode.TOKEN_NOT_FOUND)
+                queueTokenRepository.addActiveQueue(token)
                 queueTokenRepository.removeWaitingQueueToken(userJson) 
             }.onFailure { e-> 
                 log.error("WaitingQueue -> ActiveQueue Error : $userJson", e) 
             } 
         } 
-    } 
-  
+    }
+
+    /**
+     * Active Queue 에서 결제까지 진행하지 않고 이탈한 토큰 삭제 (하루에 한번 실행)
+     */
     override fun manageExpiredTokens() {
-        TODO("Not yet implemented")
+        if (queueTokenRepository.deleteAllActiveTokens()) {
+            log.info("Active Queue 삭제 완료")
+        } else {
+            log.error("Active Queue 삭제 실패")
+        }
     }
 
     override fun validateToken(token: String): TokenValidationResult { 

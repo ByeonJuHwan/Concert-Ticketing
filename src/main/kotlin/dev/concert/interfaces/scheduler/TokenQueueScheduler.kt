@@ -16,4 +16,13 @@ class TokenQueueScheduler (
     fun tokenScheduler() {
         tokenFacade.manageTokenStatus()
     }
+
+    /**
+     * Active Queue 에서 결제까지 진행하지 않고 이탈한 토큰 삭제
+     * 1일에 1번 실행 (매일 자정에 실행)
+     */
+    @Scheduled(cron = "0 0 0 * * ?")
+    fun deleteActiveTokenExpired() {
+        tokenFacade.manageExpiredTokens()
+    }
 }
