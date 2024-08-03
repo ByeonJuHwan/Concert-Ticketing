@@ -54,7 +54,7 @@ class TokenIntegrationTest {
         val token = tokenFacade.generateToken(user.id)
 
         // when
-        val tokenResponseDto = tokenFacade.getToken(token)
+        val tokenResponseDto = tokenFacade.getToken(user.id)
 
         // then
         assertThat(tokenResponseDto.token).isEqualTo(token)
@@ -69,7 +69,7 @@ class TokenIntegrationTest {
         tokenFacade.manageTokenStatus() 
  
         // then
-        val tokenResponseDto = tokenFacade.getToken(token) 
+        val tokenResponseDto = tokenFacade.getToken(user.id)
         assertThat(tokenResponseDto.status).isEqualTo(QueueTokenStatus.ACTIVE) 
     }
 

@@ -43,6 +43,9 @@ dependencies {
 	implementation("jakarta.annotation:jakarta.annotation-api")
 	kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
 	kapt("org.springframework.boot:spring-boot-configuration-processor")
+
+	// Redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 kotlin {

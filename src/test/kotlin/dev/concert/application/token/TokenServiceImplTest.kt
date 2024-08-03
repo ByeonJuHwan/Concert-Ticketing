@@ -61,10 +61,10 @@ class TokenServiceImplTest {
         val token = "test"
         val queueTokenEntity = QueueTokenEntity(token = token, user = user)
 
-        given(tokenRepository.findByToken(token)).willReturn(queueTokenEntity)
+        given(tokenRepository.findByUser(user)).willReturn(queueTokenEntity)
 
         // when
-        val tokenResponseDto = tokenServiceImpl.getToken(token)
+        val tokenResponseDto = tokenServiceImpl.getToken(user)
 
         // then
         assertNotNull(tokenResponseDto)
