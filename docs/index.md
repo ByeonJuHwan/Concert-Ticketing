@@ -172,8 +172,17 @@ fun `콘서트 날짜 조회 인덱스 테스트`() {
 예약가능 좌석 조회 쿼리는 다음과 같습니다.
 
 ```sql
-
-
+explain select
+    se1_0.id,
+    se1_0.concert_option_id,
+    se1_0.price,
+    se1_0.seat_no,
+    se1_0.seat_status
+from
+    seat se1_0
+where
+    se1_0.concert_option_id= :concert_option_id
+  and se1_0.seat_status= :seat_status
 ```
 
 테스트는 콘서트 날짜가 50개 있고, 각 날짜에 좌석 정보를 1000개씩 가지고 있는 환경에서 좌석 정보는 예약가능 한 좌석을 약 333~334 개 있도록 테스트를 진행했습니다.
@@ -196,7 +205,32 @@ fun `콘서트 날짜 조회 인덱스 테스트`() {
 
 #### `concert_option_id` 가 먼저 오는 경우
 
+![](https://velog.velcdn.com/images/asdcz11/post/aa9a8ff5-4731-4e54-9f85-28916adaa3ee/image.png)
+
+**약 10번의 테스트 결과 평균 130 ~ 140 ms 가 소요 되었습니다.**
+
 #### `seat_status` 가 먼저 오는 경우
 
+![](https://velog.velcdn.com/images/asdcz11/post/127e08a9-e60f-446e-b5d0-27457fc5d7f5/image.png)
+
+**약 10번의 테스트 결과 평균 120 ~ 130 ms 가 소요 되었습니다.**
+
+#### 결론
+
+`seat_status` 가 먼저 오는 경우가 `concert_option_id` 가 먼저 오는 경우보다 약 10 ms 정도 더 빠른 속도를 보여주었습니다.
+
+이유는 인덱스의 순서를 지정할때는 카디널리티 (데이터 중복도가 낮은) 가 매우 중요한데, `seat_status` 의 경우 3개 종류 밖에 없지만 `concert_option_id` 의 경우 ID 이기 때문에 카디널리티가 높습니다.
+
+카디널리티가 높은 컬럼이 먼저 오는 경우 뒤에 오는 컬럼의 카디널리리티가 낮으면 복합인덱스를 추가해도 의미 없는 인덱스가 될 확률이 매우 높습니다.
+
+예를들면, `seat_status` 가 `AVAILABLE` 인 좌석중 `concert_option_id` 가 40인 좌석을 찾는게 `concert_option_id` 가 40인 좌석중 `seat_status` 가 `AVAILABLE` 인 좌석을 찾는 것보다 인덱스를 더 효율적으로 사용할 수 있습니다.
+
+따라서 두 개 이상의 컬럼을 조합하여 복합 인덱스를 사용한 쿼리의 결과가 사용하지 않은 쿼리보다 약 35% 정도 빠른 속도를 보여주었습니다.
 
 ## 정리하며...
+
+이번 인덱스 문서 정리를 통해 인덱스를 정하기 전과 후 의 쿼리 성능 차이를 알아보았습니다.
+
+복합키를 사용할때는 인덱스의 순서를 생각하면 어떤 컬럼이 먼저 오는게 좋을지 고민해보는 것이 중요하다는 것을 알 수 있었습니다.
+
+하지만 무분별한 인덱스의 사용은 오히려 성능을 저하시킬 수 있으니, 쿼리의 특성을 잘 파악하고 적절한 인덱스를 사용하는 것이 중요하다는 것을 알 수 있었습니다.
