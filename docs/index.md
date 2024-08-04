@@ -100,8 +100,38 @@ where
 ### 예약가능한 콘서트 날짜 조회
 
 ```sql
-
+explain select
+    coe1_0.id,
+    coe1_0.available_seats,
+    coe1_0.concert_id,
+    c1_0.id,
+    c1_0.concert_name,
+    c1_0.end_date,
+    c1_0.reserve_end_date,
+    c1_0.reserve_start_date,
+    c1_0.singer,
+    c1_0.start_date,
+    coe1_0.concert_date,
+    coe1_0.concert_time,
+    coe1_0.concert_venue,
+    coe1_0.created_at,
+    coe1_0.updated_by
+from
+    concert_option coe1_0
+        join
+    concert c1_0
+    on c1_0.id=coe1_0.concert_id
+where
+    coe1_0.concert_id=?
 ```
+
+![](https://velog.velcdn.com/images/asdcz11/post/1809edac-ab33-4ceb-a8a5-831f256ca411/image.png)
+
+실행결과 콘서트 Table 의 PK는 인덱스가 적요되어 있지만, concert_option Table 의 Join Column 인 concert_id 에는 인덱스가 적용되어 있지 않습니다.
+
+이 상태로 콘서트 날짜 조회 쿼리를 실행해보겠습니다. 
+
+
 
 
 ### 예약가능한 콘서트 좌석 조회
