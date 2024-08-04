@@ -125,7 +125,7 @@ where
     coe1_0.concert_id=?
 ```
 
-![](https://velog.velcdn.com/images/asdcz11/post/1809edac-ab33-4ceb-a8a5-831f256ca411/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/58408fae-2b84-4ef4-a2c8-f2f8abbb7958/image.png)
 
 실행결과 콘서트 Table 의 PK는 인덱스가 적용되어 있지만, concert_option Table 의 Join Column 인 concert_id 에는 인덱스가 적용되어 있지 않습니다.
 
@@ -169,7 +169,10 @@ fun `콘서트 날짜 조회 인덱스 테스트`() {
 
 ### 예약가능한 콘서트 좌석 조회
 
+예약가능 좌석 조회 쿼리는 다음과 같습니다.
+
 ```sql
+
 
 ```
 
