@@ -127,11 +127,25 @@ where
 
 ![](https://velog.velcdn.com/images/asdcz11/post/1809edac-ab33-4ceb-a8a5-831f256ca411/image.png)
 
-실행결과 콘서트 Table 의 PK는 인덱스가 적요되어 있지만, concert_option Table 의 Join Column 인 concert_id 에는 인덱스가 적용되어 있지 않습니다.
+실행결과 콘서트 Table 의 PK는 인덱스가 적용되어 있지만, concert_option Table 의 Join Column 인 concert_id 에는 인덱스가 적용되어 있지 않습니다.
 
 이 상태로 콘서트 날짜 조회 쿼리를 실행해보겠습니다. 
 
+**테스트 코드**
 
+```kotlin
+
+```
+
+**인덱스 추가 전 테스트 결과**
+
+![](https://velog.velcdn.com/images/asdcz11/post/c425eb06-c5dd-410d-b066-7d68433039b4/image.png)
+
+**인덱스 추가 후 테스트 결과**
+
+![](https://velog.velcdn.com/images/asdcz11/post/94532246-8b5a-4a3e-81cd-4977f7b78848/image.png)
+
+이로써 조인하는 컬럼에 대해 인덱스를 걸고 쿼리 실행시 약 두 배 정도의 성능 향상을 보여주었습니다.
 
 
 ### 예약가능한 콘서트 좌석 조회
