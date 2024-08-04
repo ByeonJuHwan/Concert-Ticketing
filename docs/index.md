@@ -74,6 +74,8 @@ where
 
 이제 같은 데이터에 인덱스를 적용한 후 쿼리를 실행해보겠습니다.
 
+---
+
 #### 인덱스 적용후 Explain 쿼리 결과와 쿼리 시간 계산 결과
 
 ![](https://velog.velcdn.com/images/asdcz11/post/9d41738a-96e3-49ec-8cf2-f7ec3db4d061/image.png)
@@ -103,6 +105,8 @@ where
 **이로써 테스트 결과 인덱스를 적용한 조회 쿼리가 약 13% 정도의 성능 향상을 보여주었습니다.**
 
 같은 방식으로 날짜와 좌석 조회 쿼리에도 인덱스를 적용하여 성능 테스트를 진행해 보겠습니다.
+
+---
 
 ### 예약가능한 콘서트 날짜 조회
 
@@ -194,9 +198,54 @@ where
 
 테스트는 콘서트 날짜가 50개 있고, 각 날짜에 좌석 정보를 1000개씩 가지고 있는 환경에서 좌석 정보는 예약가능 한 좌석을 약 333~334 개 있도록 테스트를 진행했습니다.
 
+#### 인덱스 추가 전 EXPLAIN 결과 요약
+![](https://velog.velcdn.com/images/asdcz11/post/497d61ea-2797-4e32-8c9b-d89455243068/image.png)
+
+| Field         | Value    |
+|---------------|----------|
+| id            | 1        |
+| select_type   | SIMPLE   |
+| table         | se1_0    |
+| type          | ALL      |
+| possible_keys | <null>   |
+| key           | <null>   |
+| key_len       | <null>   |
+| ref           | <null>   |
+| rows          | 97969    |
+| Extra         | Using where |
+
+- **전체 테이블 스캔**: `type` 필드가 `ALL`로 설정되어 있어, 이 쿼리는 전체 테이블 스캔을 수행하고 있습니다. 이는 인덱스가 적용되지 않았다고 볼 수 있습니다.
+- **인덱스 미사용**: `key` 필드가 <null>이므로, 어떠한 인덱스도 사용되지 않고 있습니다.
+
 #### 인덱스 추가 전 테스트 결과
 
 ![](https://velog.velcdn.com/images/asdcz11/post/17d16511-5698-4636-9ad4-4eab5ae9ac9c/image.png)
+
+**인덱스 추가 전 테스트 결과 168 ms 가 소요되었습니다.**
+
+---
+
+#### 인덱스 추가 후 EXPLAIN 결과
+
+![](https://velog.velcdn.com/images/asdcz11/post/595a0b26-be83-4c07-8b06-c4b5c040f8a6/image.png)
+
+| Field         | Value                              |
+|---------------|------------------------------------|
+| id            | 1                                  |
+| select_type   | SIMPLE                             |
+| table         | sel_0                              |
+| type          | ref                                |
+| possible_keys | idx_seat_status_concert_option_id  |
+| key           | idx_seat_status_concert_option_id  |
+| key_len       | 18                                 |
+| ref           | const, const                       |
+| rows          | 334                                |
+| Extra         | Using index condition              |
+
+- **인덱스 최적화 사용**: `type` 필드가 `ref`로 설정되어 있으며, `key`로 `idx_seat_status_concert_option_id` 인덱스가 사용되고 있습니다. 이는 쿼리가 해당 인덱스를 사용하여 관련 데이터를 효율적으로 찾고 있음을 의미합니다.
+- **조건에 따른 인덱스 활용**: `ref`에 `const, const`로 표시되어 있어, 인덱스를 사용하는 데 있어 상수 값을 참조하고 있습니다.
+
+---
 
 위 두 쿼리와 다르게 where 문에 콘서트 옵션 테이블과의 조인을 위한 `concert_option_id` 와 `seat_status` 가 `AVAILABLE` 인지 확인하는 조건이 추가되었습니다.
 
@@ -221,6 +270,8 @@ where
 ![](https://velog.velcdn.com/images/asdcz11/post/127e08a9-e60f-446e-b5d0-27457fc5d7f5/image.png)
 
 **약 10번의 테스트 결과 평균 120 ~ 130 ms 가 소요 되었습니다.**
+
+---
 
 #### 결론
 
