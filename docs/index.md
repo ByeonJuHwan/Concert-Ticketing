@@ -134,7 +134,17 @@ where
 **테스트 코드**
 
 ```kotlin
+@Test
+fun `콘서트 날짜 조회 인덱스 테스트`() { 
+    // 쿼리 성능 측정
+    val duration = measureTimeMillis {
+        val concerts = concertRepository.getAvailableDates(501L)
+        println("콘서트 날짜 엔티티 개수 : ${concerts.size}")
+    }
 
+    // 결과 출력
+    println("인덱스 적용 전 DB 조회 시간 : $duration ms")
+}
 ```
 
 **인덱스 추가 전 테스트 결과**
@@ -143,9 +153,18 @@ where
 
 **인덱스 추가 후 테스트 결과**
 
+![](https://velog.velcdn.com/images/asdcz11/post/f4e1537e-c247-4b73-9f2e-b7eb8009af53/image.png)
+
+
+#### 조인 성능 특징
+- **인덱스 사용**: 두 테이블 모두에서 인덱스가 성공적으로 사용되었습니다.
+    - `콘서트 엔티티` (`concert` 테이블)은 기본 키(`PRIMARY`)를 사용하여 단일 행(`rows=1`)을 `const` 접근 방식으로 조회합니다.
+    - `콘서트 옵션 엔티티` (`concert_option` 테이블)은 인덱스(`idx_concert_option_concert_id`)를 사용하여 `ref` 접근 방식으로 50개 행을 조회합니다.
+
+
 ![](https://velog.velcdn.com/images/asdcz11/post/94532246-8b5a-4a3e-81cd-4977f7b78848/image.png)
 
-이로써 조인하는 컬럼에 대해 인덱스를 걸고 쿼리 실행시 약 두 배 정도의 성능 향상을 보여주었습니다.
+이로써 조인하는 컬럼에 대해 인덱스를 추가하고 쿼리 실행시 약 두 배 정도의 성능 향상을 보여주었습니다.
 
 
 ### 예약가능한 콘서트 좌석 조회
