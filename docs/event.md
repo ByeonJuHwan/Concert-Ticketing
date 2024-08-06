@@ -63,5 +63,9 @@
 
 ### EventPublisher
 
-스프링에서는 `ApplicationEvent`
+스프링에서는 `ApplicationEventPublisher` 를 사용해서 이벤트를 발행할 수 있습니다.
+이벤트로는 `ReservationSuccessEvent` 로 이벤트를 만들어서 예약완료 이벤트를 만들어 보겠습니다.
 
+```kotlin
+
+```
