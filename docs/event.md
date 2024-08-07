@@ -105,8 +105,6 @@ MSA 로 각 서비스별로 나눔으로써 각 로직에서 필요한 관심사
 
 따라서 MSA 로 무조건 전환하기보다는 현재 비즈니스의 상황과 요구사항을 충분히 고려하여 최적의 아키텍처를 선택하는 것이 중요합니다.
 
-이제 기존 로직에서 외부 API 와의 통신 기능을 이벤트를 발행하는 방식으로 전환해 보겠습니다.
-
 ## 이벤트 주도 설계
 
 어플리케이션에 EVENT 를 발행 및 구독 하게 비즈니스로직을 구현한다고 하면 어떻게 활용할 수 있을까요?
@@ -121,19 +119,33 @@ MSA 로 각 서비스별로 나눔으로써 각 로직에서 필요한 관심사
 ### EventPublisher
 
 스프링에서는 `ApplicationEventPublisher` 를 사용해서 이벤트를 발행할 수 있습니다.
-이벤트로는 `ReservationSuccessEvent` 로 이벤트를 만들어서 예약완료 이벤트를 만들어 보겠습니다.
+
+이벤트로는 `ReservationSuccessEvent` 를 만들어 리스너쪽에서 이븐트를 받을수 있도록 합니다.
 
 ```kotlin
+@Component
+class ReservationEventPublisherImpl (
+    private val applicationEventPublisher: ApplicationEventPublisher,
+) : ReservationEventPublisher{
 
+    private val log : Logger = LoggerFactory.getLogger(ReservationEventPublisherImpl::class.java)
+
+    override fun publish(event: ReservationSuccessEvent) {
+        applicationEventPublisher.publishEvent(event)
+        log.info("예약 성공 이벤트 발행")
+    }
+}
 ```
 
 ### EventListener / TransactionalEventListener
 
+이벤트를 수신하는 방법으로는 두기지 어노테이션이 있습니다.
 
+`@EventListener` 는 스프링에서 이벤트를 수신하고 처리하는 기본 어노테이션으로, 트랜잭션과 무관하게 이벤트를 처리합니다.
 
-#### `@TransactionalEventListener`
+`@TransactionalEventListener` 는 Publisher 의 트랜잭션의 상태에 따라 이벤트를 처리하며, 지정된 트랜잭션 경계 (커밋,롤백) 에 따라 이벤트 핸들러를 실행합니다.
 
-`@TransactionalEventListener` 의 경우에는 Publisher 쪽의 트랜잭션에 따라 리스너의 로직을 컨트롤 할 수 있습니다.
+`@TransactionalEventListener` 의 트랜잭션별 이벤트 처리 옵션에는 아래 4개의 옵션이 있습니다.
 
 - `BEFORE_COMMIT` : 트랜잭션이 커밋되기 전에 이벤트를 처리합니다.
 - `AFTER_COMMIT` : 트랜잭션이 성공적으로 커밋된 후에 이벤트를 처리합니다. 이 단계는 데이터베이스 상태가 확정되었음을 보장합니다.
