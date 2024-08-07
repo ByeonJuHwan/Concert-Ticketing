@@ -193,7 +193,17 @@ class ReservationEventListener (
 이제 실제 리스너에서 의도적으로 예외를 발생시켜서 외부 API 와의 통신이 실패해도 예약 API 에는 영향이 안가는지 확인해 보겠습니다.
 
 ```kotlin
+@Service
+class DataPlatformServiceImpl (
 
+) : DataPlatformService {
+
+    private val log : Logger = LoggerFactory.getLogger(DataPlatformServiceImpl::class.java)
+
+    override fun sendReservationData(reservation: ReservationEntity) {
+        throw RuntimeException("예외가 발생해도 기존로직에는 영향이 안가도록 이벤트 처리")
+    }
+}
 ```
 
 로그를 보면 의도대로 RuntimeException 이 발생했습니다
