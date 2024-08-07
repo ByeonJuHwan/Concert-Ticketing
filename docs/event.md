@@ -171,6 +171,17 @@ class ReservationEventPublisherImpl (
 4. AFTER_COMPLETION 중 처리가능한게 있으면, 돌면서 실행시킴
 ```
 
+그렇다면 어떤 어노테이션을 사용하고 어떤 옵션을 사용해야 기존 비즈니스로직에 영향받지 않으면서 요구사항을 만족할 수 있을까요?
+
+우선 예약정보를 보내야하므로 예약 정보가 생성이 되아야 합니다. 따라서 `@EventListener`, `BEFORE_COMMIT` 은 사용할 수 없습니다.
+그리고 예약 생성시 예외가 발생하면 예약 데이터를 보내면 안되므로 로직 실패와 상관없이 동작하는 `AFTER_COMPLETION` 도 사용할 수 없습니다.
+
+**따라서 저는 `@TransactionalEventListener` 의 `AFTER_COMMIT` 을 사용하여 구현했습니다.**
+
+```kotlin
+
+```
+
 만약 `@TransactionalEventListener` 에서 `@Transactional` 이 없다면 어떻게 동작할까요??
 
 **정답은 이벤트 리스터가 동작을 하지 않습니다.** 트랜잭션에 따라 동작하는 방식이 다르기 때문에 트랜잭션이 없으면 이벤트 리스터가 정상적으로 동작하지 않습니다.
