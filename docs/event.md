@@ -179,7 +179,16 @@ class ReservationEventPublisherImpl (
 **따라서 저는 `@TransactionalEventListener` 의 `AFTER_COMMIT` 을 사용하여 구현했습니다.**
 
 ```kotlin
-
+@Component
+class ReservationEventListener (
+    private val dataPlatformFacade: DataPlatformFacade,
+) {
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleExternalApiEvent(event: ReservationSuccessEvent) {
+        dataPlatformFacade.sendReservationData(event.reservationId)
+    }
+}
 ```
 
 만약 `@TransactionalEventListener` 에서 `@Transactional` 이 없다면 어떻게 동작할까요??
