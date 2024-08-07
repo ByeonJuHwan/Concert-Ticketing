@@ -11,6 +11,7 @@ import dev.concert.domain.service.reservation.event.ReservationSuccessEvent
 import dev.concert.domain.service.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class ConcertFacade (
@@ -55,6 +56,7 @@ class ConcertFacade (
         }
     }
 
+    @Transactional
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         // 유저 정보 조회
         val user = userService.getUser(request.userId)
