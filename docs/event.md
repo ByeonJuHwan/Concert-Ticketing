@@ -1,6 +1,9 @@
-# MSA
+# 서비스 규모에 따른 설계
 
-## 트랜잭션 범위 
+현재 콘서트 좌석 예약의 트랜잭션 범위에 대해 알아보고 서비스 규모가 확장된다면 서비스들을 어떻게 분리하고,
+분리에 따른 트랜잭션 처리의 한계와 해결방안에대해서 알아보겠습니다.
+
+## 트랜잭션 범위에 따른 문제점
 
 현재 콘서트 좌석 예약 로직에는 아래와 같습니다.
 ```text
@@ -36,11 +39,11 @@
 4. 예약 생성
 ---
 기능추가
-5. 좌석정보 외부 API 송신
+5. 예약정보 외부 API 송신
 ```
 
-외부 API로 좌석 정보를 송신하는 기능이 추가되면서, 전체 트랜잭션 시간이 4~5초로 길어집니다. 외부 API 송신은 본래의 비즈니스 로직과 직접적으로 연관이 없지만,
-하나의 트랜잭션에 포함되어 있어 통신이 실패할 경우 **영향을 받지 말아야 할 비즈니스 로직까지 전체 롤백되는 문제가 발생합니다.** 
+외부 API로 예약 정보를 송신하는 기능이 추가되면서, 해당 기능이 3~4초 소요된다면 전체 트랜잭션 시간이 4~5초로 길어집니다. 외부 API 송신은 본래의 비즈니스 로직과 직접적으로 연관이 없지만,
+단일 트랜잭션에 메인로직과 포함되어 있어 통신이 실패할 경우 **영향을 받지 말아야 할 비즈니스 로직까지 전체 롤백되는 문제가 발생합니다.** 
 이러한 문제는 시스템의 성능과 안정성을 저하시킬 수 있습니다.
 
 > 정리해보자면 데이터 정합성을 보장하기 위해 트랜잭션을 사용하지만, 
@@ -139,7 +142,7 @@ MSA 로 각 서비스별로 나눔으로써 각 로직에서 필요한 관심사
 
 스프링에서는 `ApplicationEventPublisher` 를 사용해서 이벤트를 발행할 수 있습니다.
 
-이벤트로는 `ReservationSuccessEvent` 를 만들어 리스너쪽에서 이븐트를 받을수 있도록 합니다.
+이벤트로는 `ReservationSuccessEvent` 를 만들어 리스너쪽에서 이벤트를 받을수 있도록 합니다.
 
 ```kotlin
 @Component
@@ -158,7 +161,7 @@ class ReservationEventPublisherImpl (
 
 ### EventListener / TransactionalEventListener
 
-이벤트를 수신하는 방법으로는 두기지 어노테이션이 있습니다.
+이벤트를 수신하는 방법으로는 두 가지 어노테이션이 있습니다.
 
 `@EventListener` 는 스프링에서 이벤트를 수신하고 처리하는 기본 어노테이션으로, 트랜잭션과 무관하게 이벤트를 처리합니다.
 
@@ -167,11 +170,11 @@ class ReservationEventPublisherImpl (
 `@TransactionalEventListener` 의 트랜잭션별 이벤트 처리 옵션에는 아래 4개의 옵션이 있습니다.
 
 - `BEFORE_COMMIT` : 트랜잭션이 커밋되기 전에 이벤트를 처리합니다.
-- `AFTER_COMMIT` : 트랜잭션이 성공적으로 커밋된 후에 이벤트를 처리합니다. 이 단계는 데이터베이스 상태가 확정되었음을 보장합니다.
+- `AFTER_COMMIT` : 트랜잭션이 성공적으로 커밋된 후에 이벤트를 처리합니다.
 - `AFTER_ROLLBACK` : 트랜잭션이 롤백된 후에 이벤트를 처리합니다.
-- `AFTER_COMPLETION` : 트랜잭션이 완료된 후(성공이든 실패든) 에 이벤트를 처리합니다.
+- `AFTER_COMPLETION` : 트랜잭션이 완료된 후(성공이든 실패든) 에 이벤트를 처리합니다. -> `finally` 와 유사하게 동작
 
-아래 순서는 `@TransactionalEventListener` 가 이벤트를 받았을때 각 옵션에 따른 동작 방식 입니다.
+아래 순서는 `@TransactionalEventListener` 와 `@EventListener` 가 이벤트를 받았을때 각 옵션에 따른 동작 방식 입니다.
 
 ```text
 1. 이벤트 발행
@@ -183,7 +186,7 @@ class ReservationEventPublisherImpl (
 7. 트랜잭션 종료
 8. AFTER_COMPLETION 중 처리가능한게 있으면, 돌면서 실행시킴
 
-번외
+예외 발생
 1. 롤백
 2. AFTER_ROLLBACK 중 처리가능한게 있으면서, 돌면서 실행시킴
 3. 트랜잭션 종료
@@ -192,8 +195,8 @@ class ReservationEventPublisherImpl (
 
 그렇다면 어떤 어노테이션을 사용하고 어떤 옵션을 사용해야 기존 비즈니스로직에 영향받지 않으면서 요구사항을 만족할 수 있을까요?
 
-우선 예약정보를 보내야하므로 예약 정보가 생성이 되아야 합니다. 따라서 `@EventListener`, `BEFORE_COMMIT` 은 사용할 수 없습니다.
-그리고 예약 생성시 예외가 발생하면 예약 데이터를 보내면 안되므로 로직 실패와 상관없이 동작하는 `AFTER_COMPLETION` 도 사용할 수 없습니다.
+예약 정보를 보내기 위해서는 예약 정보가 먼저 생성되어야 합니다. 따라서 `@EventListener` 와 `BEFORE_COMMIT` 을 사용할 수 없습니다.
+또한, 예약 생성 시 예외가 발생하면 예약 데이터를 보내서는 안 되므로, 로직 실패와 상관없이 동작하는 `AFTER_COMPLETION` 도 적절하지 않습니다.
 
 **따라서 저는 `@TransactionalEventListener` 의 `AFTER_COMMIT` 을 사용하여 구현했습니다.**
 
@@ -239,16 +242,18 @@ class DataPlatformServiceImpl (
 }
 ```
 
-로그를 보면 의도대로 RuntimeException 이 발생했습니다
+로그를 보면 의도대로 `RuntimeException` 이 발생했습니다
 
 ![](https://velog.velcdn.com/images/asdcz11/post/8accc8fc-7255-4319-8108-81979e4eb0e2/image.png)
 
-하지만 실제 사용자의 응답을보면 정상적으로 예약이 된것을 확인 할 수 있습니다. 
-이벤트 로직이 비동기로 돌았기 때문에 기존 메인 쓰레드의 로직에는 영향을 주지 않고 정상 응답을 내려줍니다.
+그러나 실제 사용자의 응답에서는 예약이 정상적으로 완료된 것을 확인할 수 있습니다. 
+이는 이벤트 로직이 비동기로 실행되기 때문에, 기존 메인 스레드의 로직에 영향을 주지 않고 정상 응답을 반환할 수 있기 때문입니다.
+
+**따라서, 이벤트를 수신한 로직에서 실패가 발생하더라도, 기존 로직에는 영향을 미치지 않는다는 것을 확인할 수 있었습니다.**
 
 ![](https://velog.velcdn.com/images/asdcz11/post/ac618b50-a2f7-44ed-a692-da6d11f02ba3/image.png)
 
-### `@TransactionalEventListener`와 트랜잭션 연관성
+### `@TransactionalEventListener` 과 트랜잭션 연관성
 
 만약 `@TransactionalEventListener` 에서 `@Transactional` 이 없다면 어떻게 동작할까요??
 
