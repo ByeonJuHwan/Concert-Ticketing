@@ -193,6 +193,11 @@ class ReservationEventListener (
 
 만약 `@TransactionalEventListener` 에서 `@Transactional` 이 없다면 어떻게 동작할까요??
 
-**정답은 이벤트 리스터가 동작을 하지 않습니다.** 트랜잭션에 따라 동작하는 방식이 다르기 때문에 트랜잭션이 없으면 이벤트 리스터가 정상적으로 동작하지 않습니다.
+**결과는 이벤트 리스터가 동작을 하지 않습니다.** 트랜잭션에 따라 동작하는 방식이 다르기 때문에 트랜잭션이 없으면 이벤트 리스터가 정상적으로 동작하지 않습니다.
 
 또 다른 질문으로 `@EventListener` 와 `@TransactionalEventListener` 를 같이 사용하면 어떻게 동작할까요??
+
+**결과는 1번만 동작합니다** `@EventListener` 와 `@TransactionalEventListener` 는 둘 다 이벤트를 수신하는 역할을 하지만, 
+`@TransactionalEventListener` 는 트랜잭션의 특정 단계에서만 이벤트를 처리하도록 하는 기능을 추가로 제공합니다.
+
+`@TransactionalEventListener` 는 `@EventListener` 의 특성을 포함하면서도 트랜잭션 경계를 추가적으로 설정하는 역할을 하기 때문에, `@EventListener` 는 별도로 작동하지 않습니다.
