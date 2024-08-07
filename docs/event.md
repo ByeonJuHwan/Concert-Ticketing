@@ -190,7 +190,20 @@ class ReservationEventListener (
 }
 ```
 
-이제 실제 리스너에서 의도적으로 예외를 발생시켜서 외부 API 와의 통신이 실패해도 예약 API 에는 영향이 안가는지 확인해 보겠습니다.
+```kotlin
+@Service
+class DataPlatformServiceImpl : DataPlatformService {
+
+    private val log : Logger = LoggerFactory.getLogger(DataPlatformServiceImpl::class.java)
+
+    override fun sendReservationData(reservation: ReservationEntity) {
+        log.info("외부 API 통신 성공")
+        // TODO 슬랙, 텔레그램 알림으로 변경해보기
+    }
+}
+```
+
+**이제 실제 리스너에서 의도적으로 예외를 발생시켜서 외부 API 와의 통신이 실패해도 예약 API 에는 영향이 안가는지 확인해 보겠습니다.**
 
 ```kotlin
 @Service
