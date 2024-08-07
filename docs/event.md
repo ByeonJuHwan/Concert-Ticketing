@@ -1,6 +1,5 @@
 # MSA
 
-
 ## 트랜잭션 범위 
 
 현재 콘서트 좌석 예약 로직에는 아래와 같습니다.
@@ -191,13 +190,39 @@ class ReservationEventListener (
 }
 ```
 
+이제 실제 리스너에서 의도적으로 예외를 발생시켜서 외부 API 와의 통신이 실패해도 예약 API 에는 영향이 안가는지 확인해 보겠습니다.
+
+```kotlin
+
+```
+
+로그를 보면 의도대로 RuntimeException 이 발생했습니다
+
+![](https://velog.velcdn.com/images/asdcz11/post/8accc8fc-7255-4319-8108-81979e4eb0e2/image.png)
+
+하지만 실제 사용자의 응답을보면 정상적으로 예약이 된것을 확인 할 수 있습니다. 
+이벤트 로직이 비동기로 돌았기 때문에 기존 메인 쓰레드의 로직에는 영향을 주지 않고 정상 응답을 내려줍니다.
+
+![](https://velog.velcdn.com/images/asdcz11/post/ac618b50-a2f7-44ed-a692-da6d11f02ba3/image.png)
+
+### `@TransactionalEventListener`와 트랜잭션 연관성
+
 만약 `@TransactionalEventListener` 에서 `@Transactional` 이 없다면 어떻게 동작할까요??
 
 **결과는 이벤트 리스터가 동작을 하지 않습니다.** 트랜잭션에 따라 동작하는 방식이 다르기 때문에 트랜잭션이 없으면 이벤트 리스터가 정상적으로 동작하지 않습니다.
 
-또 다른 질문으로 `@EventListener` 와 `@TransactionalEventListener` 를 같이 사용하면 어떻게 동작할까요??
+### `@EventListener`와 `@TransactionalEventListener` 의 관계
+
+또 다른 질문으로 `@EventListener` 와 `@TransactionalEventListener` 를 같이 사용하면 몇 번 동작할까요??
 
 **결과는 1번만 동작합니다** `@EventListener` 와 `@TransactionalEventListener` 는 둘 다 이벤트를 수신하는 역할을 하지만, 
 `@TransactionalEventListener` 는 트랜잭션의 특정 단계에서만 이벤트를 처리하도록 하는 기능을 추가로 제공합니다.
 
 `@TransactionalEventListener` 는 `@EventListener` 의 특성을 포함하면서도 트랜잭션 경계를 추가적으로 설정하는 역할을 하기 때문에, `@EventListener` 는 별도로 작동하지 않습니다.
+
+## 정리하며...
+
+트랜잭션의 범위에 대해 고민해 보고, 비즈니스 로직의 융합으로 인한 문제점과 그 해결 방안에 대해 알아보았습니다.
+서비스의 규모가 증가할 때, 이벤트를 통해 각 도메인을 분리함으로써 이러한 문제를 해결할 수 있지만, 이 과정에서도 트랜잭션과 데이터 정합성에 대한 문제가 존재합니다.
+
+따라서 현재 비즈니스를 이해하고 상황에 맞게 적절한 설계와 패턴을 사용해야 할 것 같습니다.
