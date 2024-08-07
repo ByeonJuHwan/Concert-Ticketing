@@ -38,6 +38,11 @@ class ReservationServiceImpl (
         return saveReservation(user, seat)
     }
 
+    @Transactional(readOnly = true)
+    override fun getReservation(reservationId: Long): ReservationEntity {
+        return reservationRepository.findById(reservationId) ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+    }
+
     private fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {
         val expiresAt = LocalDateTime.now().plusMinutes(5)
 
