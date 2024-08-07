@@ -96,6 +96,26 @@ fun handleSeatReserved(event: SeatReservedEvent) {
         eventPublisher.publishEvent(ReservationCreationFailedEvent(event.seatId))
     }
 }
+
+
+
+@EventListener
+fun handleReservationCreationFailed(event: ReservationCreationFailedEvent) {
+    try {
+        // 좌석 상태 롤백
+        val seat = seatRepository.findById(event.seatId)
+            ?: throw SeatNotFoundException("Seat not found: ${event.seatId}")
+
+        if (seat.status == SeatStatus.RESERVED) {
+            seat.status = SeatStatus.AVAILABLE
+            seatRepository.save(seat)
+            log.info("좌석 상태 롤백 성공: ${event.seatId}")
+        }
+    } catch (ex: Exception) {
+        log.error("좌석 상태 롤백 실패: ${event.seatId}", ex)
+        // 추가적인 실패 처리 로직 (알림, 재시도 등)
+    }
+}
 ```
 
 MSA 로 각 서비스별로 나눔으로써 각 로직에서 필요한 관심사만 비즈니스 로직에 담을 수 있으며, 이를 통해 트랜잭션 범위를 좁게 가져감으로써 쓰레드 풀에서 사용된 쓰레드를 더 빠르게 순환시킬 수 있습니다.
