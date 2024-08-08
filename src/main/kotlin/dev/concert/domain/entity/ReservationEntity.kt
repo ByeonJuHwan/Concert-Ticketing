@@ -18,7 +18,7 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "reservation", indexes = [Index(name = "idx_expires_at", columnList = "expires_at")])
+@Table(name = "reservation", indexes = [Index(name = "idx_expires_at", columnList = "expires_at")]) 
 class ReservationEntity(
     user: UserEntity,
     seat : SeatEntity,
