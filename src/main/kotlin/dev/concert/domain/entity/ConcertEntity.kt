@@ -8,7 +8,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "concert" , indexes = [Index(name = "idx_start_date", columnList = "startDate")])
+@Table(name = "concert" , indexes = [Index(name = "idx_start_date", columnList = "startDate")]) 
 class ConcertEntity(
     concertName: String,
     singer: String,
