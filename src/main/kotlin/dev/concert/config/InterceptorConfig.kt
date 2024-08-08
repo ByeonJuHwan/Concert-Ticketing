@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class InterceptorConfig (
-    private val tokenValidateInterceptor: TokenValidateInterceptor,
+//    private val tokenValidateInterceptor: TokenValidateInterceptor,
     private val activeTokenValidateInterceptor: ActiveTokenValidateInterceptor,
 ) : WebMvcConfigurer {
 

@@ -6,4 +6,5 @@ import dev.concert.domain.entity.UserEntity
 interface ReservationService {
     fun manageReservationStatus()
     fun createSeatReservation(user: UserEntity, seatId: Long): ReservationEntity
+    fun getReservation(reservationId: Long): ReservationEntity
 }

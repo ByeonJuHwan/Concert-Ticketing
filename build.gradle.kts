@@ -46,6 +46,9 @@ dependencies {
 
 	// Redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+	// Slack
+	implementation("com.slack.api:slack-api-client:1.20.2")
 }
 
 kotlin {

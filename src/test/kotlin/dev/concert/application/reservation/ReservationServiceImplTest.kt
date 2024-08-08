@@ -6,6 +6,7 @@ import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.service.reservation.ReservationServiceImpl
 import org.assertj.core.api.Assertions.*
@@ -63,8 +64,41 @@ class ReservationServiceImplTest {
         // then 
         verify(reservationRepository).updateReservationStatusToExpired(listOf(reservation.id))
         verify(seatRepository).updateSeatStatusToAvailable(listOf(reservation.seat.id))
-    } 
+    }
 
+    @Test
+    fun `예약 아이디가 주어지면 예약을 조회한다`() {
+        // given
+        val reservation = ReservationEntity(
+            user = UserEntity(name = "test"),
+            seat = stubSeatEntity(),
+            expiresAt = LocalDateTime.now().minusMinutes(5)
+        )
+
+        val reservationId = 1L
+
+        given(reservationRepository.findById(reservationId)).willReturn(reservation)
+
+        // when
+        val result = reservationService.getReservation(reservationId)
+
+        // then
+        assertThat(result).isNotNull
+        assertThat(result.user.name).isEqualTo(reservation.user.name)
+    }
+
+    @Test
+    fun `예약 정보가 없으면 예외를 터트린다`() {
+        // given
+        val reservationId = 1L
+
+        given(reservationRepository.findById(reservationId)).willReturn(null)
+
+        // when & then
+        assertThatThrownBy {
+            reservationService.getReservation(reservationId)
+        }.isInstanceOf(ConcertException::class.java)
+    }
 
     private fun stubSeatEntity(): SeatEntity {
         val concertOption = ConcertOptionEntity(
