@@ -200,6 +200,8 @@ class ReservationEventPublisherImpl (
 
 **따라서 저는 `@TransactionalEventListener` 의 `AFTER_COMMIT` 을 사용하여 구현했습니다.**
 
+그리고 외부 API 로는 예약정보를 슬랙으로 보내도록 구현했습니다.
+
 ```kotlin
 @Component
 class ReservationEventListener (
@@ -215,23 +217,55 @@ class ReservationEventListener (
 
 ```kotlin
 @Service
-class DataPlatformServiceImpl : DataPlatformService {
+class DataPlatformServiceImpl (
+    private val messageManager: MessageManager
+) : DataPlatformService {
 
     private val log : Logger = LoggerFactory.getLogger(DataPlatformServiceImpl::class.java)
 
     override fun sendReservationData(reservation: ReservationEntity) {
+        messageManager.sendMessage("예약 데이터 전송 reservationId : ${reservation.id}")
         log.info("외부 API 통신 성공")
-        // TODO 슬랙, 텔레그램 알림으로 변경해보기
     }
 }
 ```
+
+```kotlin
+@Component
+class SlackApiClient : MessageManager {
+
+    @Value("\${slack.token}")
+    lateinit var token : String
+
+    @Value("\${slack.channel.id}")
+    lateinit var channelId : String
+
+    private val log : Logger = LoggerFactory.getLogger(SlackApiClient::class.java)
+
+    override fun sendMessage(message : String) {
+        val client = Slack.getInstance().methods()
+
+        client.chatPostMessage {
+            it.token(token)
+                .channel(channelId)
+                .text(message)
+        }
+
+        log.info("슬랙 메세지 전송 완료")
+    }
+}
+```
+
+![](https://velog.velcdn.com/images/asdcz11/post/69e004ec-03cc-4dbf-afac-b37908e41124/image.png)
+
+---
 
 **이제 실제 리스너에서 의도적으로 예외를 발생시켜서 외부 API 와의 통신이 실패해도 예약 API 에는 영향이 안가는지 확인해 보겠습니다.**
 
 ```kotlin
 @Service
 class DataPlatformServiceImpl (
-
+    private val messageManager: MessageManager
 ) : DataPlatformService {
 
     private val log : Logger = LoggerFactory.getLogger(DataPlatformServiceImpl::class.java)
