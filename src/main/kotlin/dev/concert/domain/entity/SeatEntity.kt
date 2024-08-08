@@ -17,10 +17,10 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
 @Entity
-@Table(
-    name = "seat",
-    indexes = [Index(name = "idx_seat_status_concert_option_id", columnList = "seat_status,concert_option_id")]
-)
+@Table( 
+    name = "seat", 
+    indexes = [Index(name = "idx_seat_status_concert_option_id", columnList = "seat_status,concert_option_id")] 
+) 
 class SeatEntity(
     concertOption: ConcertOptionEntity,
     price: Long,
