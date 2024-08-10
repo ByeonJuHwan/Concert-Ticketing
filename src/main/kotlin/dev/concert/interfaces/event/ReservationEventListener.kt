@@ -1,7 +1,7 @@
 package dev.concert.interfaces.event
 
 import dev.concert.application.data.DataPlatformFacade
-import dev.concert.domain.service.reservation.event.ReservationSuccessEvent
+import dev.concert.domain.event.reservation.ReservationSuccessEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async

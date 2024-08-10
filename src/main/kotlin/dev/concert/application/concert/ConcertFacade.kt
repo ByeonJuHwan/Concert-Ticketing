@@ -5,10 +5,10 @@ import dev.concert.application.concert.dto.ConcertReservationDto
 import dev.concert.application.concert.dto.ConcertReservationResponseDto
 import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
+import dev.concert.domain.event.reservation.ReservationSuccessEvent
+import dev.concert.domain.event.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
-import dev.concert.domain.service.reservation.event.ReservationSuccessEvent
-import dev.concert.domain.service.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
