@@ -7,14 +7,18 @@ import dev.concert.application.concert.dto.ConcertSeatsDto
 import dev.concert.application.concert.dto.ConcertsDto
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
+import dev.concert.domain.service.reservation.event.ReservationSuccessEvent
+import dev.concert.domain.service.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.service.user.UserService
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 class ConcertFacade (
     private val userService: UserService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
+    private val eventPublisher: ReservationEventPublisher,
 ){
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(
@@ -52,12 +56,16 @@ class ConcertFacade (
         }
     }
 
+    @Transactional
     fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
         // 유저 정보 조회
         val user = userService.getUser(request.userId)
 
         //예약가능인지 확인하고 좌석 임시배정해 잠근다.
         val reservation = reservationService.createSeatReservation(user, request.seatId)
+
+        // 예약 성공 이벤트 발행
+        eventPublisher.publish(ReservationSuccessEvent(reservation.id))
 
         return ConcertReservationResponseDto(
             status = reservation.status,
