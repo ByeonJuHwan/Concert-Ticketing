@@ -9,7 +9,6 @@ import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.repository.SeatRepository
-import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.user.UserService
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -20,9 +19,6 @@ import org.springframework.test.context.event.ApplicationEvents
 import org.springframework.test.context.event.RecordApplicationEvents
 import org.springframework.transaction.annotation.Transactional
 
-@SpringBootTest
-@Transactional
-@RecordApplicationEvents
 @SpringBootTest
 @Transactional
 @RecordApplicationEvents
@@ -41,10 +37,7 @@ class ReservationEventListenerTest {
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
-    private lateinit var reservationService: ReservationService
-
-    @Autowired
-    private lateinit var applicationEvents: ApplicationEvents
+    private lateinit var applicationEvents: ApplicationEvents // IDE 에서는 컴파일 오류라고 뜨지만 정상실행됩니다
 
     @BeforeEach
     fun setUp() {
