@@ -72,6 +72,16 @@ class ReservationServiceImpl (
         reservationOutBoxRepository.updateStatusSuccess(reserveOutBox)
     }
 
+    /**
+     * 아웃박스의 Event 의 Status 를 Send_Fail 로 변경
+     */
+    override fun chanceMsgStatusFail(reservationId: Long) {
+        val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
+            ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+
+        reservationOutBoxRepository.updateStatusFail(reserveOutBox)
+    }
+
     private fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {
         val expiresAt = LocalDateTime.now().plusMinutes(5)
 

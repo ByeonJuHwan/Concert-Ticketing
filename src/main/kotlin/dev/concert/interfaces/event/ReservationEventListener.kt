@@ -48,7 +48,8 @@ class ReservationEventListener (
         }.onFailure { ex ->
             // 예외 처리 로직
             log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
-            // TODO SEND_FAIL 로 변경하는 로직 추가 AND 재시도 로직도 추가해야함
+            // TODO 재시도 로직도 추가해야함
+            reservationFacade.changeReservationOutBoxStatusSendFail(reservationId.toLong())
         }
     }
 }

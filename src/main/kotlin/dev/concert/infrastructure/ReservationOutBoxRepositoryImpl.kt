@@ -21,4 +21,8 @@ class ReservationOutBoxRepositoryImpl (
     override fun updateStatusSuccess(outboxEntity: ReservationEventOutBox) {
         reservationOutBoxJpaRepository.updateByReservationId(outboxEntity.reservationId, OutBoxMsgStats.SEND_SUCCESS)
     }
+
+    override fun updateStatusFail(outboxEntity: ReservationEventOutBox) {
+        reservationOutBoxJpaRepository.updateByReservationId(outboxEntity.reservationId, OutBoxMsgStats.SEND_FAIL)
+    }
 }
