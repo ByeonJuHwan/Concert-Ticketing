@@ -4,10 +4,12 @@ import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.event.reservation.publisher.ReservationEventPublisher
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 
-//@Component
+@Component
+@Qualifier("application")
 class ReservationEventPublisherImpl (
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : ReservationEventPublisher {
