@@ -4,6 +4,7 @@ import dev.concert.application.data.DataPlatformFacade
 import dev.concert.domain.event.reservation.ReservationSuccessEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -21,6 +22,19 @@ class ReservationEventListener (
     fun handleExternalApiEvent(event: ReservationSuccessEvent) {
         runCatching {
             dataPlatformFacade.sendReservationData(event.reservationId)
+        }.onFailure { ex ->
+            // 예외 처리 로직
+            log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @KafkaListener(topics = ["reservation"], groupId = "concert_group")
+    fun handleExternalApiKafkaEvent(reservationId : String) {
+        log.info("Kafka Event 수신 성공!!")
+        runCatching {
+            dataPlatformFacade.sendReservationData(reservationId.toLong())
         }.onFailure { ex ->
             // 예외 처리 로직
             log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
