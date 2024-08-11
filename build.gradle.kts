@@ -47,6 +47,9 @@ dependencies {
 	// Redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+	// Kafka
+	implementation("org.springframework.kafka:spring-kafka")
+
 	// Slack
 	implementation("com.slack.api:slack-api-client:1.20.2")
 }
