@@ -5,9 +5,13 @@ import dev.concert.domain.entity.ReservationEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.SeatStatus
+import dev.concert.domain.event.reservation.ReservationEvent
+import dev.concert.domain.event.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
+import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -15,7 +19,9 @@ import java.time.LocalDateTime
 @Service
 class ReservationServiceImpl (
     private val reservationRepository : ReservationRepository,
+    private val reservationOutBoxRepository : ReservationOutBoxRepository,
     private val seatRepository: SeatRepository,
+    @Qualifier("Kafka") private val reservationEventPublisher: ReservationEventPublisher,
 ) : ReservationService {
 
     @Transactional
@@ -41,6 +47,29 @@ class ReservationServiceImpl (
     @Transactional(readOnly = true)
     override fun getReservation(reservationId: Long): ReservationEntity {
         return reservationRepository.findById(reservationId) ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+    }
+
+    /**
+     * 아웃박스에 Event 를 저장 후 Kafka 이벤트 발행
+     *
+     * 1. 아웃박스 이벤트 저장
+     * 2. 카프카 이벤트 발행
+     */
+    @Transactional
+    override fun saveMsgToOutBox(event: ReservationEvent) {
+        reservationOutBoxRepository.save(event.toEntity())
+        reservationEventPublisher.publish(event)
+    }
+
+    /**
+     * 아웃박스의 Event 의 Status 를 Send_Success 로 변경
+     */
+    @Transactional
+    override fun chanceMsgStatusSuccess(reservationId: Long) {
+        val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
+            ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+
+        reservationOutBoxRepository.updateStatusSuccess(reserveOutBox)
     }
 
     private fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {
