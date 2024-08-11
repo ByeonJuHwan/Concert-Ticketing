@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 
-@Component
+//@Component
 class ReservationEventPublisherImpl (
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : ReservationEventPublisher {
