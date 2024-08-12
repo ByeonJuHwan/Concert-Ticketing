@@ -13,4 +13,5 @@ interface ReservationService {
     fun chanceMsgStatusFail(reservationId: Long)
     fun retryInitOrFailEvents()
     fun deleteOutBoxEvents()
+    fun publishReservationEvent(event: ReservationEvent)
 }

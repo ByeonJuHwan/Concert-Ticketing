@@ -28,4 +28,8 @@ class ReservationFacade (
     fun deleteOutBoxEvents() {
         reservationService.deleteOutBoxEvents()
     }
+
+    fun publishReservationEvent(event: ReservationEvent) {
+        reservationService.publishReservationEvent(event)
+    }
 }

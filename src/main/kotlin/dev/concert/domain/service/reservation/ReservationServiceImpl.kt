@@ -55,14 +55,19 @@ class ReservationServiceImpl (
     }
 
     /**
-     * 아웃박스에 Event 를 저장 후 Kafka 이벤트 발행
-     *
-     * 1. 아웃박스 이벤트 저장
-     * 2. 카프카 이벤트 발행
+     * [아웃박스 패턴] BEFORE_COMMIT
+     * 아웃박스에 Event 를 저장 (Init 상태)
      */
     @Transactional
     override fun saveMsgToOutBox(event: ReservationEvent) {
         reservationOutBoxRepository.save(event.toEntity())
+    }
+
+    /**
+     * [아웃박스 패턴] AFTER_COMMIT
+     * AFTER_COMMIT 이후의 카프카 이벤트를 발행한다
+     */
+    override fun publishReservationEvent(event: ReservationEvent) {
         reservationEventPublisher.publish(event)
     }
 
@@ -72,7 +77,7 @@ class ReservationServiceImpl (
     @Transactional
     override fun chanceMsgStatusSuccess(reservationId: Long) {
         val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
-            ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+            ?: throw ConcertException(ErrorCode.RESERVATION_OUTBOX_NOT_FOUND)
 
         reservationOutBoxRepository.updateStatusSuccess(reserveOutBox)
     }
@@ -80,9 +85,10 @@ class ReservationServiceImpl (
     /**
      * 아웃박스의 Event 의 Status 를 Send_Fail 로 변경
      */
+    @Transactional
     override fun chanceMsgStatusFail(reservationId: Long) {
         val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
-            ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
+            ?: throw ConcertException(ErrorCode.RESERVATION_OUTBOX_NOT_FOUND)
 
         reservationOutBoxRepository.updateStatusFail(reserveOutBox)
     }
@@ -99,6 +105,9 @@ class ReservationServiceImpl (
         }
     }
 
+    /**
+     * [아웃박스 패턴] 아웃박스 데이터는 3일이지나면 삭제된다
+     */
     @Transactional
     override fun deleteOutBoxEvents() {
         runCatching {
