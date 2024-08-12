@@ -11,7 +11,7 @@ class ReservationEventDeleteScheduler (
     /**
      * 예약 아웃박스의 데이터는 3일이 지나면 자동으로 삭제된다
      */
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(cron = "0 0 0 */3 * ?")
     fun reservationEventRetryScheduler() {
         reservationFacade.deleteOutBoxEvents()
     }
