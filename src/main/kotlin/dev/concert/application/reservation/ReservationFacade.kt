@@ -24,4 +24,8 @@ class ReservationFacade (
     fun retryEvents() {
         reservationService.retryInitOrFailEvents()
     }
+
+    fun deleteOutBoxEvents() {
+        reservationService.deleteOutBoxEvents()
+    }
 }

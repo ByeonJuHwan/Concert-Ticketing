@@ -30,4 +30,8 @@ class ReservationOutBoxRepositoryImpl (
     override fun getInitOrFailEvents(): List<ReservationEventOutBox> {
         return reservationOutBoxJpaRepository.findEventByStatuses(listOf(SEND_FAIL, INIT), LocalDateTime.now().minusMinutes(10))
     }
+
+    override fun deleteEntriesOlderThanThreeDays() {
+        reservationOutBoxJpaRepository.deleteEntriesOlderThan(LocalDateTime.now().minusDays(3))
+    }
 }

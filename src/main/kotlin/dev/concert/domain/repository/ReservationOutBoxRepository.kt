@@ -8,4 +8,5 @@ interface ReservationOutBoxRepository {
     fun updateStatusSuccess(outboxEntity: ReservationEventOutBox)
     fun updateStatusFail(outboxEntity: ReservationEventOutBox)
     fun getInitOrFailEvents(): List<ReservationEventOutBox>
+    fun deleteEntriesOlderThanThreeDays()
 }

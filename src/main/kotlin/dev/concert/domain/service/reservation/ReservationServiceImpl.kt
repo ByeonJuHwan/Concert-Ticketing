@@ -12,6 +12,8 @@ import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
 import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +26,8 @@ class ReservationServiceImpl (
     private val seatRepository: SeatRepository,
     @Qualifier("Kafka") private val reservationEventPublisher: ReservationEventPublisher,
 ) : ReservationService {
+
+    private val log : Logger = LoggerFactory.getLogger(ReservationServiceImpl::class.java)
 
     @Transactional
     override fun manageReservationStatus() {
@@ -92,6 +96,16 @@ class ReservationServiceImpl (
     override fun retryInitOrFailEvents() {
         reservationOutBoxRepository.getInitOrFailEvents().forEach { entity ->
             reservationEventPublisher.publish(ReservationSuccessEvent(entity.reservationId))
+        }
+    }
+
+    @Transactional
+    override fun deleteOutBoxEvents() {
+        runCatching {
+            reservationOutBoxRepository.deleteEntriesOlderThanThreeDays()
+        }.onFailure { e->
+            log.error("ReservationOutBoxDelete Delete Error", e)
+            // 슬랙 메세지, 재시도 등등
         }
     }
 
