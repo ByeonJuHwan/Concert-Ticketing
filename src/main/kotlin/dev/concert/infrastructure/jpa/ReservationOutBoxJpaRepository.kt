@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import java.time.LocalDateTime
 
 interface ReservationOutBoxJpaRepository : JpaRepository<ReservationEventOutBox, Long> {
     fun findByReservationId(reservationId: Long): ReservationEventOutBox?
 
-    @Query("SELECT r FROM ReservationEventOutBox r WHERE r.status IN :statuses")
-    fun findEventByStatuses(@Param("statuses") statuses: List<OutBoxMsgStats>): List<ReservationEventOutBox>
+    @Query("SELECT r FROM ReservationEventOutBox r WHERE r.status IN :statuses AND r.createdAt < :tenMinutesAgo")
+    fun findEventByStatuses(@Param("statuses") statuses: List<OutBoxMsgStats>, @Param("tenMinutesAgo") tenMinutesAgo : LocalDateTime): List<ReservationEventOutBox>
 
     @Modifying
     @Query("UPDATE ReservationEventOutBox SET status = :status WHERE reservationId = :reservationId")

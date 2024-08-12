@@ -1,5 +1,6 @@
 package dev.concert.domain.entity.outbox
 
+import dev.concert.domain.entity.BaseEntity
 import dev.concert.domain.entity.status.OutBoxMsgStats
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,7 +12,7 @@ import jakarta.persistence.Id
 @Entity
 class ReservationEventOutBox(
     reservationId: Long,
-) {
+) : BaseEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id : Long = 0

@@ -5,6 +5,7 @@ import dev.concert.domain.entity.status.OutBoxMsgStats.*
 import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.infrastructure.jpa.ReservationOutBoxJpaRepository
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class ReservationOutBoxRepositoryImpl (
@@ -27,6 +28,6 @@ class ReservationOutBoxRepositoryImpl (
     }
 
     override fun getInitOrFailEvents(): List<ReservationEventOutBox> {
-        return reservationOutBoxJpaRepository.findEventByStatuses(listOf(SEND_FAIL, INIT))
+        return reservationOutBoxJpaRepository.findEventByStatuses(listOf(SEND_FAIL, INIT), LocalDateTime.now().minusMinutes(10))
     }
 }

@@ -30,18 +30,24 @@ class ReservationEventListener (
         }
     }
 
+    /**
+     * 아웃박스 패턴으로 카프카로 이벤트가 발행되는데 예외 발생시 상태를 SEND_FAIL 로 변경
+     */
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     fun handleReservationOutBox(event: ReservationSuccessEvent) {
         log.info("BEFORE_COMMIT : 아웃박스 이벤트 발행")
-        reservationFacade.recordReservationOutBoxMsg(event)
+        runCatching {
+            reservationFacade.recordReservationOutBoxMsg(event)
+        }.onFailure { e ->
+            log.error("Kafka 이벤트 발행 장애" , e)
+            reservationFacade.changeReservationOutBoxStatusSendFail(event.reservationId)
+        }
     }
 
     /**
      * 아웃 박스 패턴 적용
      *
-     * 성공시 -> SEND_SUCCESS 로 상태변경
-     * 실패시 -> SEND_FAIL 로 상태 변경
-     *
+     * 아웃박스 상태를 SEND_SUCCESS 로 상태변경
      * 이후 SEND_FAIL, INIT 인 상태인 이벤트들을 재시도 처리
      */
     @Async
@@ -55,7 +61,6 @@ class ReservationEventListener (
         }.onFailure { ex ->
             // 예외 처리 로직
             log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
-            reservationFacade.changeReservationOutBoxStatusSendFail(reservationId.toLong())
         }
     }
 }
