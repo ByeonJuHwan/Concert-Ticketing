@@ -36,11 +36,18 @@ class ReservationEventListener (
         reservationFacade.recordReservationOutBoxMsg(event)
     }
 
+    /**
+     * 아웃 박스 패턴 적용
+     *
+     * 성공시 -> SEND_SUCCESS 로 상태변경
+     * 실패시 -> SEND_FAIL 로 상태 변경
+     *
+     * 이후 SEND_FAIL, INIT 인 상태인 이벤트들을 재시도 처리
+     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @KafkaListener(topics = ["reservation"], groupId = "concert_group")
     fun handleExternalApiKafkaEvent(reservationId : String) {
-        log.info("아웃박스 리스터로부터 수신 성공!!")
         log.info("Kafka Event 수신 성공!!")
         runCatching {
             reservationFacade.changeReservationOutBoxStatusSendSuccess(reservationId.toLong())
@@ -48,7 +55,6 @@ class ReservationEventListener (
         }.onFailure { ex ->
             // 예외 처리 로직
             log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
-            // TODO 재시도 로직도 추가해야함
             reservationFacade.changeReservationOutBoxStatusSendFail(reservationId.toLong())
         }
     }

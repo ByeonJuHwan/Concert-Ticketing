@@ -6,6 +6,7 @@ import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.SeatStatus
 import dev.concert.domain.event.reservation.ReservationEvent
+import dev.concert.domain.event.reservation.ReservationSuccessEvent
 import dev.concert.domain.event.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.exception.ConcertException
 import dev.concert.domain.exception.ErrorCode
@@ -80,6 +81,18 @@ class ReservationServiceImpl (
             ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
 
         reservationOutBoxRepository.updateStatusFail(reserveOutBox)
+    }
+
+    /**
+     * 발행이 실패한 이벤트들을 다시 재시도 한다
+     *
+     * 1. 이벤트 상태가 INIT, SEND_FAIL 인 예약 이벤트 조회
+     * 2. 이벤트 재발송
+     */
+    override fun retryInitOrFailEvents() {
+        reservationOutBoxRepository.getInitOrFailEvents().forEach { entity ->
+            reservationEventPublisher.publish(ReservationSuccessEvent(entity.reservationId))
+        }
     }
 
     private fun saveReservation(user: UserEntity, seat: SeatEntity) : ReservationEntity {

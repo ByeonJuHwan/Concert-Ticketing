@@ -20,4 +20,8 @@ class ReservationFacade (
     fun changeReservationOutBoxStatusSendFail(reservationId: Long) {
         reservationService.chanceMsgStatusFail(reservationId)
     }
+
+    fun retryEvents() {
+        reservationService.retryInitOrFailEvents()
+    }
 }

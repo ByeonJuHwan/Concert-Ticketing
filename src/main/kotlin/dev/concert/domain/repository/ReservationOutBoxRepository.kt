@@ -7,4 +7,5 @@ interface ReservationOutBoxRepository {
     fun findByReservationId(reservationId: Long) : ReservationEventOutBox?
     fun updateStatusSuccess(outboxEntity: ReservationEventOutBox)
     fun updateStatusFail(outboxEntity: ReservationEventOutBox)
+    fun getInitOrFailEvents(): List<ReservationEventOutBox>
 }
