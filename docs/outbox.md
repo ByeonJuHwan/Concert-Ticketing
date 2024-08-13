@@ -140,3 +140,9 @@ fun reservationEventRetryScheduler() {
 
 이전에는 주로 메시지 수신과 처리 즉 비즈니스 로직 처리에 초점을 맞추었지만, 이번 경험을 통해 이벤트 발행 과정에서 발생할 수 있는 문제 상황과
 그 해결 방법에 대해 고민하고 구현해 볼 수 있어서 좋은 경험이었습니다.
+
+---
+
+**참조문서**
+
+[트랜잭셔널 아웃박스 패턴의 실제 구현 사례 - 29CM](https://medium.com/@greg.shiny82/%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%94%EB%84%90-%EC%95%84%EC%9B%83%EB%B0%95%EC%8A%A4-%ED%8C%A8%ED%84%B4%EC%9D%98-%EC%8B%A4%EC%A0%9C-%EA%B5%AC%ED%98%84-%EC%82%AC%EB%A1%80-29cm-0f822fc23edb)
