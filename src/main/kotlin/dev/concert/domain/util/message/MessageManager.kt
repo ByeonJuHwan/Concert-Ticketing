@@ -1,4 +1,4 @@
-package dev.concert.domain.service.data.message
+package dev.concert.domain.util.message
 
 interface MessageManager {
     fun sendMessage(message : String)

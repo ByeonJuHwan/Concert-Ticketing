@@ -1,7 +1,7 @@
 package dev.concert.infrastructure.slack
 
 import com.slack.api.Slack
-import dev.concert.domain.service.data.message.MessageManager
+import dev.concert.domain.util.message.MessageManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

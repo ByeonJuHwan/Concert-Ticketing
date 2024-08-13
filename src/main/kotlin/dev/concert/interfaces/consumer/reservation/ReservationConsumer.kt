@@ -2,6 +2,7 @@ package dev.concert.interfaces.consumer.reservation
 
 import dev.concert.application.data.DataPlatformFacade
 import dev.concert.application.reservation.ReservationFacade
+import dev.concert.domain.util.message.MessageManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 class ReservationConsumer (
     private val dataPlatformFacade: DataPlatformFacade,
     private val reservationFacade: ReservationFacade,
+    private val messageManager: MessageManager,
 ) {
 
     private val log : Logger = LoggerFactory.getLogger(ReservationConsumer::class.java)
@@ -33,6 +35,7 @@ class ReservationConsumer (
             // 아웃박스 패턴으로 발행은 정상적으로 이루어지는게 보장됨
             // 비즈니스로직 혹은 외부 api 문제일 수 있으므로 예외를 슬랙으로 보내도록 처리
             log.error("데이터 플랫폼 전송 에러 : ${ex.message}", ex)
+            messageManager.sendMessage("예약 데이터 전송 수신 에러 -> ${ex.message}")
         }
     }
 }
