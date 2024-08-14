@@ -48,12 +48,13 @@ class ReservationEventListener (
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun publishReservationEvent(event: ReservationEvent) {
         // 카프카 이벤트 발행
-        runCatching {
-            // TODO init -> send_success 로 변경
-            reservationFacade.publishReservationEvent(event)
-        }.onFailure { e -> // TODO 빈 설정
-            log.error("Kafka Message Send Failed!" , e)
-            reservationFacade.changeReservationOutBoxStatusSendFail(event.toEntity().reservationId)
-        }
+//        runCatching {
+//            // TODO init -> send_success 로 변경
+//            reservationFacade.publishReservationEvent(event)
+//        }.onFailure { e -> // TODO 빈 설정
+//            log.error("Kafka Message Send Failed!" , e)
+//            reservationFacade.changeReservationOutBoxStatusSendFail(event.toEntity().reservationId)
+//        }
+        reservationFacade.publishReservationEvent(event)
     }
 }

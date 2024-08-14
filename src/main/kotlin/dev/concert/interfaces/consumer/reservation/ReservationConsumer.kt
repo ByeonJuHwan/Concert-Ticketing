@@ -30,7 +30,7 @@ class ReservationConsumer (
         log.info("Kafka Event 수신 성공!!")
         runCatching {
             // TODO 외부 API 처리에 reservation outbox 처리를 함께 넣는건 강한 커플링이므로 제거 대신 AFTER_COMMIT 에서 상태변경
-            reservationFacade.changeReservationOutBoxStatusSendSuccess(reservationId.toLong())
+//            reservationFacade.changeReservationOutBoxStatusSendSuccess(reservationId.toLong())
             dataPlatformFacade.sendReservationData(reservationId.toLong())
         }.onFailure { ex ->
             // 아웃박스 패턴으로 발행은 정상적으로 이루어지는게 보장됨
