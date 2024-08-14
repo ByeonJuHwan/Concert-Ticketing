@@ -9,8 +9,6 @@ interface ReservationService {
     fun createSeatReservation(user: UserEntity, seatId: Long): ReservationEntity
     fun getReservation(reservationId: Long): ReservationEntity
     fun saveMsgToOutBox(event: ReservationEvent)
-    fun chanceMsgStatusSuccess(reservationId: Long)
-    fun chanceMsgStatusFail(reservationId: Long)
     fun retryInitOrFailEvents()
     fun deleteOutBoxEvents()
     fun publishReservationEvent(event: ReservationEvent)

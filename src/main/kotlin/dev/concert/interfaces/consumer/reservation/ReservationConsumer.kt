@@ -1,7 +1,6 @@
 package dev.concert.interfaces.consumer.reservation
 
 import dev.concert.application.data.DataPlatformFacade
-import dev.concert.application.reservation.ReservationFacade
 import dev.concert.domain.util.message.MessageManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component
 @Component
 class ReservationConsumer (
     private val dataPlatformFacade: DataPlatformFacade,
-    private val reservationFacade: ReservationFacade,
     private val messageManager: MessageManager,
 ) {
 
@@ -21,16 +19,14 @@ class ReservationConsumer (
     /**
      * 아웃 박스 패턴 적용
      *
-     * 1. 아웃박스 상태를 SEND_SUCCESS 로 상태변경
-     * 2. 예약 관련 외부 API 호출 (이로직에서는 Slack)
+     * 1. 예약 관련 외부 API 호출 (이로직에서는 Slack)
+     * 2. 아웃박스 패턴으로 이벤트 발행이 보장됨으로 실패시 개발자가 알수 있도록 처리
      */
     @Async
     @KafkaListener(topics = ["reservation"], groupId = "concert_group")
     fun handleExternalApiKafkaEvent(reservationId : String) {
         log.info("Kafka Event 수신 성공!!")
         runCatching {
-            // TODO 외부 API 처리에 reservation outbox 처리를 함께 넣는건 강한 커플링이므로 제거 대신 AFTER_COMMIT 에서 상태변경
-//            reservationFacade.changeReservationOutBoxStatusSendSuccess(reservationId.toLong())
             dataPlatformFacade.sendReservationData(reservationId.toLong())
         }.onFailure { ex ->
             // 아웃박스 패턴으로 발행은 정상적으로 이루어지는게 보장됨

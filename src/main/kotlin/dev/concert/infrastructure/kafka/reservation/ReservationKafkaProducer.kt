@@ -18,6 +18,12 @@ class ReservationKafkaProducer (
 
     private val log : Logger = LoggerFactory.getLogger(ReservationKafkaProducer::class.java)
 
+    /**
+     * [아웃박스 패턴]
+     * 카프카 이벤트를 발행하고
+     * 발행이 성공하면 SEND_SUCCESS 로 변경
+     * 발행이 실패하면 SEND_FAIL 로 변경
+     */
     override fun publish(event: ReservationEvent) {
         kafkaTemplate.send("reservation", event.toKafkaMessage())
             .whenComplete { _, exception ->

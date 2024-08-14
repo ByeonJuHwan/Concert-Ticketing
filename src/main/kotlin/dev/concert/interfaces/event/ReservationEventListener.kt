@@ -42,19 +42,10 @@ class ReservationEventListener (
     /**
      * [아웃박스 패턴]
      * AFTER_COMMIT 시 카프카 이벤트를 발행한다
-     * 만약 카프카 이벤트를 발행했지만 발행과정에서 예외발생시 SEND_FAIL 상태로 변경된다.
      */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun publishReservationEvent(event: ReservationEvent) {
-        // 카프카 이벤트 발행
-//        runCatching {
-//            // TODO init -> send_success 로 변경
-//            reservationFacade.publishReservationEvent(event)
-//        }.onFailure { e -> // TODO 빈 설정
-//            log.error("Kafka Message Send Failed!" , e)
-//            reservationFacade.changeReservationOutBoxStatusSendFail(event.toEntity().reservationId)
-//        }
         reservationFacade.publishReservationEvent(event)
     }
 }

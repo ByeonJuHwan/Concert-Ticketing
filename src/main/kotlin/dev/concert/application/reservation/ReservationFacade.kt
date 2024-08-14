@@ -13,14 +13,6 @@ class ReservationFacade (
         reservationService.saveMsgToOutBox(event)
     }
 
-    fun changeReservationOutBoxStatusSendSuccess(reservationId: Long) {
-        reservationService.chanceMsgStatusSuccess(reservationId)
-    }
-
-    fun changeReservationOutBoxStatusSendFail(reservationId: Long) {
-        reservationService.chanceMsgStatusFail(reservationId)
-    }
-
     fun retryEvents() {
         reservationService.retryInitOrFailEvents()
     }

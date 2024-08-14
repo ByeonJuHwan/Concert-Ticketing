@@ -5,6 +5,7 @@ import dev.concert.domain.entity.status.OutBoxMsgStats.*
 import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.infrastructure.jpa.ReservationOutBoxJpaRepository
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Repository
@@ -19,10 +20,12 @@ class ReservationOutBoxRepositoryImpl (
         return reservationOutBoxJpaRepository.findByReservationId(reservationId)
     }
 
+    @Transactional
     override fun updateStatusSuccess(outboxEntity: ReservationEventOutBox) {
         reservationOutBoxJpaRepository.updateByReservationId(outboxEntity.reservationId, SEND_SUCCESS)
     }
 
+    @Transactional
     override fun updateStatusFail(outboxEntity: ReservationEventOutBox) {
         reservationOutBoxJpaRepository.updateByReservationId(outboxEntity.reservationId, SEND_FAIL)
     }

@@ -72,28 +72,6 @@ class ReservationServiceImpl (
     }
 
     /**
-     * 아웃박스의 Event 의 Status 를 Send_Success 로 변경
-     */
-    @Transactional
-    override fun chanceMsgStatusSuccess(reservationId: Long) {
-        val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
-            ?: throw ConcertException(ErrorCode.RESERVATION_OUTBOX_NOT_FOUND)
-
-        reservationOutBoxRepository.updateStatusSuccess(reserveOutBox)
-    }
-
-    /**
-     * 아웃박스의 Event 의 Status 를 Send_Fail 로 변경
-     */
-    @Transactional
-    override fun chanceMsgStatusFail(reservationId: Long) {
-        val reserveOutBox = reservationOutBoxRepository.findByReservationId(reservationId)
-            ?: throw ConcertException(ErrorCode.RESERVATION_OUTBOX_NOT_FOUND)
-
-        reservationOutBoxRepository.updateStatusFail(reserveOutBox)
-    }
-
-    /**
      * 발행이 실패한 이벤트들을 다시 재시도 한다
      *
      * 1. 이벤트 상태가 INIT, SEND_FAIL 인 예약 이벤트 조회
