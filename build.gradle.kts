@@ -49,7 +49,7 @@ dependencies {
 
 	// Kafka
 	implementation("org.springframework.kafka:spring-kafka")
-	testImplementation("org.springframework.kafka:spring-kafka-test:3.2.2")
+	testImplementation("org.springframework.kafka:spring-kafka-test")
 
 	// Slack
 	implementation("com.slack.api:slack-api-client:1.20.2")
