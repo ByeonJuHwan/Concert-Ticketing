@@ -12,8 +12,8 @@ import java.time.LocalDateTime
 class ReservationOutBoxRepositoryImpl (
     private val reservationOutBoxJpaRepository: ReservationOutBoxJpaRepository
 ): ReservationOutBoxRepository {
-    override fun save(outboxEntity: ReservationEventOutBox) {
-        reservationOutBoxJpaRepository.save(outboxEntity)
+    override fun save(outboxEntity: ReservationEventOutBox) : ReservationEventOutBox {
+        return reservationOutBoxJpaRepository.save(outboxEntity)
     }
 
     override fun findByReservationId(reservationId: Long) : ReservationEventOutBox? {
@@ -28,6 +28,11 @@ class ReservationOutBoxRepositoryImpl (
     @Transactional
     override fun updateStatusFail(outboxEntity: ReservationEventOutBox) {
         reservationOutBoxJpaRepository.updateByReservationId(outboxEntity.reservationId, SEND_FAIL)
+    }
+
+    @Transactional
+    override fun updateCreatedAt11MinutesAgo(outboxEntity: ReservationEventOutBox) {
+        reservationOutBoxJpaRepository.updateCreatedAt11MinutesAgo(outboxEntity.reservationId, LocalDateTime.now().minusMinutes(11))
     }
 
     override fun getInitOrFailEvents(): List<ReservationEventOutBox> {

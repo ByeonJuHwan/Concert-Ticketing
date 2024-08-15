@@ -21,4 +21,8 @@ interface ReservationOutBoxJpaRepository : JpaRepository<ReservationEventOutBox,
     @Modifying
     @Query("DELETE FROM ReservationEventOutBox r WHERE r.createdAt < :date")
     fun deleteEntriesOlderThan(date: LocalDateTime)
+
+    @Modifying
+    @Query("UPDATE ReservationEventOutBox SET createdAt = :time WHERE reservationId = :reservationId")
+    fun updateCreatedAt11MinutesAgo(@Param(value = "reservationId") reservationId: Long, @Param(value = "time") time: LocalDateTime)
 }
