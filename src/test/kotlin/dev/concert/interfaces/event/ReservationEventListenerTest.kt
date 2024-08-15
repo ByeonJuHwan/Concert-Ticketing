@@ -2,7 +2,6 @@ package dev.concert.interfaces.event
 
 import dev.concert.application.concert.ConcertFacade
 import dev.concert.application.concert.dto.ConcertReservationDto
-import dev.concert.application.reservation.ReservationFacade
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
@@ -10,7 +9,6 @@ import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.OutBoxMsgStats
 import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.repository.ConcertRepository
-import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.service.user.UserService
 import org.assertj.core.api.Assertions.*
@@ -29,9 +27,6 @@ class ReservationEventListenerTest {
 
     @Autowired
     private lateinit var concertFacade: ConcertFacade
-
-    @Autowired
-    private lateinit var reservationOutBoxRepository: ReservationOutBoxRepository
 
     @Autowired
     private lateinit var userService: UserService
