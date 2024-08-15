@@ -49,7 +49,6 @@ fun reserveSeat(request: ConcertReservationDto): ConcertReservationResponseDto {
  */
 @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT) 
 fun handleReservationOutBox(event: ReservationEvent) {
-    log.info("BEFORE_COMMIT : 아웃박스 이벤트 저장")
     reservationFacade.recordReservationOutBoxMsg(event)
 }
 ```
@@ -70,14 +69,19 @@ fun handleReservationOutBox(event: ReservationEvent) {
 @Async
 @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 fun publishReservationEvent(event: ReservationEvent) {
-    // 카프카 이벤트 발행
-    runCatching {
-        reservationFacade.publishReservationEvent(event)
-    }.onFailure { e ->
-        log.error("Kafka Message Send Failed!" , e)
-        reservationFacade.changeReservationOutBoxStatusSendFail(event.toEntity().reservationId)
-    }
+   reservationFacade.publishReservationEvent(event)
 }
+```
+
+**카프카 구현체 구현**
+```kotlin
+
+```
+
+**코틀린 비동기 예외처리**
+
+```kotlin
+
 ```
 
 ### 4. Kafka 이벤트 Consume
