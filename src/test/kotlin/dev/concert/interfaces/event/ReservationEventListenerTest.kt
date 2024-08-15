@@ -2,12 +2,15 @@ package dev.concert.interfaces.event
 
 import dev.concert.application.concert.ConcertFacade
 import dev.concert.application.concert.dto.ConcertReservationDto
+import dev.concert.application.reservation.ReservationFacade
 import dev.concert.domain.entity.ConcertEntity
 import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
+import dev.concert.domain.entity.status.OutBoxMsgStats
 import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.repository.ConcertRepository
+import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.service.user.UserService
 import org.assertj.core.api.Assertions.*
@@ -26,6 +29,9 @@ class ReservationEventListenerTest {
 
     @Autowired
     private lateinit var concertFacade: ConcertFacade
+
+    @Autowired
+    private lateinit var reservationOutBoxRepository: ReservationOutBoxRepository
 
     @Autowired
     private lateinit var userService: UserService
@@ -88,5 +94,26 @@ class ReservationEventListenerTest {
 
         val events = applicationEvents.stream(ReservationEvent::class.java).toList()
         assertThat(events).hasSize(1)
+    }
+
+    @Test
+    fun `예약을 생성하면 1개의 이벤트와 함께 Init 상태의 아웃박스가 하나 생성된다`() {
+        // given
+        val userId = 1L
+        val seatId = 1L
+
+        // when
+        concertFacade.reserveSeat(
+            ConcertReservationDto(
+                userId = userId,
+                seatId = seatId,
+            )
+        )
+
+        // then
+        val events = applicationEvents.stream(ReservationEvent::class.java).toList()
+        assertThat(events).hasSize(1)
+        assertThat(events[0].toEntity().status).isEqualTo(OutBoxMsgStats.INIT)
+        assertThat(events[0].toEntity().reservationId).isEqualTo(1L)
     }
 }
