@@ -7,7 +7,6 @@ import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.OutBoxMsgStats
-import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.repository.ConcertRepository
 import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
