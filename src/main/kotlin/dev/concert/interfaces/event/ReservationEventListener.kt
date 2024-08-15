@@ -4,7 +4,6 @@ import dev.concert.application.data.DataPlatformFacade
 import dev.concert.domain.event.reservation.ReservationSuccessEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
