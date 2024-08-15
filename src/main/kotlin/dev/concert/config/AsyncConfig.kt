@@ -25,9 +25,16 @@ class AsyncConfig : AsyncConfigurer {
 
     override fun getAsyncUncaughtExceptionHandler(): AsyncUncaughtExceptionHandler? {
         return AsyncUncaughtExceptionHandler { ex, method, params ->
-            log.error("이벤트 처리 예외 발생!! : ${ex.message}", ex)
-            log.error("메소드 이름 : ${method.name}")
-            log.error("파라미터 : ${params.joinToString()}}")
+            when(method.name) {
+                "publishReservationEvent" -> {
+                    log.error("[${method.name} Exception occurred] Kafka Message Published Error || Exception Message : ${ex.message}", ex)
+                }
+                else -> {
+                    log.error("이벤트 처리 예외 발생!! : ${ex.message}")
+                    log.error("메소드 이름 : ${method.name}")
+                    log.error("파라미터 : ${params.joinToString()}}")
+                }
+            }
         }
     }
 }

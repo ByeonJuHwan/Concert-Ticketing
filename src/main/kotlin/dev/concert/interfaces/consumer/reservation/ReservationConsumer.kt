@@ -17,7 +17,7 @@ class ReservationConsumer (
     private val log : Logger = LoggerFactory.getLogger(ReservationConsumer::class.java)
 
     /**
-     * 아웃 박스 패턴 적용
+     * [아웃 박스 패턴]
      *
      * 1. 예약 관련 외부 API 호출 (이로직에서는 Slack)
      * 2. 아웃박스 패턴으로 이벤트 발행이 보장됨으로 실패시 개발자가 알수 있도록 처리

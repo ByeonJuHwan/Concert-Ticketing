@@ -35,7 +35,6 @@ class ReservationEventListener (
      */
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     fun handleReservationOutBox(event: ReservationEvent) {
-        log.info("BEFORE_COMMIT : 아웃박스 이벤트 저장")
         reservationFacade.recordReservationOutBoxMsg(event)
     }
 
