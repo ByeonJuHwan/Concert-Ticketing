@@ -23,7 +23,7 @@ class ReservationConsumer (
      * 2. 아웃박스 패턴으로 이벤트 발행이 보장됨으로 실패시 개발자가 알수 있도록 처리
      */
     @Async
-    @KafkaListener(topics = ["reservation"], groupId = "concert_group")
+    @KafkaListener(topics = ["reservation"], groupId = "reservation_group")
     fun handleExternalApiKafkaEvent(reservationId : String) {
         log.info("Kafka Event 수신 성공!!")
         runCatching {
