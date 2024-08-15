@@ -91,6 +91,9 @@ class ReservationEventListenerTest {
         assertThat(events).hasSize(1)
     }
 
+    /**
+     * BEFORE_COMMIT 에서 정상적으로 아웃박스가 생성되는지 테스트
+     */
     @Test
     fun `예약을 생성하면 1개의 이벤트와 함께 Init 상태의 아웃박스가 하나 생성된다`() {
         // given
