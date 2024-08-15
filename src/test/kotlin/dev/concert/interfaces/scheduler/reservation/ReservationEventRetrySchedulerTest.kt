@@ -26,9 +26,11 @@ class ReservationEventRetrySchedulerTest {
     @Autowired
     private lateinit var reservationEventRetryScheduler : ReservationEventRetryScheduler
 
+    /**
+     * Stats 가 init 상태이고, 생성된지 10분이 지난 테스트 데이터 생성
+     */
     @BeforeEach
     fun setup() {
-        // given
         val outbox = reservationOutBoxRepository.save(ReservationEventOutBox(1L))
         reservationOutBoxRepository.updateCreatedAt11MinutesAgo(outbox)
     }
