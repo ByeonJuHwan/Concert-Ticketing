@@ -74,11 +74,21 @@ fun publishReservationEvent(event: ReservationEvent) {
 ```
 
 **카프카 구현체 구현**
+
+`KafkaTemplate` 의 `send()` 함수는 비동기적으로 메시지를 발행하고, CompletableFuture 를 반환합니다. `whenComplete` 메소드는 이 비동기 작업이 
+완료될 때 실행될 콜백을 정의합니다. 
+
+발행 성공 시 아웃박스 상태를 `SEND_SUCCESS` 로 변경하고, 실패시 `SEND_FAIL` 로 업데이트합니다.
+
 ```kotlin
 
 ```
 
 **코틀린 비동기 예외처리**
+
+스프링 에서는 `AsyncConfigurerSupport` 빈 만들어서 Async 작업을 실행할 Executor 에 대한 설정 / 예외 발생시에 대한 핸들링 ( 에러로깅 ) 을 처리할 수 있습니다.
+
+저는 메소드 이름을 기준으로 카프카 발행 메소드에 예외 발생 시 예외처리가 가능하도록 작성했습니다.
 
 ```kotlin
 
@@ -86,13 +96,9 @@ fun publishReservationEvent(event: ReservationEvent) {
 
 ### 4. Kafka 이벤트 Consume
 
-`@KafkaListener`를 사용하여 발행된 이벤트를 처리합니다. 이 단계에서 주목해야 할 두 가지 중요한 점이 있습니다:
+`@KafkaListener`를 사용하여 발행된 이벤트를 처리합니다.
 
-1. `아웃박스 이벤트 상태 업데이트` :
-   이벤트 처리 시 아웃박스에 저장된 이벤트의 상태를 `SEND_SUCCESS`로 변경합니다.
-   이는 이벤트 재처리 로직 실행 시 중복 처리를 방지하는 핵심 단계입니다.
-
-2. `외부 API 연동 및 에러 처리` :
+#### `외부 API 연동 및 에러 처리` :
    외부 API 와의 연동 과정에서 발생하는 오류는 아웃박스 패턴의 이벤트 발행 보장과는 별개의 문제입니다.
    따라서, 이러한 오류는 개발자가 즉시 인지하고 대응할 수 있도록 `Slack` 을 통해 알림을 보내도록 구현했습니다.
 
@@ -100,15 +106,13 @@ fun publishReservationEvent(event: ReservationEvent) {
 /**
  * 아웃 박스 패턴 적용
  *
- * 1. 아웃박스 상태를 SEND_SUCCESS 로 상태변경
- * 2. 예약 관련 외부 API 호출 (이로직에서는 Slack)
+ * 예약 관련 외부 API 호출 (이로직에서는 Slack)
  */
 @Async
 @KafkaListener(topics = ["reservation"], groupId = "concert_group")
 fun handleExternalApiKafkaEvent(reservationId : String) {
     log.info("Kafka Event 수신 성공!!")
     runCatching {
-        reservationFacade.changeReservationOutBoxStatusSendSuccess(reservationId.toLong())
         dataPlatformFacade.sendReservationData(reservationId.toLong())
     }.onFailure { ex ->
         // 아웃박스 패턴으로 발행은 정상적으로 이루어지는게 보장됨
