@@ -10,15 +10,16 @@ import dev.concert.domain.event.reservation.publisher.ReservationEventPublisher
 import dev.concert.domain.service.concert.ConcertService
 import dev.concert.domain.service.reservation.ReservationService
 import dev.concert.domain.service.user.UserService
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class ConcertFacade (
+class ConcertFacade(
     private val userService: UserService,
     private val concertService: ConcertService,
     private val reservationService: ReservationService,
-    private val eventPublisher: ReservationEventPublisher,
+    @Qualifier("application") private val eventPublisher: ReservationEventPublisher,
 ){
     fun getConcerts(): List<ConcertsDto> {
         return concertService.getConcerts().map { ConcertsDto(

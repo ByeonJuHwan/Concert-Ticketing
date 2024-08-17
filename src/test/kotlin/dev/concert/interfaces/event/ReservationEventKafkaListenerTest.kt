@@ -7,23 +7,25 @@ import dev.concert.domain.entity.ConcertOptionEntity
 import dev.concert.domain.entity.SeatEntity
 import dev.concert.domain.entity.UserEntity
 import dev.concert.domain.entity.status.OutBoxMsgStats
-import dev.concert.domain.event.reservation.ReservationEvent
 import dev.concert.domain.repository.ConcertRepository
+import dev.concert.domain.repository.ReservationOutBoxRepository
 import dev.concert.domain.repository.SeatRepository
 import dev.concert.domain.service.user.UserService
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.event.ApplicationEvents
-import org.springframework.test.context.event.RecordApplicationEvents
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.kafka.test.context.EmbeddedKafka
+import org.springframework.test.annotation.DirtiesContext
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest
-@Transactional
-@RecordApplicationEvents
-class ReservationEventListenerTest {
+@EmbeddedKafka(partitions = 1, brokerProperties = ["listeners=PLAINTEXT://localhost:9092"], ports = [9092])
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+class ReservationEventKafkaListenerTest {
 
     @Autowired
     private lateinit var concertFacade: ConcertFacade
@@ -38,7 +40,7 @@ class ReservationEventListenerTest {
     private lateinit var concertRepository: ConcertRepository
 
     @Autowired
-    private lateinit var applicationEvents: ApplicationEvents // IDE 에서는 컴파일 오류라고 뜨지만 정상실행됩니다
+    private lateinit var reservationOutBoxRepository: ReservationOutBoxRepository
 
     @BeforeEach
     fun setUp() {
@@ -74,31 +76,15 @@ class ReservationEventListenerTest {
         )
     }
 
-    @Test
-    fun `예약을 생성하면 1개의 이벤트를 발행한다`() {
-        // given
-        val userId = 1L
-        val seatId = 1L
-
-        concertFacade.reserveSeat(
-            ConcertReservationDto(
-                userId = userId,
-                seatId = seatId,
-            )
-        )
-
-        val events = applicationEvents.stream(ReservationEvent::class.java).toList()
-        assertThat(events).hasSize(1)
-    }
-
     /**
-     * BEFORE_COMMIT 에서 정상적으로 아웃박스가 생성되는지 테스트
+     * AFTER_COMMIT 에서 정상적으로 카프카 이벤트가 발행되어 SEND_SUCCESS 로 변경되는지 테스트
      */
     @Test
-    fun `예약을 생성하면 1개의 이벤트와 함께 Init 상태의 아웃박스가 하나 생성된다`() {
+    fun `예약을 생성하고 트랜잭션이 종료되면 카프카 이벤트가 발행되어 아웃박스의 상태가 SEND_SUCCESS 로 변경된다`() {
         // given
         val userId = 1L
         val seatId = 1L
+        val reservationId = 1L
 
         // when
         concertFacade.reserveSeat(
@@ -108,10 +94,14 @@ class ReservationEventListenerTest {
             )
         )
 
-        // then
-        val events = applicationEvents.stream(ReservationEvent::class.java).toList()
-        assertThat(events).hasSize(1)
-        assertThat(events[0].toEntity().status).isEqualTo(OutBoxMsgStats.INIT)
-        assertThat(events[0].toEntity().reservationId).isEqualTo(1L)
+        // Then
+        await()
+            .atMost(10, TimeUnit.SECONDS)
+            .pollInterval(Duration.ofMillis(100))
+            .untilAsserted {
+                val foundOutBoxEntity = reservationOutBoxRepository.findByReservationId(reservationId)
+                assertThat(foundOutBoxEntity).isNotNull
+                assertThat(foundOutBoxEntity?.status).isEqualTo(OutBoxMsgStats.SEND_SUCCESS)
+            }
     }
 }

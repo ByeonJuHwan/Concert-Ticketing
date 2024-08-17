@@ -1,4 +1,4 @@
-package dev.concert.interfaces.scheduler
+package dev.concert.interfaces.scheduler.reservation
 
 import dev.concert.domain.service.reservation.ReservationService
 import org.springframework.scheduling.annotation.Scheduled

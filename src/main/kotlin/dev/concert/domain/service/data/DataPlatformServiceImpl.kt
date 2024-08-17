@@ -1,7 +1,7 @@
 package dev.concert.domain.service.data
 
 import dev.concert.domain.entity.ReservationEntity
-import dev.concert.domain.service.data.message.MessageManager
+import dev.concert.domain.util.message.MessageManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
