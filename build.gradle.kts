@@ -53,6 +53,10 @@ dependencies {
 
 	// Slack
 	implementation("com.slack.api:slack-api-client:1.20.2")
+
+	// monitoring
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
+	runtimeOnly ("io.micrometer:micrometer-registry-prometheus")
 }
 
 kotlin {
