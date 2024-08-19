@@ -295,16 +295,94 @@ export default function () {
 
 #### 테스트 스크립트
 ```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
 
+export const options = {
+    stages: [
+        { duration: '1m', target: 100 },
+        { duration: '1m', target: 1000 },
+        { duration: '1m', target: 2000 },
+        { duration: '1m', target: 0 },
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<1000'],
+        http_req_failed: ['rate<0.01'],
+    },
+};
+
+export default function () {
+    const params = {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    const res = http.get('http://localhost:8080/concerts', params);
+
+    check(res, {
+        'status is 200': (r) => r.status === 200,
+        'response has concerts data': (r) => {
+            try {
+                const body = r.json();
+                return body && body.data && Array.isArray(body.data.concerts);
+            } catch (e) {
+                console.error('Failed to parse response:', e);
+                return false;
+            }
+        },
+    });
+
+    if (res.status !== 200) {
+        console.error(`Request failed with status ${res.status}:`, res.body);
+    }
+
+    sleep(Math.random() * 4 + 1);
+}
 ```
 
 #### 테스트 결과 분석
 
 ![](https://velog.velcdn.com/images/asdcz11/post/60a0aee3-8401-4676-80c3-9c217acd73cb/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/8a9ebadf-7f98-45a7-8c36-7985aaeb27b6/image.png)
+
+- 평균 응답 시간 : 4.75ms
+- 95퍼 센타일 응답 시간 7.49ms
+- 최대 응답 시간 : 798.37ms
+- CPU 사용률 : 60.2%
+
+콘서트 목록 조회의 경우 캐싱 작업이 되어있기때문에 응답속도도 매우 빠르고 캐싱되어 있지 않아도
+목록조회 쿼리에 인덱스도 걸려있기 때문에 대용량 트래픽이 몰려도 안정적으로 요청을 받아낼 수 있습니다.
 
 ### 콘서트 예약 가능 날짜 조회 API
 
+**가정 및 시나리오**
+- 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
+- 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
+- 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
+
+ **성공기준**
+- 평균 응답 시간 : 500ms 이하
+- 95% 센타일 응답 시간 : 1초 이하
+- 오류율 1% 미만
+- CPU 사용률 80 % 이하
+
+#### 테스트 스크립트
+
+#### 테스트 분석 결과
+
 ### 콘서트 예약가능 좌석 조회 API
+
+**가정 및 시나리오**
+- 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
+- 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
+- 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
+
+**성공기준**
+- 평균 응답 시간 : 500ms 이하
+- 95% 센타일 응답 시간 : 1초 이하
+- 오류율 1% 미만
+- CPU 사용률 80 % 이하
 
 ### 콘서트 예약 API
 
