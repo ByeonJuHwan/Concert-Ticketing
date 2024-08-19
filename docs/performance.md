@@ -297,10 +297,11 @@ export default function () {
 ```js
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 export const options = {
     stages: [
-        { duration: '1m', target: 100 },
+        { duration: '30s', target: 100 },
         { duration: '1m', target: 1000 },
         { duration: '1m', target: 2000 },
         { duration: '1m', target: 0 },
@@ -312,47 +313,102 @@ export const options = {
 };
 
 export default function () {
-    const params = {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
+    // 토큰 발급 API
+    const userId = randomIntBetween(1, 2000);
+    const tokenPayload = JSON.stringify({ userId: userId });
+    const tokenRes = http.post('http://localhost:8080/queue/tokens', tokenPayload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
 
-    const res = http.get('http://localhost:8080/concerts', params);
-
-    check(res, {
-        'status is 200': (r) => r.status === 200,
-        'response has concerts data': (r) => {
-            try {
-                const body = r.json();
-                return body && body.data && Array.isArray(body.data.concerts);
-            } catch (e) {
-                console.error('Failed to parse response:', e);
-                return false;
-            }
+    const tokenCheck = check(tokenRes, {
+        'token generation status is 200': (r) => r.status === 200,
+        'token is present': (r) => {
+            const body = r.json();
+            return body && body.data && typeof body.data.token === 'string';
         },
     });
 
-    if (res.status !== 200) {
-        console.error(`Request failed with status ${res.status}:`, res.body);
+    if (!tokenCheck) {
+        console.error('Token generation failed:', tokenRes.status, tokenRes.body);
+        return;
     }
 
-    sleep(Math.random() * 4 + 1);
+    const token = tokenRes.json().data.token;
+
+    // 토큰 상태 조회 API
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 12;
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(10);
+        attempts++;
+
+        const statusRes = http.get(`http://localhost:8080/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const statusCheck = check(statusRes, {
+            'status check is successful': (r) => r.status === 200,
+            'token info is present': (r) => {
+                const body = r.json();
+                return body && body.data && body.data.status;
+            },
+        });
+
+        if (statusCheck) {
+            const tokenInfo = statusRes.json().data;
+            if (tokenInfo.status === 'ACTIVE') {
+                isActive = true;
+            } else {
+                console.log(`Token status: ${tokenInfo.status}, Queue Order: ${tokenInfo.queueOrder}, Remaining Time: ${tokenInfo.remainingTime}`);
+            }
+        }
+    }
+
+    if (!isActive) {
+        console.error('Token did not become active within the time limit');
+        return;
+    }
+
+    // 콘서트 목록 조회 API
+    const concertRes = http.get('http://localhost:8080/concerts', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertRes, {
+        'concert list status is 200': (r) => r.status === 200,
+        'concert list has data': (r) => {
+            const body = r.json();
+            return body && body.data && Array.isArray(body.data.concerts);
+        },
+    });
+
+    if (concertRes.status !== 200) {
+        console.error('Concert list retrieval failed:', concertRes.status, concertRes.body);
+    }
+
+    sleep(randomIntBetween(5, 15));
 }
 ```
 
-#### 테스트 결과 분석
+#### 2000명 테스트 결과 분석
 
-![](https://velog.velcdn.com/images/asdcz11/post/60a0aee3-8401-4676-80c3-9c217acd73cb/image.png)
-![](https://velog.velcdn.com/images/asdcz11/post/8a9ebadf-7f98-45a7-8c36-7985aaeb27b6/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/1169e519-4f2d-4bbf-b4c2-b1a2f02a4980/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/85e02423-8b5d-4fe3-a5ba-c18fd724abad/image.png)
 
-- 평균 응답 시간 : 4.75ms
-- 95퍼 센타일 응답 시간 7.49ms
-- 최대 응답 시간 : 798.37ms
-- CPU 사용률 : 60.2%
+- CPU 사용률: 평균 24.1%, 최대 34.4%
+- 평균 응답 시간 : 3.47ms
+- 95퍼센타일 응답 시간 : 6.18ms
+- 초당 132.72개의 요청을 처리
 
-콘서트 목록 조회의 경우 캐싱 작업이 되어있기때문에 응답속도도 매우 빠르고 캐싱되어 있지 않아도
-목록조회 쿼리에 인덱스도 걸려있기 때문에 대용량 트래픽이 몰려도 안정적으로 요청을 받아낼 수 있습니다.
+2000명의 사용자가 동시접속해 콘서트 목록조회 테스트 결과 여유있게 트래픽 처리가 가능했습니다.
+
+이번엔 6000명 동시 접속시로 테스트해 보겠습니다.
+
 
 ### 콘서트 예약 가능 날짜 조회 API
 
