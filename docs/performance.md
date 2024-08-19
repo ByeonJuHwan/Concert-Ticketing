@@ -132,7 +132,7 @@ export default function () {
 
 CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적으로 낮게 유지된걸로 보아 약 1000명의 유저가 포인트 충전 API 를 사용하는데 무리 없이 사용할 수 있습니다.
 
-### 대기역 토큰 발급 API
+### 대기열 토큰 발급 API
 
 #### 가정
 
@@ -147,6 +147,107 @@ CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적�
     - 1분: 1,000명 → 10분: 10,000명
 2. 최대 부하 유지 (1분)
     - 10,000명의 가상 사용자가 지속적으로 토큰 발급 시도
-    - 이 단
+3. 부하 감소 (1분)
+    - 부하를 점진적으로 0으로 감소
 
+#### 성공기준
 
+- 95 퍼 센타일 응답시간 1초 이내
+- 오류율 1% 미만
+
+#### 테스트 스크립트
+```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export const options = {
+  stages: [
+    { duration: '1m', target: 1000 },  
+    { duration: '1m', target: 2000 },  
+    { duration: '1m', target: 3000 },  
+    { duration: '1m', target: 4000 },  
+    { duration: '1m', target: 5000 },  
+    { duration: '1m', target: 6000 },  
+    { duration: '1m', target: 7000 },  
+    { duration: '1m', target: 8000 },  
+    { duration: '1m', target: 9000 },  
+    { duration: '1m', target: 10000 }, 
+    { duration: '1m', target: 10000 }, 
+    { duration: '1m', target: 0 }, 
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<1000'], 
+    http_req_failed: ['rate<0.01'],
+  },
+};
+
+export default function () {
+  const userId = randomIntBetween(1, 10000);
+  const payload = JSON.stringify({ userId: userId });
+  
+  const res = http.post('http://localhost:8080/queue/tokens', payload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response has valid structure': (r) => {
+      try {
+        const body = r.json();
+        return body && typeof body === 'object';
+      } catch (e) {
+        console.error('Failed to parse response body:', e);
+        return false;
+      }
+    },
+    'data field is present': (r) => {
+      const body = r.json();
+      return body && body.hasOwnProperty('data');
+    },
+    'token is present and valid': (r) => {
+      const body = r.json();
+      return body && 
+             body.data && 
+             typeof body.data.token === 'string' && 
+             body.data.token.length > 0;
+    },
+  });
+
+  // 실패시 ERROR 로그 출력
+  if (res.status !== 200) {
+    console.error(`Request failed with status ${res.status}:`, res.body);
+  }
+
+  sleep(randomIntBetween(0.1, 0.5));  // 0.1-0.5 초 사이로 랜덤하게 쓰레드 정지
+}
+```
+
+#### 테스트 결과 분석 (1 만명)
+
+실제 테스트 해본결과 6분정도 지난시점 즉, 동시접속자 6000~7000명이 토큰 발행 API 요청을 보낼 시
+서버가 이를 처리하지 못하고 전부 Error 를 반환했습니다.
+
+- 평균 응답시간 248.64ms
+- 최대 응답 시간 12.04s (응답시간이 매우 높습니다)
+- 테스트 중단 (예정된 12분을 채우지못하고 중단되었습니다)
+
+**그라파나 대시보드 분석**
+
+- CPU 사용량 최대 99.4% 까지 증가
+- 프로세스 오픈파일 최대치 도달
+
+현재 시스템이 10,000명의 부하를 견디지 못하고 있습니다. 
+그러면 현재 서버가 몇 명까지의 사용자 요청을 받아 낼 수 있는지 
+6,000명의 사용자가 동시에 요청을 보내는 테스트를 진행해 보도록 하겠습니다.
+
+기존의 테스트 스크립트에서 6,000 명 까지 점진적으로 부하를 준뒤, 1분간 유지 이후 1분간 0명으로 트래픽감소를 테스트 해보겠습니다
+
+#### 테스트 결과 분석 (6 천명)
+
+### 콘서트 목록 조회 API
+
+토큰 발급 API 에서 토큰을 발급 받은 뒤 콘서트 목록 조회 테스트를 진행해 보겠습니다.
+
+**가정**
+- 토큰을 발급 받은 유저가 
