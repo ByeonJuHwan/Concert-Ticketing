@@ -282,3 +282,6 @@ export default function () {
 ```
 
 #### 테스트 결과 분석
+
+![](https://velog.velcdn.com/images/asdcz11/post/60a0aee3-8401-4676-80c3-9c217acd73cb/image.png)
+
