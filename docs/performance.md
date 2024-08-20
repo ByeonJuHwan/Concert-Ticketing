@@ -130,6 +130,20 @@ CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적�
 
 ---
 
+### 포인트 조회 API
+
+#### 시나리오
+
+#### 테스트 스크립트
+
+```js
+
+```
+
+#### 정리하며...
+
+---
+
 ### 대기열 토큰 발급 API
 
 #### 가정
@@ -873,6 +887,7 @@ export default function () {
 **가정**
 - 총 좌석 수 : 100개
 - 최대 동시 사용자 수 : 4000명
+- 부하를 높이기위해 좌석을 적게, 사용자수를 많게 설정
 
 **시나리오**
 1. 준비 단계 (30s)
@@ -901,17 +916,17 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 export const options = {
     stages: [
-        { duration: '30s', target: 100 }, 
-        { duration: '1m', target: 1000 },   
-        { duration: '1m', target: 2000 },   
-        { duration: '1m', target: 3000 },  
-        { duration: '1m', target: 4000 },   
-        { duration: '1m', target: 4000 }, 
-        { duration: '1m', target: 100 }, 
+        { duration: '30s', target: 100 },
+        { duration: '1m', target: 1000 },
+        { duration: '1m', target: 2000 },
+        { duration: '1m', target: 3000 },
+        { duration: '1m', target: 4000 },
+        { duration: '1m', target: 4000 },
+        { duration: '1m', target: 100 },
     ],
     thresholds: {
-        http_req_duration: ['p(95)<3000'], 
-        http_req_failed: ['rate<0.01'], 
+        http_req_duration: ['p(95)<3000'],
+        http_req_failed: ['rate<0.01'],
     },
 };
 
@@ -1022,13 +1037,11 @@ export default function () {
     // 6. 좌석 예약
     const randomSeat = availableSeats[Math.floor(Math.random() * availableSeats.length)];
     const reservationPayload = JSON.stringify({
-        userId: userId,
-        concertId: CONCERT_ID,
-        concertOptionId: CONCERT_OPTION_ID,
-        seatId: randomSeat.seatId
+        seatId: randomSeat.seatId,
+        userId: userId
     });
 
-    const reservationRes = http.post(`${BASE_URL}/reservations`, reservationPayload, {
+    const reservationRes = http.post(`${BASE_URL}/concerts/reserve-seat`, reservationPayload, {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -1067,24 +1080,13 @@ export default function () {
 
 ---
 
-### 콘서트 결제 API
+### 결제 API
 
-**가정**
+#### 가정
 
-- 총 예약 수 : 1000개
+#### 시나리오
 
-**시나리오**
-
-- 좌석은 1000개에 따른 예약도 1000개 이므로 바로 동시에 1000개의 결제 요청이 들어올 때 결제 API 를 테스트 해 보겠습니다
-
-#### 테스트 시나리오
-
-```js
-
-```
-
-#### 테스트 결과 분석
-
+---
 
 ## 정리하며...
 
