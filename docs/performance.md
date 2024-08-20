@@ -1053,6 +1053,18 @@ export default function () {
 
 #### 테스트 결과 분석
 
+![](https://velog.velcdn.com/images/asdcz11/post/617cbed8-92b6-4a43-8d97-6f9a0619fa76/image.png)
+
+![](https://velog.velcdn.com/images/asdcz11/post/e2e18e32-2e9e-4660-8128-5353f5112df2/image.png)
+
+- 평균 응답 시간 : 4.49ms
+- 95% 센타일 응답 시간 : 10.1ms
+- 초당 요청 처리량 645.2 요청
+- 최대 CPU 사용량 : 75%
+
+좌석 예약의 경우 비관적 락이 적용되어 있고 로그 확인 결과 Error 없이 정상적으로 100개의 좌석이 예약되고, 이후 예약 요청은 409 응답코드를 반환한걸로보아
+정상적으로 동시성 이슈에 대해서 처리하고 있습니다.
+
 ---
 
 ### 콘서트 결제 API
