@@ -701,10 +701,17 @@ export default function () {
 
 ### 콘서트 예약가능 좌석 조회 API
 
+이번에는 캐싱이 적용되기전 후 부하테스트 결과를 비교해 보겠습니다.
+
+현재 좌석조회 API 에는 인덱스는 적용되어있지만, 캐싱이 적용되어 있지않습니다.
+
+이때 기존 6,000명보다 조금 낮은 4,000명의 사용자료 부하테스트 시 그 차이를 확인해 보겠습니다.
+
 **가정**
 - 최대 동시 사웅자수 : 4000명
 - 테스트 대상 콘서트 ID : 1
 - 테스트 대상 콘서트 옵션 ID : 1
+- 좌석 개수 : 100개
 
 **시나리오**
 
@@ -745,9 +752,9 @@ const CONCERT_OPTION_ID = 1;
 
 export default function () {
     // 1. 토큰 발급
-    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({
-        userId: randomIntBetween(1, 10000)
-    }), {
+    const userId = randomIntBetween(1, 6000);
+    const tokenPayload = JSON.stringify({ userId: userId });
+    const tokenRes = http.post('http://localhost:8080/queue/tokens', tokenPayload, {
         headers: { 'Content-Type': 'application/json' },
     });
 
@@ -761,7 +768,6 @@ export default function () {
     }
 
     const token = tokenRes.json().data.token;
-    const userId = tokenRes.json().data.userId;
 
     // 2. 토큰 상태 조회
     let isActive = false;
@@ -832,10 +838,25 @@ export default function () {
 }
 ```
 
-#### 테스트 결과 분석
+#### 테스트 결과 분석 (캐싱 전후 비교)
 
-콘서트 좌석 조회에는 캐싱이 적용되어 있지 않음
-콘서트 캐싱 전 후 비교 가능
+**콘서트 좌석 조회 캐싱 전** 
+
+![](https://velog.velcdn.com/images/asdcz11/post/889fd35d-4f49-4202-a15b-242cfc3847f9/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/11c11827-9e9c-427c-9f9e-8d55a880ea71/image.webp)
+
+- 초당 요청 처리량 : 491 개
+- 평균 응답 시간 : 10.05ms
+- 95 % 센타일 시간 : 29.3ms
+- CPU 최대 사용률 : 78%
+
+전체적으로 빠른 요청 처리가 가능하지만 위 두 테스트에서는 6,000 명 부하테스트에서 CPU 사용량이 70~80% 였던 반면,
+
+현재 좌석조회 쿼리는 DB 에 지속적으로 요청을 보내다 보니 CPU 사용량이 낮은 부하수에도 급격히 상승하고 있습니다.
+
+**콘서트 좌석 조회 캐싱 후 **
+
+
 
 ---
 
