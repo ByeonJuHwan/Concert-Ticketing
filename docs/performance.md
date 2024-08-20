@@ -137,11 +137,48 @@ CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적�
 #### 테스트 스크립트
 
 ```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
+export const options = {
+    stages: [
+        { duration: '30s', target: 100 },
+        { duration: '1m', target: 1000 },
+        { duration: '3m', target: 6000 },
+        { duration: '30s', target: 0 },
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<1000'],
+        http_req_failed: ['rate<0.01'],
+    },
+};
+
+export default function () {
+    const userId = randomIntBetween(1, 6000);  // Assume up to 1 million unique users
+
+    const res = http.get(`http://localhost:8080/points/current/${userId}`);
+
+    check(res, {
+        'status is 200': (r) => r.status === 200,
+        'currentPoints is present': (r) => r.json('data.currentPoints') !== null,
+    });
+
+    sleep(randomIntBetween(1, 5));  // Random sleep between 1-5 seconds
+}
 ```
 
 #### 테스트 분석 결과
 
+![](https://velog.velcdn.com/images/asdcz11/post/755d8634-7948-4d20-85ce-d00ffb805c75/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/dc7ebf36-bd41-462f-9f07-839515a8e31c/image.png)
+
+- 평균 응답시간 886.62ms
+- 95% 센타일 응답 시간 : 2.79 s
+- 초당 요청 수 : 649 개
+- CPU 사용률 평균: 49.7%, 최대: 88.3%
+
+애플리케이션 성능상 6000명 정도의 사용자가 쿼리조회를 하면 성능적으로 저하되는 것을 확인했습니다.
 
 ---
 
