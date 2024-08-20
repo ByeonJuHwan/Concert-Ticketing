@@ -7,6 +7,8 @@
 
 - 포인트 충전 API
 - 포인트 조회 API
+- 토큰 발급 API
+- 토큰 상태 조회 API
 - 콘서트 목록 조회 API
 - 콘서트 예약가능 날짜 조회 API
 - 콘서트 예약 가능 좌석 조회 API
@@ -31,9 +33,7 @@
 ### 포인트 충전 API
 
 #### 가정
-- 평상시 초당 50건의 포인트 충전 요청
-- 콘서트 티켓 오픈 직전 초당 1,000건까지 급격히 증가 가능
-- 충전 금액은 10,000원에서 300,000원 사이로 다양함
+- 충전 금액 : 10,000원 ~ 300,000원 사이로 다양한 금액으로 요청
 
 #### 시나리오
 
@@ -41,17 +41,14 @@
    - 일반적인 사용 상황 동시 사용자 50명으로 시작
 2. 급격한 부하 증가 (1분) :
     - 티켓 오픈 직전 상황이며 많은 사용자들이 포인트 충전을 시도합니다
-    - 동시 사용자가 50명 -> 500명으로 급격히 증가합니다.
+    - 동시 사용자가 50명 -> 1000명으로 급격히 증가합니다.
 3. 피크 부하 (3분) :
     - 티켓 오픈 중 최대 부하 상황입니다
-    - 500명의 동시 사용자가 지속적으로 포인트를 충전합니다.
+    - 1000명의 동시 사용자가 지속적으로 포인트를 충전합니다.
 4. 부하 감소(1분) :
     - 티켓 오픈 후 포인트충전을 마친 사용자들이 점점 줄어듭니다.
-    - 동시 사용자가 500명 -> 100명으로 점진적으로 감소합니다.
-5. 정리 단계 (30초) :
-    - 콘서트 티켓팅이 끝나고 1번단계와 같이 평소 사용자로 돌아옵니다
-    - 100명의 동시 사용자로 안정화됩니다.
-
+    - 동시 사용자가 1000명 -> 200명으로 점진적으로 감소합니다.
+   
 #### 성공기준 및 목표
 - 평균 응답 시간 : 1초
 - 95퍼센타일 응답 시간 : 3초이하
@@ -67,11 +64,10 @@ import { check, sleep } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '30s', target: 50 },    // 준비 단계
-        { duration: '1m', target: 1000 },   // 급격한 부하 증가
-        { duration: '5m', target: 1000 },   // 피크 부하
-        { duration: '2m', target: 200 },    // 부하 감소
-        { duration: '1m', target: 200 },    // 정리 단계
+        { duration: '30s', target: 50 },    
+        { duration: '1m', target: 1000 },   
+        { duration: '3m', target: 1000 },
+        { duration: '1m', target: 200 },  
     ],
     thresholds: {
         http_req_duration: ['p(95)<3000', 'p(99)<5000', 'avg<1000'],  // 응답 시간 임계값
@@ -131,6 +127,8 @@ export default function () {
 평균 응답시간은 목표시간인 1초 이내를 달성하였고, TPS 도 목표치인 300 TPS 보다 높은 수치를 달성했습니다.
 
 CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적으로 낮게 유지된걸로 보아 약 1000명의 유저가 포인트 충전 API 를 사용하는데 무리 없이 사용할 수 있습니다.
+
+---
 
 ### 대기열 토큰 발급 API
 
@@ -265,27 +263,140 @@ export default function () {
 
 **가정**
 
-
+- 최대 동시 사용자수 : 3,000명
 
 **테스트 시나리오**
 
+1. 준비 단계 (30s)
+   - 0명에서 500명의 사용자로 점진적 증가
+2. 부하 증가 (3m)
+    - 500 -> 3000명 으로 1분당 1000명씩 증가
+3. 최대 부가 (1m)
+    - 3000 명의 사용자가 지속적으로 토큰 발급 및 상태 조회
+4. 부하 감소 (1m)
+    - 3000명 -> 0명으로 사용자수 감소
+
 #### 테스트 스크립트
 ```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
+export const options = {
+    stages: [
+        { duration: '30s', target: 500 }, 
+        { duration: '1m', target: 1500 },   
+        { duration: '1m', target: 2500 },   
+        { duration: '1m', target: 3000 },   
+        { duration: '1m', target: 3000 },  
+        { duration: '1m', target: 0 },     
+    ],
+    thresholds: {
+        'token_generation': ['p(95)<1000'],  // 토큰 발급 95% 1초 이내
+        'token_status_check': ['p(95)<1000'], // 토큰 상태 조회 95% 1초 이내
+        'http_req_failed': ['rate<0.01'],    // 전체 오류율 1% 미만
+    },
+};
+
+const BASE_URL = 'http://localhost:8080';
+
+export default function () {
+    // 토큰 발급
+    const userId = randomIntBetween(1, 1000000);
+    const tokenGenerationStart = new Date();
+    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({ userId: userId }), {
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const tokenGenerationDuration = new Date() - tokenGenerationStart;
+
+    const tokenCheck = check(tokenRes, {
+        '토큰 발급 성공': (r) => r.status === 200,
+        '토큰이 존재함': (r) => {
+            const body = r.json();
+            return body && body.data && typeof body.data.token === 'string';
+        },
+    });
+
+    if (!tokenCheck) {
+        console.error('토큰 발급 실패:', tokenRes.status, tokenRes.body);
+        return;
+    }
+
+    const token = tokenRes.json().data.token;
+
+    // 토큰 발급 시간 기록
+    tokenGenerationDuration;
+
+    // 토큰 상태 조회
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 24; // 2분 동안 5초마다 체크
+    const statusCheckStart = new Date();
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(5);  // 5초 대기
+        attempts++;
+
+        const statusRes = http.get(`${BASE_URL}/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const statusCheck = check(statusRes, {
+            '상태 조회 성공': (r) => r.status === 200,
+            '토큰 정보 존재': (r) => {
+                const body = r.json();
+                return body && body.data && body.data.status;
+            },
+        });
+
+        if (statusCheck) {
+            const tokenInfo = statusRes.json().data;
+            if (tokenInfo.status === 'ACTIVE') {
+                isActive = true;
+            } else {
+                console.log(`토큰 상태: ${tokenInfo.status}, 대기 순서: ${tokenInfo.queueOrder}, 남은 시간: ${tokenInfo.remainingTime}`);
+            }
+        }
+    }
+
+    const statusCheckDuration = new Date() - statusCheckStart;
+
+    // 토큰 상태 조회 시간 기록
+    statusCheckDuration;
+
+    if (!isActive) {
+        console.error('토큰이 활성화되지 않음');
+    }
+
+    // 측정 지표 기록
+    tokenGenerationDuration;
+    statusCheckDuration;
+
+    sleep(randomIntBetween(1, 3));  // 1-3초 대기
+}
 ```
 
 #### 테스트 결과 분석
 
-
+---
 
 ### 콘서트 목록 조회 API
 
 예약가능한 콘서트 목록이 100개정도 있다고 가정하고 테스트를 진행해 보겠습니다.
 
-**가정 및 시나리오**
+**가정**
 - 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
 - 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
 - 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
+
+**시나리오**
+1. 준비단계 (30s)
+    - 평소과 같은 트래픽으로 100명의 유저가 콘서트 조회를 합니다
+2. 점진적 부하(2m)
+    - 1분당 1000명씩 부하가 들어옵니다 총 2분 -> 2000명이 동시에 토큰발급, 콘서트 조회를 합니다
+3. 정리단계 (1m)
+    - 1분간 2000명 ->0명으로 사용자가 줄어들며 부하가 점차 감소합니다
+
 
 **성공기준**
 - 평균 응답 시간 : 500ms 이하
@@ -329,7 +440,7 @@ export default function () {
     });
 
     if (!tokenCheck) {
-        console.error('Token generation failed:', tokenRes.status, tokenRes.body);
+        console.error('토큰 생성 실패:', tokenRes.status, tokenRes.body);
         return;
     }
 
@@ -367,7 +478,7 @@ export default function () {
     }
 
     if (!isActive) {
-        console.error('Token did not become active within the time limit');
+        console.error('WatingToken -> ActiveToken 변환 오류 (ActiveToken 상태 변경 오류)');
         return;
     }
 
@@ -388,7 +499,7 @@ export default function () {
     });
 
     if (concertRes.status !== 200) {
-        console.error('Concert list retrieval failed:', concertRes.status, concertRes.body);
+        console.error('콘서트 목록 조회 실패:', concertRes.status, concertRes.body);
     }
 
     sleep(randomIntBetween(5, 15));
@@ -409,13 +520,25 @@ export default function () {
 
 이번엔 6000명 동시 접속시로 테스트해 보겠습니다.
 
+---
+
 
 ### 콘서트 예약 가능 날짜 조회 API
 
-**가정 및 시나리오**
+콘서트 목록조회에서 2000명 트래픽은 여유롭게 처리했으므로 4000명 부하테스트로 테스트 해 보겠습니다.
+
+**가정**
 - 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
-- 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
-- 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
+- 1분당 1000명씩 증가하며 예약가능 콘서트 날짜를 조회 합니다
+- 4000명 까지 증가하며 1분간 0명으로 부하가 줄어듭니다
+
+**시나리오**
+1. 준비단계 (30s) 
+    - 평소과 같은 트래픽으로 100명의 유저가 콘서트 조회를 합니다
+2. 점진적 부하(4m)
+    - 1분당 1000명씩 부하가 들어옵니다 총 4 -> 4000명이 동시에 토큰발급, 콘서트 조회, 콘서트 날짜 조회를 합니다
+3. 정리단계 (1m)
+    - 1분간 4000명 ->0명으로 사용자가 줄어들며 부하가 점차 감소합니다
 
  **성공기준**
 - 평균 응답 시간 : 500ms 이하
@@ -425,21 +548,495 @@ export default function () {
 
 #### 테스트 스크립트
 
+```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export const options = {
+    stages: [
+        { duration: '30s', target: 100 },   // 준비 단계: 100명
+        { duration: '1m', target: 1000 },   // 1분 동안 1000명으로 증가
+        { duration: '1m', target: 2000 },   // 2분 동안 2000명으로 증가
+        { duration: '1m', target: 3000 },   // 3분 동안 3000명으로 증가
+        { duration: '1m', target: 4000 },   // 4분 동안 4000명으로 증가
+        { duration: '1m', target: 0 },      // 정리 단계: 1분 동안 0명으로 감소
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<1000'],  // 요청의 95%가 1초 미만이어야 함
+        http_req_failed: ['rate<0.01'],     // 실패율 1% 미만
+    },
+};
+
+export default function () {
+    // 1단계: 토큰 생성
+    const userId = randomIntBetween(1, 5000);
+    const tokenPayload = JSON.stringify({ userId: userId });
+    const tokenRes = http.post('http://localhost:8080/queue/tokens', tokenPayload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const tokenCheck = check(tokenRes, {
+        '토큰 생성 상태가 200입니다': (r) => r.status === 200,
+        '토큰이 존재합니다': (r) => {
+            const body = r.json();
+            return body && body.data && typeof body.data.token === 'string';
+        },
+    });
+
+    if (!tokenCheck) {
+        console.error('토큰 생성 실패:', tokenRes.status, tokenRes.body);
+        return;
+    }
+
+    const token = tokenRes.json().data.token;
+
+    // 2단계: 토큰 상태 확인
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 12; // 최대 시도 횟수 (총 2분)
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(10); // 토큰 상태 확인 전 10초 대기
+        attempts++;
+
+        const statusRes = http.get(`http://localhost:8080/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const statusCheck = check(statusRes, {
+            '상태 확인이 성공했습니다': (r) => r.status === 200,
+            '토큰 정보가 존재합니다': (r) => {
+                const body = r.json();
+                return body && body.data && body.data.status;
+            },
+        });
+
+        if (statusCheck) {
+            const tokenInfo = statusRes.json().data;
+            if (tokenInfo.status === 'ACTIVE') {
+                isActive = true;
+            } else {
+                console.log(`토큰 상태: ${tokenInfo.status}, 대기열 순서: ${tokenInfo.queueOrder}, 남은 시간: ${tokenInfo.remainingTime}`);
+            }
+        }
+    }
+
+    if (!isActive) {
+        console.error('제한 시간 내에 토큰이 활성화되지 않았습니다');
+        return;
+    }
+
+    // 3단계: 콘서트 목록 조회
+    const concertListRes = http.get('http://localhost:8080/concerts', {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const concertListCheck = check(concertListRes, {
+        '콘서트 목록 상태가 200입니다': (r) => r.status === 200,
+        '콘서트 목록 데이터가 존재합니다': (r) => {
+            const body = r.json();
+            return body && body.data && Array.isArray(body.data.concerts) && body.data.concerts.length > 0;
+        },
+    });
+
+    if (!concertListCheck) {
+        console.error('콘서트 목록 조회 실패:', concertListRes.status, concertListRes.body);
+        return;
+    }
+
+    const concerts = concertListRes.json().data.concerts;
+    const firstConcertId = concerts[0].id;
+
+    // 4단계: 첫 번째 콘서트의 예약 가능한 날짜 조회
+    const availableDatesRes = http.get(`http://localhost:8080/concerts/${firstConcertId}/available-dates`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(availableDatesRes, {
+        '예약 가능한 날짜 조회 상태가 200입니다': (r) => r.status === 200,
+        '예약 가능한 날짜 데이터가 존재합니다': (r) => {
+            const body = r.json();
+            return body && body.data && Array.isArray(body.data.concerts);
+        },
+    });
+
+    if (availableDatesRes.status !== 200) {
+        console.error('가능한 날짜 조회 실패:', availableDatesRes.status, availableDatesRes.body);
+    }
+
+    sleep(randomIntBetween(1, 5));  // 사용자 행동을 시뮬레이션하기 위한 1~5초 사이의 랜덤 대기
+}
+```
+
 #### 테스트 분석 결과
+
+콘서트 예약 가능한 날짜조회 API 도 콘서트 목록조회 API 와 마찬가지로 인덱스 및 캐싱전략이 되어있어서 많은 트래픽이 몰려도
+빠른 응답을 할 수 있습니다.
 
 ### 콘서트 예약가능 좌석 조회 API
 
-**가정 및 시나리오**
-- 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
-- 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
-- 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
+**가정**
+- 최대 동시 사웅자수 : 4000명
+- 테스트 대상 콘서트 ID : 1
+- 테스트 대상 콘서트 옵션 ID : 1
 
-**성공기준**
-- 평균 응답 시간 : 500ms 이하
-- 95% 센타일 응답 시간 : 1초 이하
-- 오류율 1% 미만
-- CPU 사용률 80 % 이하
+**시나리오**
+
+1. 준비 단계 (30s)
+   - 0에서 100명으로 사용자 수 증가
+   - 각 사용자는 전체 프로세스 수행
+2. 점진적 부하 (4m)
+   - 1분당 1000명씩 증가
+   - 4000명까지 점진적 증가
+3. 최대 부하 유지(1m)
+   - 4000명 의 사용자가 지속적으로 예약 시도
+4. 점진적 부하 감소 (1m)
+    - 4000명 -> 0명 점진적으로 사용자수 감소
+
+#### 테스트 스크립트
+
+```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export const options = {
+    stages: [
+        { duration: '30s', target: 100 }, 
+        { duration: '4m', target: 4000 },  
+        { duration: '1m', target: 4000 }, 
+        { duration: '1m', target: 0 }, 
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<3000'], 
+        http_req_failed: ['rate<0.01'],  
+    },
+};
+
+const BASE_URL = 'http://localhost:8080';
+const CONCERT_ID = 1;
+const CONCERT_OPTION_ID = 1;
+
+export default function () {
+    // 1. 토큰 발급
+    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({
+        userId: randomIntBetween(1, 10000)
+    }), {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const tokenCheck = check(tokenRes, {
+        '토큰 발급 성공': (r) => r.status === 200,
+    });
+
+    if (!tokenCheck) {
+        console.error('토큰 발급 실패:', tokenRes.status, tokenRes.body);
+        return;
+    }
+
+    const token = tokenRes.json().data.token;
+    const userId = tokenRes.json().data.userId;
+
+    // 2. 토큰 상태 조회
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 12; // 2분 동안 10초마다 체크
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(10);
+        attempts++;
+
+        const statusRes = http.get(`${BASE_URL}/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (statusRes.json().data.status === 'ACTIVE') {
+            isActive = true;
+        }
+    }
+
+    if (!isActive) {
+        console.error('토큰 활성화 실패');
+        return;
+    }
+
+    sleep(randomIntBetween(1, 5));
+
+    // 3. 콘서트 목록 조회
+    const concertListRes = http.get(`${BASE_URL}/concerts`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertListRes, {
+        '콘서트 목록 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 5));
+
+    // 4. 콘서트 날짜 조회
+    const concertDatesRes = http.get(`${BASE_URL}/concerts/${CONCERT_ID}/available-dates`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertDatesRes, {
+        '콘서트 날짜 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 5));
+
+    // 5. 콘서트 좌석 조회
+    const seatsRes = http.get(`${BASE_URL}/concerts/${CONCERT_OPTION_ID}/available-seats`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(seatsRes, {
+        '좌석 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 5));
+}
+```
+
+#### 테스트 결과 분석
+
+콘서트 좌석 조회에는 캐싱이 적용되어 있지 않음
+콘서트 캐싱 전 후 비교 가능
+
+---
 
 ### 콘서트 예약 API
 
-### 콘서트 결재 API
+**가정**
+- 총 좌석 수 : 1000개
+- 최대 동시 사용자 수 : 4000명
+
+**시나리오**
+1. 준비 단계 (30s)
+   - 100명의 사용자가 동시에 랜덤한 좌석 예약 시도
+2. 부하 증가 단계 (4m)
+    - 100명 -> 1분당 1000명씩 점진적 증가
+    - 각 사용자는 랜덤한 좌석 번호로 예약 시도
+3. 최대 부하 단계 (1m)
+    - 4000명의 사용자가 지속적으로 예약 시도
+    - 이미 예약된 좌석에 대한 재예약 시도 포함
+4. 부가 감소 단계 (1m)
+    - 4000명 -> 100명으로 점진적 감소
+
+**성공기준**
+
+- 평균 응답 시간 : 1초 이하
+- 95% 센타일 응답시간 : 3초 이하
+- 오류율 1% 미만
+
+#### 테스트 스크립트
+
+```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export const options = {
+    stages: [
+        { duration: '30s', target: 100 }, 
+        { duration: '1m', target: 1000 },   
+        { duration: '1m', target: 2000 },   
+        { duration: '1m', target: 3000 },  
+        { duration: '1m', target: 4000 },   
+        { duration: '1m', target: 4000 }, 
+        { duration: '1m', target: 100 }, 
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<3000'], 
+        http_req_failed: ['rate<0.01'], 
+    },
+};
+
+const BASE_URL = 'http://localhost:8080';
+const CONCERT_ID = 1;
+const CONCERT_OPTION_ID = 1;
+const TOTAL_SEATS = 1000;
+
+export default function () {
+    // 1. 토큰 발급
+    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({
+        userId: randomIntBetween(1, 10000)
+    }), {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const tokenCheck = check(tokenRes, {
+        '토큰 발급 성공': (r) => r.status === 200,
+    });
+
+    if (!tokenCheck) {
+        console.error('토큰 발급 실패:', tokenRes.status, tokenRes.body);
+        return;
+    }
+
+    const token = tokenRes.json().data.token;
+    const userId = tokenRes.json().data.userId;
+
+    // 2. 토큰 상태 조회
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 12; // 2분 동안 10초마다 체크
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(10);
+        attempts++;
+
+        const statusRes = http.get(`${BASE_URL}/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (statusRes.json().data.status === 'ACTIVE') {
+            isActive = true;
+        }
+    }
+
+    if (!isActive) {
+        console.error('토큰 활성화 실패');
+        return;
+    }
+
+    sleep(randomIntBetween(1, 3));
+
+    // 3. 콘서트 목록 조회
+    const concertListRes = http.get(`${BASE_URL}/concerts`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertListRes, {
+        '콘서트 목록 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 3));
+
+    // 4. 콘서트 날짜 조회
+    const concertDatesRes = http.get(`${BASE_URL}/concerts/${CONCERT_ID}/available-dates`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertDatesRes, {
+        '콘서트 날짜 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 3));
+
+
+    // 5. 콘서트 좌석 조회
+    const seatsRes = http.get(`${BASE_URL}/concerts/${CONCERT_OPTION_ID}/available-seats`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const seatsCheck = check(seatsRes, {
+        '좌석 조회 성공': (r) => r.status === 200,
+    });
+
+    if (!seatsCheck) {
+        console.error('좌석 조회 실패:', seatsRes.status, seatsRes.body);
+        return;
+    }
+
+    const availableSeats = seatsRes.json().data.seats;
+
+    if (availableSeats.length === 0) {
+        console.log('예약 가능한 좌석 없음');
+        return;
+    }
+
+    sleep(randomIntBetween(1, 3));
+
+    // 6. 좌석 예약
+    const randomSeat = availableSeats[Math.floor(Math.random() * availableSeats.length)];
+    const reservationPayload = JSON.stringify({
+        userId: userId,
+        concertId: CONCERT_ID,
+        concertOptionId: CONCERT_OPTION_ID,
+        seatId: randomSeat.seatId
+    });
+
+    const reservationRes = http.post(`${BASE_URL}/reservations`, reservationPayload, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(reservationRes, {
+        '예약 성공 또는 이미 예약됨': (r) => r.status === 200 || r.status === 409,
+    });
+
+    if (reservationRes.status === 200) {
+        console.log(`좌석 예약 성공: 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+    } else if (reservationRes.status === 409) {
+        console.log(`좌석 이미 예약됨: 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+    } else {
+        console.error(`예약 실패: 상태 코드 ${reservationRes.status}, 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+    }
+
+    sleep(randomIntBetween(1, 3));
+}
+```
+
+#### 테스트 결과 분석
+
+---
+
+### 콘서트 결제 API
+
+**가정**
+
+- 총 예약 수 : 1000개
+
+**시나리오**
+
+- 좌석은 1000개에 따른 예약도 1000개 이므로 바로 동시에 1000개의 결제 요청이 들어올 때 결제 API 를 테스트 해 보겠습니다
+
+#### 테스트 시나리오
+
+```js
+
+```
+
+#### 테스트 결과 분석
+
+
+## 정리하며...
+
+콘서트 좌석 예약 프로젝트를 하면서 각 API 를 테스트 해보면서 몇명의 사용자 즉 트래픽을 받아낼 수 있는지 테스트해 보았습니다.
+
+- CPU 사용률 80 % 아래
+- 응답률 1초 이하
+- 오류율 1% 이하
+
+공통된 기준을 위와 같이 잡고 테스트를 해볼 수 있어서 현재 내 서버 애플리케이션이 얼마정도의 트래픽을 받아낼수 있는지
+확인해 볼수 있는 기회가 되었습니다.
+
+
+
