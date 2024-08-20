@@ -6,7 +6,8 @@ export const options = {
     stages: [
         { duration: '30s', target: 100 },
         { duration: '1m', target: 1000 },
-        { duration: '1m', target: 2000 },
+        { duration: '1m', target: 3000 },
+        { duration: '1m', target: 7000 },
         { duration: '1m', target: 0 },
     ],
     thresholds: {
@@ -17,7 +18,7 @@ export const options = {
 
 export default function () {
     // Step 1: Generate Token
-    const userId = randomIntBetween(1, 2000);
+    const userId = randomIntBetween(1, 6000);
     const tokenPayload = JSON.stringify({ userId: userId });
     const tokenRes = http.post('http://localhost:8080/queue/tokens', tokenPayload, {
         headers: { 'Content-Type': 'application/json' },
