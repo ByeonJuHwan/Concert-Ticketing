@@ -854,16 +854,24 @@ export default function () {
 
 현재 좌석조회 쿼리는 DB 에 지속적으로 요청을 보내다 보니 CPU 사용량이 낮은 부하수에도 급격히 상승하고 있습니다.
 
-**콘서트 좌석 조회 캐싱 후 **
+**콘서트 좌석 조회 캐싱 후**
 
+![](https://velog.velcdn.com/images/asdcz11/post/e1818401-515b-4e06-a7ba-836427b969d0/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/21467b8f-3989-4ebc-af6d-f148d0493e2e/image.png)
 
+- 초당 요청 처리량 : 487.4 개
+- 평균 응답시간 : 4.7 ms (53.2% 개선)
+- 95 % 센타일 시간 : 6,76ms (76.9% 개선)
+- cpu 최대 사용률 : 70%
+
+**위 테스트 결과로 대용량 트래픽 발생시 병목이 조회쿼리에 병목이 발생한다면 캐싱 전략을 통해서 cpu 사용률을 낮추고, 응답시간의 개선을 가져갈 수 있습니다.**
 
 ---
 
 ### 콘서트 예약 API
 
 **가정**
-- 총 좌석 수 : 1000개
+- 총 좌석 수 : 100개
 - 최대 동시 사용자 수 : 4000명
 
 **시나리오**
@@ -910,13 +918,13 @@ export const options = {
 const BASE_URL = 'http://localhost:8080';
 const CONCERT_ID = 1;
 const CONCERT_OPTION_ID = 1;
-const TOTAL_SEATS = 1000;
+const TOTAL_SEATS = 100;
 
 export default function () {
     // 1. 토큰 발급
-    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({
-        userId: randomIntBetween(1, 10000)
-    }), {
+    const userId = randomIntBetween(1, 6000);
+    const tokenPayload = JSON.stringify({ userId: userId });
+    const tokenRes = http.post('http://localhost:8080/queue/tokens', tokenPayload, {
         headers: { 'Content-Type': 'application/json' },
     });
 
@@ -930,7 +938,6 @@ export default function () {
     }
 
     const token = tokenRes.json().data.token;
-    const userId = tokenRes.json().data.userId;
 
     // 2. 토큰 상태 조회
     let isActive = false;
@@ -1077,6 +1084,3 @@ export default function () {
 
 공통된 기준을 위와 같이 잡고 테스트를 해볼 수 있어서 현재 내 서버 애플리케이션이 얼마정도의 트래픽을 받아낼수 있는지
 확인해 볼수 있는 기회가 되었습니다.
-
-
-
