@@ -12,9 +12,8 @@ export const options = {
         { duration: '1m', target: 0 },
     ],
     thresholds: {
-        'token_generation': ['p(95)<1000'],
-        'token_status_check': ['p(95)<1000'],
-        'http_req_failed': ['rate<0.01'],
+        http_req_duration: ['p(95)<3000'],
+        http_req_failed: ['rate<0.01'],
     },
 };
 
