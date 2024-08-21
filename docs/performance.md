@@ -22,9 +22,9 @@
 - Mariadb:latest 이미지
 
 **테스트 툴** 
- - k6
- - 프로메테우스
- - 그라파나
+ - K6
+ - Prometheus
+ - Grafana
 
 ## 각 테스트 시나리오 및 테스트 결과
 
@@ -34,6 +34,7 @@
 
 #### 가정
 - 충전 금액 : 10,000원 ~ 300,000원 사이로 다양한 금액으로 요청
+- 콘서트 예약 오픈 전 요청이 많을 것으로 예상되며, 미리 충전해 놓은 사용자도 있을거라 예상해 1,000명의 사용자가 충전요청을 지속적으로 보낸다고 가정
 
 #### 시나리오
 
@@ -55,7 +56,6 @@
 - 99퍼센타일 응답 시간 : 5초이하
 - 오류율 0.1 % 미만
 - 300 TPS 이상
-- 
 
 #### 테스트 스크립트
 ```js
@@ -70,14 +70,14 @@ export const options = {
         { duration: '1m', target: 200 },  
     ],
     thresholds: {
-        http_req_duration: ['p(95)<3000', 'p(99)<5000', 'avg<1000'],  // 응답 시간 임계값
-        http_req_failed: ['rate<0.001'],  // 오류율 임계값
+        http_req_duration: ['p(95)<3000', 'p(99)<5000', 'avg<1000'], 
+        http_req_failed: ['rate<0.001'], 
     },
 };
 
 export default function () {
-    const userId = Math.floor(Math.random() * 1000) + 1;  // 더 많은 사용자 ID 범위
-    const amount = Math.floor(Math.random() * 290000) + 10000;  // 10000 ~ 300000 원
+    const userId = Math.floor(Math.random() * 1000) + 1;  
+    const amount = Math.floor(Math.random() * 290000) + 10000;  
 
     const payload = JSON.stringify({
         userId: userId,
@@ -96,8 +96,7 @@ export default function () {
         'is status 200': (r) => r.status === 200,
         'transaction time OK': (r) => r.timings.duration < 1000,
     });
-
-    // 더 짧은 sleep 시간으로 더 높은 부하 생성
+    
     sleep(Math.random() * 0.5);
 }
 ```
@@ -126,13 +125,27 @@ export default function () {
 
 평균 응답시간은 목표시간인 1초 이내를 달성하였고, TPS 도 목표치인 300 TPS 보다 높은 수치를 달성했습니다.
 
-CPU 사용량 안정적으로 유지도고 메모리 사용량은 저전반적으로 낮게 유지된걸로 보아 약 1000명의 유저가 포인트 충전 API 를 사용하는데 무리 없이 사용할 수 있습니다.
+CPU 사용량 안정적으로 유지도고 메모리 사용량은 전반적으로 낮게 유지된걸로 보아 약 1,000명의 유저가 포인트 충전 API 를 사용하는데 무리 없이 사용할 수 있습니다.
+
+더 많은 유저가 요청시 HikariCP 의 쓰레드 수를 늘리는 방법도 고려해 볼 수 있을것 같습니다.
 
 ---
 
 ### 포인트 조회 API
 
+#### 가정
+
+- 요청사용자수 : 6,000명
+- 콘서트 오픈전 사용자들이 현재 충전되어 있는 포인트 잔액을 확인하기 위해 포인트 조회를 합니다
+
 #### 시나리오
+
+1. 시작 단계 (30s)
+    - 평상시 요청과 동일하게 100명의 사용자가 조회 API 를 사용합니다
+2. 부하 증가 (3m)
+    - 1분안에 1,000명 , 3분안에 6,000명 까지 사용자수가 증가합니다
+3. 부하 감소 (30s)
+    - 포인트 확인이 끝나고 요청 사용자가 감소합니다
 
 #### 테스트 스크립트
 
@@ -178,7 +191,13 @@ export default function () {
 - 초당 요청 수 : 649 개
 - CPU 사용률 평균: 49.7%, 최대: 88.3%
 
-애플리케이션 성능상 6000명 정도의 사용자가 쿼리조회를 하면 성능적으로 저하되는 것을 확인했습니다.
+
+애플리케이션 부하테스트 결과 6,000명 정도의 사용자가 포인트 조회시 평균적으로 1초 이내에 실행이되지만,
+95% 의 요청이 2.79s 로 확인되었습니다.
+
+포인트 저장 / 사용 이라는 동시성 이슈를 고려해 비관적 락이 걸려있기 때문에 DB 쓰레드를 많이 사용하고 있는 것으로 추정됩니다.
+따라서 잦은 충돌이 일어나지 않는 다면 낙관적 락, 분산락으로 더 대규모 트래픽일 시 에는 쓰레드를 빠르게
+순환시키는 방법을 고려해 볼 수 있을것 같습니다.
 
 ---
 
@@ -263,13 +282,12 @@ export default function () {
              body.data.token.length > 0;
     },
   });
-
-  // 실패시 ERROR 로그 출력
+  
   if (res.status !== 200) {
     console.error(`Request failed with status ${res.status}:`, res.body);
   }
 
-  sleep(randomIntBetween(0.1, 0.5));  // 0.1-0.5 초 사이로 랜덤하게 쓰레드 정지
+  sleep(randomIntBetween(0.1, 0.5)); 
 }
 ```
 
@@ -288,8 +306,9 @@ export default function () {
 - CPU 사용량 최대 99.4% 까지 증가
 - 프로세스 오픈파일 최대치 도달
 
-현재 시스템이 10,000명의 부하를 견디지 못하고 있습니다. 
-그러면 현재 서버가 몇 명까지의 사용자 요청을 받아 낼 수 있는지 
+현재 시스템이 10,000명의 부하를 견디지 못하고 있습니다.
+
+그렇다면 현재 서버가 몇 명까지의 사용자 요청을 받아 낼 수 있는지 
 6,000명의 사용자가 동시에 요청을 보내는 테스트를 진행해 보도록 하겠습니다.
 
 기존의 테스트 스크립트에서 6000 명부터 점점 사용자수를 줄여가면서 적절한 CPU 사용량을 찾아보면서 적정 인원을 확인해 보겠습니다.
@@ -313,11 +332,11 @@ export default function () {
 
 ### 토큰 조회 API
 
-**가정**
+#### 가정
 
 - 최대 동시 사용자수 : 3,000명
 
-**테스트 시나리오**
+#### 테스트 시나리오
 
 1. 준비 단계 (30s)
    - 0명에서 500명의 사용자로 점진적 증가
@@ -436,12 +455,12 @@ export default function () {
 
 예약가능한 콘서트 목록이 100개정도 있다고 가정하고 테스트를 진행해 보겠습니다.
 
-**가정**
+#### 가정
 - 100명의 유저부터 콘서트 목록 조회를 시작해서 점차 증가합니다
 - 1분안에 1000명으로 증가하며 콘서트 조회를 합니다
 - 2분안에 2000명으로 사용자가 2배 증가하면 콘서트 조회를 합니다.
 
-**시나리오**
+#### 시나리오
 1. 준비단계 (30s)
     - 평소과 같은 트래픽으로 100명의 유저가 콘서트 조회를 합니다
 2. 점진적 부하(2m)
@@ -570,9 +589,9 @@ export default function () {
 
 2000명의 사용자가 동시접속해 콘서트 목록조회 테스트 결과 여유있게 트래픽 처리가 가능했습니다.
 
-이번엔 6000명 동시 접속시로 테스트해 보겠습니다.
+이번엔 같은 테스트 스크립트에 6000명 동시 접속시 부하 테스트를 진행 해보겠습니다.
 
-**테스트 결과**
+#### 테스트 결과
 
 - CPU 사용률 최대 약 70%
 - 평균 응답 시간 : 3.77ms
@@ -582,7 +601,6 @@ export default function () {
 cpu 사용량을 70~80% 사이로 안정정적으로 유지하려면 6,000명 ~ 7,000명 사이의 트래픽은 안정적적으로 처리가능합니다.
 
 ---
-
 
 ### 콘서트 예약 가능 날짜 조회 API
 
@@ -1120,18 +1138,213 @@ export default function () {
 
 ### 결제 API
 
+현재 좌석이 100개이며 100개에 대한 예약 데이터가 생성이 되어있습니다.
+
+이때 다른 지속적으로 예약 부하가 들어오는 상황에도 결제도 정확히 100건 진행되는지 테스트 해 보겠습니다.
+
 #### 가정
+
+- 1,000명의 사용자가 100개의 좌석에 예약시도
+- 좌석 예약에 성공한 사용자는 결제 API 까지 시도
+- 나머지 900명은 예약 시도를 지속적으로 하는 부하에 결제 요청이 100건 생성되는지 확인
 
 #### 시나리오
 
+1. 준비단계 (30s)
+    - 100명의 사용자가 30초안에 예약시도를 합니다
+2. 부하시작(1m)
+    - 1분안에 1,000명의 사용자로 증가하며 좌석 예약 시도를 합니다
+    - 앞서 들어온 100명중 좌석 예약에 성공한 사용자는 결제까지 진행합니다
+3. 부하감소 (1m)
+    - 좌석이 전부 예매된 상황이며 점진적으로 사용자가 이탈합니다
+
 #### 테스트 스크립트
+
+```js
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
+
+export const options = {
+    stages: [
+        { duration: '30s', target: 100 },
+        { duration: '1m', target: 1000 },
+        { duration: '1m', target: 100 },
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<3000'],
+        http_req_failed: ['rate<0.01'],
+    },
+};
+
+const BASE_URL = 'http://localhost:8080';
+const CONCERT_ID = 1;
+const CONCERT_OPTION_ID = 1;
+const TOTAL_SEATS = 100;
+
+export default function () {
+    // 1. 토큰 발급
+    const userId = randomIntBetween(1, 1000);
+    const tokenPayload = JSON.stringify({ userId: userId });
+    const tokenRes = http.post(`${BASE_URL}/queue/tokens`, tokenPayload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const tokenCheck = check(tokenRes, {
+        '토큰 발급 성공': (r) => r.status === 200,
+    });
+
+    if (!tokenCheck) {
+        console.error('토큰 발급 실패:', tokenRes.status, tokenRes.body);
+        return;
+    }
+
+    const token = tokenRes.json().data.token;
+
+    // 2. 토큰 상태 조회
+    let isActive = false;
+    let attempts = 0;
+    const maxAttempts = 12; // 2분 동안 10초마다 체크
+
+    while (!isActive && attempts < maxAttempts) {
+        sleep(10);
+        attempts++;
+
+        const statusRes = http.get(`${BASE_URL}/queue/tokens/status/${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (statusRes.json().data.status === 'ACTIVE') {
+            isActive = true;
+        }
+    }
+
+    if (!isActive) {
+        console.error('토큰 활성화 실패');
+        return;
+    }
+
+    sleep(randomIntBetween(1, 3));
+
+    // 3. 콘서트 목록 조회
+    const concertListRes = http.get(`${BASE_URL}/concerts`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertListRes, {
+        '콘서트 목록 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 3));
+
+    // 4. 콘서트 날짜 조회
+    const concertDatesRes = http.get(`${BASE_URL}/concerts/${CONCERT_ID}/available-dates`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(concertDatesRes, {
+        '콘서트 날짜 조회 성공': (r) => r.status === 200,
+    });
+
+    sleep(randomIntBetween(1, 3));
+
+    // 5. 콘서트 좌석 조회
+    const seatsRes = http.get(`${BASE_URL}/concerts/${CONCERT_OPTION_ID}/available-seats`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const seatsCheck = check(seatsRes, {
+        '좌석 조회 성공': (r) => r.status === 200,
+    });
+
+    if (!seatsCheck) {
+        console.error('좌석 조회 실패:', seatsRes.status, seatsRes.body);
+        return;
+    }
+
+    const availableSeats = seatsRes.json().data.seats;
+
+    if (availableSeats.length === 0) {
+        console.log('예약 가능한 좌석 없음');
+        return;
+    }
+
+    sleep(randomIntBetween(1, 3));
+
+    // 6. 좌석 예약
+    const randomSeat = availableSeats[Math.floor(Math.random() * availableSeats.length)];
+    const reservationPayload = JSON.stringify({
+        seatId: randomSeat.seatId,
+        userId: userId
+    });
+
+    const reservationRes = http.post(`${BASE_URL}/concerts/reserve-seat`, reservationPayload, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    check(reservationRes, {
+        '예약 성공 또는 이미 예약됨': (r) => r.status === 200 || r.status === 409,
+    });
+
+    if (reservationRes.status === 200) {
+        console.log(`좌석 예약 성공: 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+
+        // 예약 성공 시 reservationId 추출
+        const reservationData = reservationRes.json().data;
+        const reservationId = reservationData.reservationId;
+
+        sleep(randomIntBetween(1, 3));
+
+        // 7. 결제 진행
+        const paymentPayload = JSON.stringify({
+            reservationId: reservationId
+        });
+
+        const paymentRes = http.post(`${BASE_URL}/payment/pay`, paymentPayload, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        check(paymentRes, {
+            '결제 성공': (r) => r.status === 200,
+        });
+
+        if (paymentRes.status === 200) {
+            console.log(`결제 성공: 사용자 ${userId}, 예약 ID ${reservationId}`);
+        } else {
+            console.error(`결제 실패: 상태 코드 ${paymentRes.status}, 사용자 ${userId}, 예약 ID ${reservationId}`);
+        }
+    } else if (reservationRes.status === 409) {
+        console.log(`좌석 이미 예약됨: 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+    } else {
+        console.error(`예약 실패: 상태 코드 ${reservationRes.status}, 사용자 ${userId}, 좌석 ${randomSeat.seatNo}`);
+    }
+
+    sleep(randomIntBetween(1, 3));
+}
+```
 
 #### 테스트 분석 결과
 
 ![](https://velog.velcdn.com/images/asdcz11/post/0db23f81-d28a-4618-ae32-8c4afae6c59a/image.png)
 ![](https://velog.velcdn.com/images/asdcz11/post/aacb991b-7a56-4c8e-ab84-a7b687a9870a/image.png)
 
-결제 API 부하 테스트로 확인해 보고싶었던 내용은 1,000 명 이상의 사용자가 
+테스트 결과 100개의 예약 데이터의 상태가 결제완료로 변경되었고, 결제 데이터도 정확히 100건 생성되었습니다.
+이로써 부하가 몰리는 상황에서도 정상적으로 결제 API 가 실행되는것을 확인 가능했습니다.
 
 ---
 
@@ -1139,9 +1352,5 @@ export default function () {
 
 콘서트 좌석 예약 프로젝트를 하면서 각 API 를 테스트 해보면서 몇명의 사용자 즉 트래픽을 받아낼 수 있는지 테스트해 보았습니다.
 
-- CPU 사용률 80 % 아래
-- 응답률 1초 이하
-- 오류율 1% 이하
-
-공통된 기준을 위와 같이 잡고 테스트를 해볼 수 있어서 현재 내 서버 애플리케이션이 얼마정도의 트래픽을 받아낼수 있는지
-확인해 볼수 있는 기회가 되었습니다.
+각 API 에 적용되어 있는 락, 캐싱, 인덱스에 따라서 조회쿼리의 성능이 바뀌는 걸 시각적으로 확인할 수 있었고, 
+현재 내 애플리케이션이 평균 몇 명의 사용자를 받을수 있는지 확인해 볼 수 있었습니다.
