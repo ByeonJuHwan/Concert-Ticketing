@@ -449,6 +449,16 @@ export default function () {
 
 #### 테스트 결과 분석
 
+![](https://velog.velcdn.com/images/asdcz11/post/c9e279aa-8eff-417b-8a49-3aa36d38eef9/image.png)
+![](https://velog.velcdn.com/images/asdcz11/post/60e6e817-d324-4a8a-867e-8cb95255311c/image.png)
+
+- 평균 응답 시간 : 2.37ms
+- 95% 센타일 응답 시간 : 4.15ms
+- 초당 응답률 : 533
+- CPU 최대 사용률 : 48.6%
+
+3,000 명이 토큰을 발급받고 조회하기 까지 준수하게 처리가 가능합니다.
+
 ---
 
 ### 콘서트 목록 조회 API
