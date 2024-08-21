@@ -22,7 +22,7 @@ const BASE_URL = 'http://localhost:8080';
 
 export default function () {
     // 토큰 발급
-    const userId = randomIntBetween(1, 1000000);
+    const userId = randomIntBetween(1, 3000);
     const tokenGenerationStart = new Date();
     const tokenRes = http.post(`${BASE_URL}/queue/tokens`, JSON.stringify({ userId: userId }), {
         headers: { 'Content-Type': 'application/json' },
