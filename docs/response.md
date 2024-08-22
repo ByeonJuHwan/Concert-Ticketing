@@ -9,6 +9,7 @@
 콘서트 좌석 예약 시스템에는 `Grafana` 를 사용하여 시스템을 지속적으로 모니터링을 진행하며, 이 모니터링 시스템에서 이상 현상을 탐지하면,
 즉각적으로 인지하기 위해서 `Slack` 으로 알림을 발송하도록 처리했습니다.
 
+![](https://velog.velcdn.com/images/asdcz11/post/838ca8ae-ad99-4c07-8d54-339794cacc78/image.webp)
 ![](https://velog.velcdn.com/images/asdcz11/post/585bd365-c4b6-4fb2-a15b-b2b65e749f35/image.png)
 
 대기열 이라는 특성상 급격하게 부하가 몰릴수 있기 때문에 CPU 사용량이 급격히 증가합니다.
