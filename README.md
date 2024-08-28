@@ -301,14 +301,14 @@ sequenceDiagram
 ---
 ### 2. 유저 토큰 정보 조회 API
 
-| Method | URI | Description         |
-|-----|-----|---------------------|
-| GET |/queue/tokens/{token}/status| 대기열 정보 확인| 
+| Method | URI                           | Description         |
+|-----|-------------------------------|---------------------|
+| GET | /queue/tokens/status/{userId} | 대기열 정보 확인| 
 
 **Request**
 
 ```https
-curl -X GET https://{SERVER_URL}/queue/token/status?token={token}
+curl -X GET https://{SERVER_URL}/queue/tokens/status/{userId}
 ```
 
 **Response**
@@ -538,9 +538,9 @@ curl -X GET https://{SERVER_URL}/concerts/{concertOptionId}/seats/available \
 
 ### 7. 콘서트 좌석 결제 API
 
-| Method | URI | Description         |
-|-----|-----|---------------------|
-| POST |/concerts/payments|콘서트 좌석 결재 | 
+| Method | URI          | Description         |
+|-----|--------------|---------------------|
+| POST | /payment/pay |콘서트 좌석 결재 | 
 
 
 **Request**
