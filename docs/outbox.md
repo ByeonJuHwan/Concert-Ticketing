@@ -81,7 +81,24 @@ fun publishReservationEvent(event: ReservationEvent) {
 발행 성공 시 아웃박스 상태를 `SEND_SUCCESS` 로 변경하고, 실패시 `SEND_FAIL` 로 업데이트합니다.
 
 ```kotlin
-
+/**
+* [아웃박스 패턴]
+* 카프카 이벤트를 발행하고
+* 발행이 성공하면 SEND_SUCCESS 로 변경
+* 발행이 실패하면 SEND_FAIL 로 변경
+*/
+override fun publish(event: ReservationEvent) {
+  kafkaTemplate.send("reservation", event.toKafkaMessage())
+      .whenComplete { _, exception ->
+          if(exception == null) {
+              reservationOutBoxRepository.updateStatusSuccess(event.toEntity())
+              log.info("예약 Kafka Event 발행 성공!!")
+          } else {
+              reservationOutBoxRepository.updateStatusFail(event.toEntity())
+              log.error("예약 Kafka Event 발행 실패!!", exception)
+          }
+      }
+}
 ```
 
 **코틀린 비동기 예외처리**
@@ -91,7 +108,20 @@ fun publishReservationEvent(event: ReservationEvent) {
 저는 메소드 이름을 기준으로 카프카 발행 메소드에 예외 발생 시 예외처리가 가능하도록 작성했습니다.
 
 ```kotlin
-
+ override fun getAsyncUncaughtExceptionHandler(): AsyncUncaughtExceptionHandler? {
+     return AsyncUncaughtExceptionHandler { ex, method, params ->
+         when(method.name) {
+             "publishReservationEvent" -> {
+                 log.error("[${method.name} Exception occurred] Kafka Message Published Error || Exception Message : ${ex.message}", ex)
+             }
+             else -> {
+                 log.error("이벤트 처리 예외 발생!! : ${ex.message}")
+                 log.error("메소드 이름 : ${method.name}")
+                 log.error("파라미터 : ${params.joinToString()}}")
+             }
+         }
+     }
+ }
 ```
 
 ### 4. Kafka 이벤트 Consume
