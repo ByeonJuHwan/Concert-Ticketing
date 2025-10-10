@@ -18,7 +18,7 @@
 
 * 1주차 : [콘서트 티켓팅 예약 시스템 설계](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218480) (API 명세, 시퀀스 다이어그램, ERD, 마일스톤 작성, Mock API 작성)
 * 2주차 : [포인트 충전 / 조회 기능 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218504), [대기열 시스템 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218492)
-* 3주차 : [콘서트 좌석 예약](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218503), [결재 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218505)
+* 3주차 : [콘서트 좌석 예약](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218503), [결제 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218505)
 
 
 ---
@@ -42,7 +42,7 @@
 
 ## 동시성 이슈
 
-콘서트 좌서 예약시 동일한 좌석에 여려명이 예약을 시도하는 과정에서 동시성 이슈가 발생합니다.
+콘서트 좌석 예약시 동일한 좌석에 여려명이 예약을 시도하는 과정에서 동시성 이슈가 발생합니다.
 
 어떻게 동시성 이슈를 해결하는지 그리고 락의 범위를 줄이기위해 트랜잭션의 범위를 줄이면 발행하는 사이드 이펙트에 대해서도 작성했습니다.
 
