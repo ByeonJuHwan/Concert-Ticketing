@@ -39,7 +39,7 @@
 [콘서트 좌석 예약 ERD](https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%A2%8C%EC%84%9D-%EC%98%88%EC%95%BD-ERD)
 
 ---
-## Monolitic -> MSA 전환
+## Monolithic -> MSA 전환
 
 ---
 
