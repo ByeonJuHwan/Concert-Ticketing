@@ -28,5 +28,5 @@ class ConcertEntity(
     val reserveStartDate: String,
     @Column(nullable = false)
     val reserveEndDate: String,
-) {
+): BaseEntity() {
 }

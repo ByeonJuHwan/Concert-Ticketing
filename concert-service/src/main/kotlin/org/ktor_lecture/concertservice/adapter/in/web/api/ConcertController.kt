@@ -37,7 +37,6 @@ class ConcertController (
     }
 
 
-
     @GetMapping("/{concertOptionId}/available-seats")
     override fun getAvailableSeats(
         @PathVariable concertOptionId: Long,

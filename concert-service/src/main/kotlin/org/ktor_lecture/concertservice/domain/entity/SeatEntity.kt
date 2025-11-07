@@ -1,0 +1,46 @@
+package org.ktor_lecture.concertservice.domain.entity
+
+import jakarta.persistence.Column
+import jakarta.persistence.ConstraintMode
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Index
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
+import org.ktor_lecture.concertservice.domain.status.SeatStatus
+
+@Entity
+@Table( 
+    name = "seat", 
+    indexes = [Index(name = "idx_seat_status_concert_option_id", columnList = "seat_status,concert_option_id")] 
+) 
+class SeatEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "concert_option_id", foreignKey = ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    val concertOption: ConcertOptionEntity,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var seatStatus: SeatStatus = SeatStatus.AVAILABLE,
+
+    @Column(nullable = false)
+    val price: Long,
+
+    @Column(nullable = false)
+    val seatNo: Int,
+) {
+    fun changeSeatStatus(status: SeatStatus) {
+        this.seatStatus = status
+    }
+}
