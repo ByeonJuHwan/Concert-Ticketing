@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableAsync
 @EnableCaching
 @EnableScheduling
-@SpringBootApplication
+//@SpringBootApplication
 class ConsertApplication
 
 fun main(args: Array<String>) {
