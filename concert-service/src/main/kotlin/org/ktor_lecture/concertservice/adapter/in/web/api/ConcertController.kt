@@ -3,7 +3,6 @@ package org.ktor_lecture.concertservice.adapter.`in`.web.api
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.ktor_lecture.concertservice.adapter.`in`.web.ApiResult
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
-import org.ktor_lecture.concertservice.adapter.`in`.web.request.toCommand
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.*
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDatesUseCase
@@ -45,7 +44,7 @@ class ConcertController (
         return ApiResult(data = ConcertAvailableSeatsResponse(concertOptionId, ConcertSeatInfoResponse.fromList(seats)))
     }
 
-    @PostMapping("reserve-seat")
+    @PostMapping("/reserve-seat")
     override fun reserveSeat(
         @RequestBody request: ReserveSeatRequest
     ) : ApiResult<ConcertReservationResponse> {

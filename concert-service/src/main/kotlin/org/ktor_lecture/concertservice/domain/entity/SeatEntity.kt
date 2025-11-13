@@ -14,6 +14,8 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.ktor_lecture.concertservice.domain.exception.ConcertException
+import org.ktor_lecture.concertservice.domain.exception.ErrorCode
 import org.ktor_lecture.concertservice.domain.status.SeatStatus
 
 @Entity
@@ -40,7 +42,11 @@ class SeatEntity(
     @Column(nullable = false)
     val seatNo: Int,
 ) {
-    fun changeSeatStatus(status: SeatStatus) {
-        this.seatStatus = status
+    fun temporarilyReserve() {
+        if (seatStatus != SeatStatus.AVAILABLE){
+             throw ConcertException(ErrorCode.SEAT_NOT_AVAILABLE)
+         }
+
+        this.seatStatus = SeatStatus.TEMPORARILY_ASSIGNED
     }
 }
