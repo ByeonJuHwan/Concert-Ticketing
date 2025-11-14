@@ -1,10 +1,11 @@
 package org.ktor_lecture.concertservice.application.service
 
-import org.ktor_lecture.concertservice.adapter.`in`.consumer.event.UserCreatedEvent
+import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 import org.ktor_lecture.concertservice.application.port.`in`.ConcertUserCreateUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.out.ConcertReadRepository
 import org.ktor_lecture.concertservice.application.port.out.ConcertWriteRepository
+import org.ktor_lecture.concertservice.application.port.out.EventPublisher
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
 import org.ktor_lecture.concertservice.application.port.out.SeatRepository
 import org.ktor_lecture.concertservice.application.service.command.ReserveSeatCommand
@@ -12,8 +13,10 @@ import org.ktor_lecture.concertservice.application.service.dto.ReserveSeatInfo
 import org.ktor_lecture.concertservice.domain.entity.ConcertUserEntity
 import org.ktor_lecture.concertservice.domain.entity.ReservationEntity
 import org.ktor_lecture.concertservice.domain.entity.SeatEntity
+import org.ktor_lecture.concertservice.domain.event.ReservationCreatedEvent
 import org.ktor_lecture.concertservice.domain.exception.ConcertException
 import org.ktor_lecture.concertservice.domain.exception.ErrorCode
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -24,8 +27,17 @@ class ConcertWriteService (
     private val concertReadRepository: ConcertReadRepository,
     private val seatRepository: SeatRepository,
     private val reservationRepository: ReservationRepository,
+    @Qualifier("application") private val eventPublisher: EventPublisher,
 ): ReserveSeatUseCase, ConcertUserCreateUseCase {
 
+    /**
+     * 좌석 임시 예약
+     *
+     * 1. 유저 정보 조회
+     * 2. 예약가능한 죄석인지 확인후 좌석 임시예약 -> 비관적락 사용
+     * 3. 임시 예약 저장
+     * 4. 예약 생성 이벤트 발행
+     */
     @Transactional
     override fun reserveSeat(command: ReserveSeatCommand): ReserveSeatInfo {
         // 유저 정보 조회
@@ -43,9 +55,9 @@ class ConcertWriteService (
             expiresAt = expiresAt,
         )
 
-        reservationRepository.save(reservation)
+        val savedReservation = reservationRepository.save(reservation)
 
-        // TODO 예약 성공 이벤트 발행
+        eventPublisher.publish(ReservationCreatedEvent(savedReservation.id!!))
 
         return ReserveSeatInfo(
             status = reservation.status,
@@ -53,6 +65,10 @@ class ConcertWriteService (
         )
     }
 
+    /**
+     * USER-SERVICE 로 부터 넘어온 유저 데이터 처리
+     * Kafka로 최종적 일관성으로 데이터 저장
+     */
     @Transactional
     override fun createUser(event: UserCreatedEvent) {
         val user = ConcertUserEntity(

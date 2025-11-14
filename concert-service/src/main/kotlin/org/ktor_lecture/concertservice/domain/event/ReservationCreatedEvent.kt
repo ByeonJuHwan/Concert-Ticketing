@@ -1,15 +1,14 @@
-package org.ktor_lecture.concertservice.adapter.`in`.consumer.event
+package org.ktor_lecture.concertservice.domain.event
 
 import kotlinx.serialization.SerialName
-import java.util.UUID
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Serializable
-@SerialName("UserCreated")
-data class UserCreatedEvent(
-    val userId: String,
-    val userName: String,
+@SerialName("ReservationCreated")
+data class ReservationCreatedEvent(
+    val reservationId: Long,
     override val eventId: String = UUID.randomUUID().toString(),
     override val occurredAt: String = LocalDateTime.now().toString(),
-): DomainEvent()
+) : DomainEvent()

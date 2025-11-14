@@ -1,6 +1,6 @@
 package org.ktor_lecture.concertservice.application.port.`in`
 
-import org.ktor_lecture.concertservice.adapter.`in`.consumer.event.UserCreatedEvent
+import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 
 interface ConcertUserCreateUseCase {
 
