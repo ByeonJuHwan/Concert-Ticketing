@@ -24,6 +24,9 @@ class UserEventService(
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
+    /**
+     * 아웃박스 메세지 생성
+     */
     @Transactional
     override fun recordUserCreatedOutBoxMsg(event: UserCreatedEvent) {
         val outBox = OutBox(
@@ -38,6 +41,9 @@ class UserEventService(
     }
 
 
+    /**
+     * 이벤트 발행
+     */
     override fun publishUseCreatedEvent(event: UserCreatedEvent) {
         eventPublisher.publish(event)
     }
