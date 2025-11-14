@@ -41,7 +41,7 @@ class KafkaEventPublisher (
     }
 
     override fun publish(event: DomainEvent) {
-        TODO("Not yet implemented")
+        log.info("이벤트 퍼블리싱")
     }
 
 }
