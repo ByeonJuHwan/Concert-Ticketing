@@ -47,10 +47,15 @@ class OutBox (
     var maxRetryCount: Int = 3,
 
 ): BaseEntity() {
+
+    fun addRetryCount() {
+        retryCount++
+    }
 }
 
 enum class OutboxStatus {
     PENDING,
     SENT,
-    FAILED
+    FAILED,
+    CANT_RETRY,
 }
