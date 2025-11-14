@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class ReservationWriteAdapter (
     private val reservationJpaRepository: ReservationJpaRepository,
 ): ReservationRepository {
-    override fun save(reservation: ReservationEntity) {
-        reservationJpaRepository.save(reservation)
+    override fun save(reservation: ReservationEntity): ReservationEntity {
+        return reservationJpaRepository.save(reservation)
     }
 }
