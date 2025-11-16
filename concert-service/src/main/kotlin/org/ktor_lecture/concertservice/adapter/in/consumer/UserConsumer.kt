@@ -21,10 +21,8 @@ class UserConsumer (
     )
     fun userCreatedConsumer(eventString: String) {
         try {
-
             val event = JsonUtil.decodeFromJson<UserCreatedEvent>(eventString)
             concertUserCreateUseCase.createUser(event)
-
         } catch (e: Exception) {
             log.error("이벤트 처리 실패 : {}", eventString, e)
         }
