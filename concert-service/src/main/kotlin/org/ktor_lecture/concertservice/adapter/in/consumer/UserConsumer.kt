@@ -16,7 +16,7 @@ class UserConsumer (
 
     @KafkaListener(
         topics = ["user.create"],
-        groupId = "user-create-group",
+        groupId = "reservation-user-create-group",
         concurrency = "3",
     )
     fun userCreatedConsumer(eventString: String) {
