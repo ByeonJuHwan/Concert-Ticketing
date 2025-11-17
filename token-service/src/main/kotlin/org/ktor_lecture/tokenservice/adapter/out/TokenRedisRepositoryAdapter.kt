@@ -37,4 +37,16 @@ class TokenRedisRepositoryAdapter(
         return redisTemplate.opsForZSet().rank(WAITING_QUEUE, userJson)
     }
 
+    override fun findTopWaitingTokens(start: Long, end: Long): Set<String>? {
+        return redisTemplate.opsForZSet().range(WAITING_QUEUE, start, end)
+    }
+
+    override fun addActiveQueue(token: String) {
+        redisTemplate.opsForSet().add(ACTIVE_QUEUE, token)
+    }
+
+    override fun removeWaitingQueueToken(userJson: String) {
+        redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
+    }
+
 }

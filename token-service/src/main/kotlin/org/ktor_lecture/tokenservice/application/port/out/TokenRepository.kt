@@ -8,4 +8,7 @@ interface TokenRepository {
     fun getTokenExpireTime(key: String): Long?
     fun isTokenInActiveQueue(token: String): Boolean
     fun getRankInWaitingQueue(userJson: String): Long?
+    fun findTopWaitingTokens(start: Long, end: Long): Set<String>?
+    fun addActiveQueue(token: String)
+    fun removeWaitingQueueToken(userJson: String)
 }
