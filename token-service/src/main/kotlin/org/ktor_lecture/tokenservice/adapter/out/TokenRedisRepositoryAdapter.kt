@@ -49,4 +49,11 @@ class TokenRedisRepositoryAdapter(
         redisTemplate.opsForZSet().remove(WAITING_QUEUE, userJson)
     }
 
+    override fun deleteToken(key: String) {
+        redisTemplate.delete(key)
+    }
+
+    override fun deleteAllActiveTokens(): Boolean {
+        return redisTemplate.delete(ACTIVE_QUEUE)
+    }
 }

@@ -1,5 +1,6 @@
 package org.ktor_lecture.tokenservice.application.service
 
+import org.ktor_lecture.tokenservice.application.port.`in`.ManageExpiredActiveTokenUseCase
 import org.ktor_lecture.tokenservice.application.port.`in`.MoveTokenToActiveQueueUseCase
 import org.ktor_lecture.tokenservice.application.port.out.LockKeyGenerator
 import org.ktor_lecture.tokenservice.application.port.out.TokenRepository
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service
 class TokenBatchService (
     private val tokenRepository: TokenRepository,
     private val lockKeyGenerator: LockKeyGenerator,
-): MoveTokenToActiveQueueUseCase {
+): MoveTokenToActiveQueueUseCase, ManageExpiredActiveTokenUseCase {
 
     private val log : Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -37,6 +38,17 @@ class TokenBatchService (
             }.onFailure { e ->
                 log.error("WaitingQueue -> ActiveQueue Error : $userJson", e)
             }
+        }
+    }
+
+    /**
+     * Active Queue 에서 결제까지 진행하지 않고 이탈한 토큰 삭제 (하루에 한번 실행)
+     */
+    override fun deleteExpiredActiveTokens() {
+        if (tokenRepository.deleteAllActiveTokens()) {
+            log.info("Active Queue 삭제 완료")
+        } else {
+            log.error("Active Queue 삭제 실패")
         }
     }
 }
