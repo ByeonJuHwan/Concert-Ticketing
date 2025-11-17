@@ -1,7 +1,7 @@
 package org.ktor_lecture.tokenservice.application.service
 
 import org.ktor_lecture.tokenservice.application.port.`in`.QueueTokenUserCreateUseCase
-import org.ktor_lecture.tokenservice.application.port.out.TokenRepository
+import org.ktor_lecture.tokenservice.application.port.out.TokenUserRepository
 import org.ktor_lecture.tokenservice.domain.entity.QueueTokenUserEntity
 import org.ktor_lecture.tokenservice.domain.event.UserCreatedEvent
 import org.springframework.stereotype.Service
@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class TokenEventService (
-    private val tokenRepository: TokenRepository,
+    private val tokenUserRepository: TokenUserRepository,
 ): QueueTokenUserCreateUseCase {
 
     @Transactional
@@ -18,6 +18,6 @@ class TokenEventService (
             username = event.userName,
         )
 
-        tokenRepository.createTokenUser(user)
+        tokenUserRepository.createTokenUser(user)
     }
 }
