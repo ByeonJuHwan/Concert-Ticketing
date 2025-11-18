@@ -87,6 +87,8 @@ routes:
 
 Gateway 도입으로 많은 개선이 있었지만, 인프라 관점에서 Gateway가 단일 장애점(Single Point of Failure)이 되는 문제가 발생했습니다.
 
+![Gateway 다이어그램](../image/gateway.png)
+
 기존에는 각 서비스로 직접 요청이 전달되었지만, Gateway 도입 후 모든 요청의 진입점이 Gateway로 집중됩니다.
 따라서 Gateway 서버에 장애가 발생하면 후방의 모든 서비스에 장애가 전파될 수 있습니다.
 
