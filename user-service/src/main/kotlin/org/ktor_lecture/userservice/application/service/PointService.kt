@@ -3,10 +3,13 @@ package org.ktor_lecture.userservice.application.service
 import org.ktor_lecture.userservice.adapter.`in`.web.response.CurrentPointResponse
 import org.ktor_lecture.userservice.application.port.`in`.point.ChargePointUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.SearchCurrentPointsUseCase
+import org.ktor_lecture.userservice.application.port.out.PointHistoryRepository
 import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.application.port.out.UserReadRepository
 import org.ktor_lecture.userservice.application.service.command.ChargePointCommand
 import org.ktor_lecture.userservice.domain.entity.PointEntity
+import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
+import org.ktor_lecture.userservice.domain.entity.PointTransactionType
 import org.ktor_lecture.userservice.domain.exception.ConcertException
 import org.ktor_lecture.userservice.domain.exception.ErrorCode
 import org.springframework.stereotype.Service
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 class PointService (
     private val userReadRepository: UserReadRepository,
     private val pointRepository: PointRepository,
+    private val pointHistoryRepository: PointHistoryRepository,
 ): ChargePointUseCase, SearchCurrentPointsUseCase {
 
     /**
@@ -23,6 +27,7 @@ class PointService (
      *
      * 1. 유저조회
      * 2. 해당 유저에 포인트 충전
+     * 3. 포인트 충전 히스토리 저장
      */
     @Transactional
     override fun chargePoints(command: ChargePointCommand): CurrentPointResponse {
@@ -34,6 +39,14 @@ class PointService (
         point.charge(command.amount)
 
         pointRepository.save(point)
+
+        val pointHistory = PointHistoryEntity(
+            user = user,
+            amount = command.amount,
+            type = PointTransactionType.CHARGE,
+        )
+
+        pointHistoryRepository.save(pointHistory)
 
         return CurrentPointResponse(
             currentPoints = point.point
