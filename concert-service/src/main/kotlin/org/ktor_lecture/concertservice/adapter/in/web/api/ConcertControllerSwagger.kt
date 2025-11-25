@@ -9,7 +9,7 @@ import org.ktor_lecture.concertservice.adapter.`in`.web.ApiResult
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertAvailableDatesResponse
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertAvailableSeatsResponse
-import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationResponse
+import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationStatusResponse
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertsResponse
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -74,5 +74,5 @@ interface ConcertControllerSwagger {
     )
     fun reserveSeat(
         @RequestBody request: ReserveSeatRequest
-    ) : ApiResult<ConcertReservationResponse>
+    ) : ApiResult<ConcertReservationStatusResponse>
 }

@@ -2,16 +2,21 @@ package org.ktor_lecture.userservice.application.service
 
 import org.ktor_lecture.userservice.adapter.`in`.web.response.CurrentPointResponse
 import org.ktor_lecture.userservice.application.port.`in`.point.ChargePointUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointConfirmUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointReserveUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointUseUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.SearchCurrentPointsUseCase
 import org.ktor_lecture.userservice.application.port.out.PointHistoryRepository
 import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.application.port.out.UserReadRepository
 import org.ktor_lecture.userservice.application.service.command.ChargePointCommand
+import org.ktor_lecture.userservice.application.service.command.PointUseCommand
 import org.ktor_lecture.userservice.domain.entity.PointEntity
 import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
 import org.ktor_lecture.userservice.domain.entity.PointTransactionType
 import org.ktor_lecture.userservice.domain.exception.ConcertException
 import org.ktor_lecture.userservice.domain.exception.ErrorCode
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -20,7 +25,9 @@ class PointService (
     private val userReadRepository: UserReadRepository,
     private val pointRepository: PointRepository,
     private val pointHistoryRepository: PointHistoryRepository,
-): ChargePointUseCase, SearchCurrentPointsUseCase {
+): ChargePointUseCase, SearchCurrentPointsUseCase, PointUseUseCase {
+
+    private val log = LoggerFactory.getLogger(this.javaClass)
 
     /**
      * 포인트를 충전합니다
@@ -63,6 +70,30 @@ class PointService (
 
         return CurrentPointResponse(
             currentPoints = point.point
+        )
+    }
+
+    /**
+     * 유저 포인트 사용
+     * 1. 유저 검색
+     * 2. 유저 - 포인트 검색
+     * 3. 유저 포인트 차감
+     * 4. 포인트 사용 히스토리 저장
+     */
+    @Transactional
+    override fun use(command: PointUseCommand) {
+        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+
+        val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
+
+        point.use(command.amount)
+
+        pointHistoryRepository.save(
+            PointHistoryEntity(
+                user = user,
+                amount = command.amount,
+                type = PointTransactionType.USE,
+            )
         )
     }
 }

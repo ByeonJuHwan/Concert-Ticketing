@@ -47,8 +47,8 @@ class ConcertController (
     @PostMapping("/reserve-seat")
     override fun reserveSeat(
         @RequestBody request: ReserveSeatRequest
-    ) : ApiResult<ConcertReservationResponse> {
+    ) : ApiResult<ConcertReservationStatusResponse> {
         val response = reserveSeatUseCase.reserveSeat(request.toCommand())
-        return ApiResult(ConcertReservationResponse.from(response))
+        return ApiResult(ConcertReservationStatusResponse.from(response))
     }
 }
