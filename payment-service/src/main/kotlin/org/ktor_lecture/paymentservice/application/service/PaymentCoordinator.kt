@@ -1,23 +1,31 @@
 package org.ktor_lecture.paymentservice.application.service
 
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
+import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
 import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
 import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
 import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCommand
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
+import org.ktor_lecture.paymentservice.application.service.saga.SagaExecution
+import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
+
+const val PAYMENT = "PAYMENT"
 
 @Component
 class PaymentCoordinator (
     private val paymentService: PaymentService,
     private val pointApiClient: PointApiClient,
     private val concertApiClient: ConcertApiClient,
+    private val sagaExecution: SagaExecution,
 ) :PaymentUseCase {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     /**
      * 결제 처리
@@ -33,52 +41,49 @@ class PaymentCoordinator (
      * 9. 예약 정보 저장
      */
     override fun pay(command: PaymentCommand): PaymentResponse {
-        val reservation = concertApiClient.getReservation(command.reservationId) // TODO api 요청이라 try-catch 필요해보임
+        val reservation = concertApiClient.getReservation(command.reservationId)
+        validateReservation(reservation)
 
-        checkReservationStatus(reservation.status)
 
-        if (isExpired(reservation.expiresAt)) {
-            concertApiClient.reservationExpiredAndSeatAvaliable(reservation.reservationId)
-            throw ConcertException(ErrorCode.RESERVATION_EXPIRED)
-        }
-
-        // --- validation 종료
-        val requestId: String = reservation.reservationId.toString()
-        val userId: String = reservation.userId.toString()
-        var pointUsed = false
-        var reservationConfirmed = false
-        var seatConfirmed = false
-        var paymentSaveStatus = false
+        val reservationId = reservation.reservationId.toString()
+        val userId = reservation.userId.toString()
         var paymentId = 0L
 
+        // saga 1회 저장
+        val sagaId = sagaExecution.setInitSaga(PAYMENT)
+
         try {
-            // 포인트 사용 요청
-            pointApiClient.use(
-                requestId = requestId,
-                userId = userId,
-                amount = reservation.price
-            )
-            pointUsed = true
 
-            // 예약 상태를 PAID로 변경
-            concertApiClient.changeReservationPaid(requestId)
-            reservationConfirmed = true
+            // 포인트 차감
+            sagaExecution.executeStep(
+                sagaId,
+                "POINT_DEDUCT"
+            ) {
+                pointApiClient.use(
+                    userId = userId,
+                    amount = reservation.price,
+                )
+            }
 
-            // 좌석 상태를 Reserve 로 변경
-            concertApiClient.changeSeatReserved(requestId)
-            seatConfirmed = true
+            // 예약 확정
+            sagaExecution.executeStep(sagaId, "RESERVATION_CONFIRM") {
+                concertApiClient.changeReservationPaid(reservationId)
+            }
 
-            // 결제 정보 저장
-            val command = PaymentCreateCommand(
-                price = reservation.price,
-            )
+            // 좌석 확정
+            sagaExecution.executeStep(sagaId, "SEAT_CONFIRM") {
+                concertApiClient.changeSeatReserved(reservationId)
+            }
 
-            val payment = paymentService.save(command)
-            paymentSaveStatus = true
+            // 결제 저장
+            val payment: PaymentEntity = sagaExecution.executeStep(sagaId, "PAYMENT_SAVE") {
+                paymentService.save(
+                    PaymentCreateCommand(reservation.price)
+                )
+            }
             paymentId = payment.id!!
 
-
-            throw RuntimeException("test")
+            sagaExecution.completeSaga(sagaId)
 
             return PaymentResponse(
                 reservationId = reservation.reservationId,
@@ -88,52 +93,46 @@ class PaymentCoordinator (
             )
         } catch (e: Exception) {
             handleRollback(
-                pointUsed,
-                reservationConfirmed,
-                seatConfirmed,
-                paymentSaveStatus,
+                sagaId,
                 userId,
                 reservation.price,
-                requestId,
-                paymentId
+                reservationId,
+                paymentId,
             )
             e.printStackTrace()
-            throw ConcertException(ErrorCode.PAYMENT_FAILED)
+            throw e
         }
     }
 
-    private fun handleRollback(pointUsed: Boolean, reservationConfirmed: Boolean, seatConfirmed: Boolean, paymentSaveStatus: Boolean, userId: String, price: Long, requestId: String, paymentId: Long) {
-        if (pointUsed) {
-            // TODO 포인트 히스토리는 어떻게 하지?
+    private fun handleRollback(sagaId: Long, userId: String, price: Long, requestId: String, paymentId: Long) {
+        sagaExecution.startCompensation(sagaId)
+
+        val completedSteps = sagaExecution.getCompletedSteps(sagaId)
+
+        completedSteps.reversed().forEach { step ->
             try {
-                pointApiClient.cancel(userId, price)
+                when (step) {
+                    "POINT_DEDUCT" -> pointApiClient.cancel(userId, price)
+                    "RESERVATION_CONFIRM" -> concertApiClient.changeReservationPending(requestId)
+                    "SEAT_CONFIRM" -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
+                    "PAYMENT_SAVE" -> paymentService.cancelPayment(paymentId)
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                log.error("보상실패: $step - ${e.message}")
             }
         }
 
-        if (reservationConfirmed) {
-            try {
-                concertApiClient.changeReservationPending(requestId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        // 보상 완료 표시
+        sagaExecution.completeCompensation(sagaId)
+    }
 
-        if (seatConfirmed) {
-            try {
-                concertApiClient.changeSeatTemporarilyAssigned(requestId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
 
-        if (paymentSaveStatus) {
-            try {
-                paymentService.cancelPayment(paymentId)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    private fun validateReservation(reservation: ConcertReservationResponse) {
+        checkReservationStatus(reservation.status)
+
+        if (isExpired(reservation.expiresAt)) {
+            concertApiClient.reservationExpiredAndSeatAvaliable(reservation.reservationId)
+            throw ConcertException(ErrorCode.RESERVATION_EXPIRED)
         }
     }
 

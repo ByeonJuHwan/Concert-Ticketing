@@ -1,0 +1,11 @@
+package org.ktor_lecture.paymentservice.application.service.saga
+
+interface SagaStep {
+
+    fun <T> executeStep(sagaId: Long, stepName: String, action: () -> T): T
+    fun setInitSaga(sataType: String): Long
+    fun completeSaga(sagaId: Long)
+    fun getCompletedSteps(sagaId: Long): List<String>
+    fun startCompensation(sagaId: Long)
+    fun completeCompensation(sagaId: Long)
+}

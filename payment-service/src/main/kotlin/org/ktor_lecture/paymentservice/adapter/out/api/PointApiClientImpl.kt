@@ -38,9 +38,8 @@ class PointApiClientImpl(
             .toBodilessEntity()
     }
 
-    override fun use(requestId: String, userId: String, amount: Long) {
+    override fun use(userId: String, amount: Long) {
         val request = PointUseRequest(
-            requestId = requestId,
             userId = userId,
             amount = amount,
         )

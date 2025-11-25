@@ -10,7 +10,6 @@ interface PointApiClient {
     fun conformPoints(requestId: String)
 
     fun use(
-        requestId: String,
         userId: String,
         amount: Long,
     )
