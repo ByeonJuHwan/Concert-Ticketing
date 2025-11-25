@@ -1,10 +1,14 @@
 package org.ktor_lecture.concertservice.adapter.`in`.web.api
 
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ChangeReservationPaidRequest
+import org.ktor_lecture.concertservice.adapter.`in`.web.request.ChangeReservationPendingRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ChangeSeatReservedRequest
+import org.ktor_lecture.concertservice.adapter.`in`.web.request.ChangeSeatTemporarilyAssignedRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReservationExpiredRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationResponse
+import org.ktor_lecture.concertservice.application.port.`in`.ChangeReservationPendingUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatReservedUseCase
+import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatTemporarilyAssignedUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationExpiredUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationPaidUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchReservationUseCase
@@ -20,6 +24,8 @@ class ReservationController(
     private val reservationExpiredUseCase: ReservationExpiredUseCase,
     private val reservationPaidUseCase: ReservationPaidUseCase,
     private val changeSeatReservedUseCase: ChangeSeatReservedUseCase,
+    private val changeReservationPendingUseCase: ChangeReservationPendingUseCase,
+    private val changeReservationTemporarilyAssignedUseCase: ChangeSeatTemporarilyAssignedUseCase,
 ) {
 
     @GetMapping("/reservations/{reservationId}")
@@ -43,10 +49,24 @@ class ReservationController(
         reservationPaidUseCase.changeReservationPaid(request.toCommand())
     }
 
-    @PostMapping("reservations/seat/reserved")
+    @PostMapping("/reservations/seat/reserved")
     fun changeSeatStatus(
         @RequestBody request: ChangeSeatReservedRequest
     ) {
         changeSeatReservedUseCase.changeSeatStatusReserved(request.toCommand())
+    }
+
+    @PostMapping("/reservations/pending")
+    fun changeReservationPending(
+        @RequestBody request: ChangeReservationPendingRequest
+    ) {
+        changeReservationPendingUseCase.changeReservationPending(request.toCommand())
+    }
+
+    @PostMapping("/reservations/seat/temporarily-assign")
+    fun changeSeatTemporarilyAssigned(
+        @RequestBody request: ChangeSeatTemporarilyAssignedRequest
+    ) {
+        changeReservationTemporarilyAssignedUseCase.changeSeatTemporarilyAssigned(request.toCommand())
     }
 }

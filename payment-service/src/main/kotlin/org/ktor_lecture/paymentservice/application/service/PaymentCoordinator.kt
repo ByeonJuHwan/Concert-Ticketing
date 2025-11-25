@@ -83,24 +83,40 @@ class PaymentCoordinator (
             handleTccRollback(
                 pointUsed,
                 reservationConfirmed,
-                seatConfirmed
+                seatConfirmed,
+                userId,
+                reservation.price,
+                requestId,
             )
             e.printStackTrace()
             throw ConcertException(ErrorCode.PAYMENT_FAILED)
         }
     }
 
-    private fun handleTccRollback(pointUsed: Boolean, reservationConfirmed: Boolean, seatConfirmed: Boolean) {
+    private fun handleTccRollback(pointUsed: Boolean, reservationConfirmed: Boolean, seatConfirmed: Boolean, userId: String, price: Long, requestId: String) {
         if (pointUsed) {
+            // TODO 포인트 히스토리는 어떻게 하지?
+            try {
+                pointApiClient.cancel(userId, price)
+            } catch (e: Exception) {
 
+            }
         }
 
         if (reservationConfirmed) {
+            try {
+                concertApiClient.changeReservationPending(requestId)
+            } catch (e: Exception) {
 
+            }
         }
 
         if (seatConfirmed) {
+            try {
+                concertApiClient.changeSeatTemporarilyAssigned(requestId)
+            } catch (e: Exception) {
 
+            }
         }
     }
 

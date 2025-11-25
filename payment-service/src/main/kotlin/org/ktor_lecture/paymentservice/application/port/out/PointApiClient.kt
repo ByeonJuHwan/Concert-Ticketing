@@ -14,4 +14,6 @@ interface PointApiClient {
         userId: String,
         amount: Long,
     )
+
+    fun cancel(userId: String, price: Long)
 }

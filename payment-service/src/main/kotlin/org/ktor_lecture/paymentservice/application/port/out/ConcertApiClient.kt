@@ -7,5 +7,7 @@ interface ConcertApiClient {
     fun reservationExpiredAndSeatAvaliable(reservationId: Long)
     fun changeReservationPaid(requestId: String)
     fun changeSeatReserved(requestId: String)
+    fun changeReservationPending(requestId: String)
+    fun changeSeatTemporarilyAssigned(requestId: String)
 
 }

@@ -1,11 +1,13 @@
 package org.ktor_lecture.concertservice.application.service
 
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationResponse
+import org.ktor_lecture.concertservice.application.port.`in`.ChangeReservationPendingUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatReservedUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationExpiredUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationPaidUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchReservationUseCase
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
+import org.ktor_lecture.concertservice.application.service.command.ChangeReservationPendingCommand
 import org.ktor_lecture.concertservice.application.service.command.ChangeSeatStatusReservedCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationExpiredCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationPaidCommand
@@ -19,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ConcertReservationService (
     private val reservationRepository: ReservationRepository,
-): SearchReservationUseCase, ReservationExpiredUseCase, ReservationPaidUseCase {
+): SearchReservationUseCase, ReservationExpiredUseCase, ReservationPaidUseCase, ChangeReservationPendingUseCase {
     override fun getReservation(reservationId: Long): ConcertReservationResponse {
         val reservation = reservationRepository.getReservationWithSeatInfo(reservationId)
             ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
@@ -50,5 +52,13 @@ class ConcertReservationService (
                     .orElseThrow { throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND) }
 
         reservation.changeStatus(ReservationStatus.PAID)
+    }
+
+    @Transactional
+    override fun changeReservationPending(command: ChangeReservationPendingCommand) {
+        val reservation = reservationRepository.getReservation(command.requestId.toLong())
+                            .orElseThrow { throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND) }
+
+        reservation.changeStatus(ReservationStatus.PENDING)
     }
 }

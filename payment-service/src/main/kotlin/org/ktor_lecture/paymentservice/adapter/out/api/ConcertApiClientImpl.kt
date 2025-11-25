@@ -2,6 +2,7 @@ package org.ktor_lecture.paymentservice.adapter.out.api
 
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeReservationPaidRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSeatReservedRequest
+import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSeatTemporarilyAssignedRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ReservationExpiredRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
 import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
@@ -50,5 +51,26 @@ class ConcertApiClientImpl(
             .uri("/reservations/seat/reserved")
             .body(request)
             .retrieve()
+            .toBodilessEntity()
+    }
+
+    override fun changeReservationPending(requestId: String) {
+        val request = ChangeReservationPaidRequest(requestId)
+
+        restClient.post()
+            .uri("/reservations/pending")
+            .body(request)
+            .retrieve()
+            .toBodilessEntity()
+    }
+
+    override fun changeSeatTemporarilyAssigned(requestId: String) {
+        val request = ChangeSeatTemporarilyAssignedRequest(requestId)
+
+        restClient.post()
+            .uri("/reservations/seat/temporarily-assign")
+            .body(request)
+            .retrieve()
+            .toBodilessEntity()
     }
 }

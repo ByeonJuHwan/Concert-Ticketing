@@ -4,7 +4,6 @@ import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointConfir
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointReserveRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointUseRequest
 import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.client.RestClient
 
 class PointApiClientImpl(
@@ -50,5 +49,9 @@ class PointApiClientImpl(
             .body(request)
             .retrieve()
             .toBodilessEntity()
+    }
+
+    override fun cancel(userId: String, amount: Long) {
+
     }
 }
