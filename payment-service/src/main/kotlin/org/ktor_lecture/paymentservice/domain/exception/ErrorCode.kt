@@ -12,6 +12,8 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
     NOT_ENOUGH_POINTS("400", "포인트가 부족합니다", HttpStatus.BAD_REQUEST),
     RESERVATION_ALREADY_PAID("409", "이미 결제된 예약입니다", HttpStatus.CONFLICT),
     RESERVATION_OUTBOX_NOT_FOUND("404", "예약의 아웃박스를 찾을수 없습니다", HttpStatus.NOT_FOUND),
+    PAYMENT_NOT_SUCCESS("500", "결제가 정상처리되지 않았습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_NOT_FOUND("404", "존재하는 결제가 없습니다", HttpStatus.NOT_FOUND),
     PAYMENT_FAILED("500", "결제에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
 }

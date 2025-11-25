@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.adapter.out.api
 
+import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointCancelRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointConfirmRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointReserveRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointUseRequest
@@ -52,6 +53,15 @@ class PointApiClientImpl(
     }
 
     override fun cancel(userId: String, amount: Long) {
+        val request = PointCancelRequest(
+            userId = userId,
+            amount = amount,
+        )
 
+        restClient.post()
+            .uri("/points/cancel")
+            .body(request)
+            .retrieve()
+            .toBodilessEntity()
     }
 }

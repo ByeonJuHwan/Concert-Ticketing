@@ -9,6 +9,8 @@ import org.ktor_lecture.paymentservice.domain.entity.PaymentStatus
 import org.ktor_lecture.paymentservice.domain.entity.PaymentType
 import org.ktor_lecture.paymentservice.domain.entity.PaymentUserEntity
 import org.ktor_lecture.paymentservice.domain.event.UserCreatedEvent
+import org.ktor_lecture.paymentservice.domain.exception.ConcertException
+import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,15 +29,21 @@ class PaymentService (
     }
 
     @Transactional
-    override fun save(command: PaymentCreateCommand): String {
+    override fun cancelPayment(paymentId: Long) {
+        val payment = paymentRepository.findById(paymentId)
+            .orElseThrow { throw ConcertException(ErrorCode.PAYMENT_NOT_FOUND) }
+
+        payment.cancel()
+    }
+
+    @Transactional
+    override fun save(command: PaymentCreateCommand): PaymentEntity {
         val payment = PaymentEntity(
             price = command.price,
             paymentStatus = PaymentStatus.SUCCESS,
             paymentType = PaymentType.POINT,
         )
 
-        paymentRepository.save(payment)
-
-        return payment.paymentStatus.toString()
+        return paymentRepository.save(payment)
     }
 }

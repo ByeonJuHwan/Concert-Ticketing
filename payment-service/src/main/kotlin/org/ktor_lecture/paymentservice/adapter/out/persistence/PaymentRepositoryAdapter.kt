@@ -6,6 +6,7 @@ import org.ktor_lecture.paymentservice.application.port.out.PaymentRepository
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.entity.PaymentUserEntity
 import org.springframework.stereotype.Component
+import java.util.Optional
 
 @Component
 class PaymentRepositoryAdapter (
@@ -16,7 +17,11 @@ class PaymentRepositoryAdapter (
         paymentUserJpaRepository.save(user)
     }
 
-    override fun save(payment: PaymentEntity) {
-        paymentJpaRepository.save(payment)
+    override fun save(payment: PaymentEntity): PaymentEntity {
+        return paymentJpaRepository.save(payment)
+    }
+
+    override fun findById(paymentId: Long): Optional<PaymentEntity> {
+        return paymentJpaRepository.findById(paymentId)
     }
 }

@@ -46,4 +46,8 @@ class PointEntity(
 
         this.point -= amount
     }
+
+    fun cancel(amount: Long) {
+        this.point += amount
+    }
 }

@@ -2,6 +2,7 @@ package org.ktor_lecture.userservice.application.service
 
 import org.ktor_lecture.userservice.adapter.`in`.web.response.CurrentPointResponse
 import org.ktor_lecture.userservice.application.port.`in`.point.ChargePointUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointCancelUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.PointConfirmUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.PointReserveUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.PointUseUseCase
@@ -10,6 +11,7 @@ import org.ktor_lecture.userservice.application.port.out.PointHistoryRepository
 import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.application.port.out.UserReadRepository
 import org.ktor_lecture.userservice.application.service.command.ChargePointCommand
+import org.ktor_lecture.userservice.application.service.command.PointCancelCommand
 import org.ktor_lecture.userservice.application.service.command.PointUseCommand
 import org.ktor_lecture.userservice.domain.entity.PointEntity
 import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
@@ -25,7 +27,7 @@ class PointService (
     private val userReadRepository: UserReadRepository,
     private val pointRepository: PointRepository,
     private val pointHistoryRepository: PointHistoryRepository,
-): ChargePointUseCase, SearchCurrentPointsUseCase, PointUseUseCase {
+): ChargePointUseCase, SearchCurrentPointsUseCase, PointUseUseCase, PointCancelUseCase {
 
     private val log = LoggerFactory.getLogger(this.javaClass)
 
@@ -95,5 +97,14 @@ class PointService (
                 type = PointTransactionType.USE,
             )
         )
+    }
+
+    @Transactional
+    override fun cancel(command: PointCancelCommand) {
+        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+
+        val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
+
+        point.cancel(command.amount)
     }
 }

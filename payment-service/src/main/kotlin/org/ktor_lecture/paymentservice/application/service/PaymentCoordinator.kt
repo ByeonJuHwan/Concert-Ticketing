@@ -48,6 +48,8 @@ class PaymentCoordinator (
         var pointUsed = false
         var reservationConfirmed = false
         var seatConfirmed = false
+        var paymentSaveStatus = false
+        var paymentId = 0L
 
         try {
             // 포인트 사용 요청
@@ -71,35 +73,42 @@ class PaymentCoordinator (
                 price = reservation.price,
             )
 
-            val status = paymentService.save(command)
+            val payment = paymentService.save(command)
+            paymentSaveStatus = true
+            paymentId = payment.id!!
+
+
+            throw RuntimeException("test")
 
             return PaymentResponse(
                 reservationId = reservation.reservationId,
                 seatNo = reservation.seatNo,
-                status = status,
+                status = payment.paymentStatus.toString(),
                 price = reservation.price,
             )
         } catch (e: Exception) {
-            handleTccRollback(
+            handleRollback(
                 pointUsed,
                 reservationConfirmed,
                 seatConfirmed,
+                paymentSaveStatus,
                 userId,
                 reservation.price,
                 requestId,
+                paymentId
             )
             e.printStackTrace()
             throw ConcertException(ErrorCode.PAYMENT_FAILED)
         }
     }
 
-    private fun handleTccRollback(pointUsed: Boolean, reservationConfirmed: Boolean, seatConfirmed: Boolean, userId: String, price: Long, requestId: String) {
+    private fun handleRollback(pointUsed: Boolean, reservationConfirmed: Boolean, seatConfirmed: Boolean, paymentSaveStatus: Boolean, userId: String, price: Long, requestId: String, paymentId: Long) {
         if (pointUsed) {
             // TODO 포인트 히스토리는 어떻게 하지?
             try {
                 pointApiClient.cancel(userId, price)
             } catch (e: Exception) {
-
+                e.printStackTrace()
             }
         }
 
@@ -107,7 +116,7 @@ class PaymentCoordinator (
             try {
                 concertApiClient.changeReservationPending(requestId)
             } catch (e: Exception) {
-
+                e.printStackTrace()
             }
         }
 
@@ -115,7 +124,15 @@ class PaymentCoordinator (
             try {
                 concertApiClient.changeSeatTemporarilyAssigned(requestId)
             } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
 
+        if (paymentSaveStatus) {
+            try {
+                paymentService.cancelPayment(paymentId)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
