@@ -5,5 +5,9 @@ import org.springframework.http.HttpStatus
 enum class ErrorCode(val code: String, val message: String, val status: HttpStatus) {
     USER_NOT_FOUND("404", "존재하는 회원이 없습니다", HttpStatus.NOT_FOUND),
     TOKEN_NOT_FOUND("401", "토큰이 존재하지 않습니다", HttpStatus.UNAUTHORIZED),
-    INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
+    INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    POINT_RESERVATION_EXIST("400","이미 예약된 요청입니다", HttpStatus.CONFLICT),
+    POINT_NOT_FOUND("400", "포인트가 존재하지 않습니다", HttpStatus.NOT_FOUND),
+    POINT_HISTORY_NOT_FOUND("500", "포인트 이력이 존재하지 않습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    POINT_NOT_ENOUGH("400", "포인트가 부족합니다", HttpStatus.BAD_REQUEST),
 }

@@ -1,12 +1,17 @@
 package org.ktor_lecture.userservice.application.service
 
 import org.ktor_lecture.userservice.adapter.`in`.web.response.CurrentPointResponse
+import org.ktor_lecture.userservice.adapter.`in`.web.response.PointUseResponse
 import org.ktor_lecture.userservice.application.port.`in`.point.ChargePointUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointCancelUseCase
+import org.ktor_lecture.userservice.application.port.`in`.point.PointUseUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.SearchCurrentPointsUseCase
 import org.ktor_lecture.userservice.application.port.out.PointHistoryRepository
 import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.application.port.out.UserReadRepository
 import org.ktor_lecture.userservice.application.service.command.ChargePointCommand
+import org.ktor_lecture.userservice.application.service.command.PointCancelCommand
+import org.ktor_lecture.userservice.application.service.command.PointUseCommand
 import org.ktor_lecture.userservice.domain.entity.PointEntity
 import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
 import org.ktor_lecture.userservice.domain.entity.PointTransactionType
@@ -20,7 +25,7 @@ class PointService (
     private val userReadRepository: UserReadRepository,
     private val pointRepository: PointRepository,
     private val pointHistoryRepository: PointHistoryRepository,
-): ChargePointUseCase, SearchCurrentPointsUseCase {
+): ChargePointUseCase, SearchCurrentPointsUseCase, PointUseUseCase, PointCancelUseCase {
 
     /**
      * 포인트를 충전합니다
@@ -64,5 +69,54 @@ class PointService (
         return CurrentPointResponse(
             currentPoints = point.point
         )
+    }
+
+    /**
+     * 유저 포인트 사용
+     * 1. 유저 검색
+     * 2. 유저 - 포인트 검색
+     * 3. 유저 포인트 차감
+     * 4. 포인트 사용 히스토리 저장
+     */
+    @Transactional
+    override fun use(command: PointUseCommand): PointUseResponse {
+        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+
+        val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
+
+        point.use(command.amount)
+
+        val pointHistory = pointHistoryRepository.save(
+            PointHistoryEntity(
+                user = user,
+                amount = command.amount,
+                type = PointTransactionType.USE,
+            )
+        )
+
+        return PointUseResponse(
+            userId = user.id!!,
+            pointHistoryId = pointHistory.id!!,
+            remainingPoints = point.point
+        )
+    }
+
+    /**
+     * 유저 포인트 감소
+     * 1. 유저 조회
+     * 2. 포인트 히스토리 조회
+     * 3. 포인트 취소(롤백)
+     * 4. 포인트 히스토리 취소 상태 변경
+     */
+    @Transactional
+    override fun cancel(command: PointCancelCommand) {
+        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+        val pointHistory = pointHistoryRepository.findById(command.pointHistoryId).orElseThrow { throw ConcertException(ErrorCode.POINT_HISTORY_NOT_FOUND) }
+
+
+        val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
+
+        point.cancel(command.amount)
+        pointHistory.cancel()
     }
 }

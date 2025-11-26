@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/points")
+@RequestMapping("/api/v1/points")
 class PointController (
     private val chargePointUseCase: ChargePointUseCase,
     private val searchCurrentPointsUseCase: SearchCurrentPointsUseCase,

@@ -39,4 +39,9 @@ class ReservationEntity(
     @Enumerated(EnumType.STRING)
     var status: ReservationStatus = ReservationStatus.PENDING
 ): BaseEntity() {
+
+    fun changeStatus(status: ReservationStatus) {
+        this.status = status
+    }
+
 }

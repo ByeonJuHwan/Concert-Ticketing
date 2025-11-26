@@ -5,6 +5,7 @@ import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.domain.entity.PointEntity
 import org.ktor_lecture.userservice.domain.entity.UserEntity
 import org.springframework.stereotype.Component
+import java.util.Optional
 
 @Component
 class PointRepositoryAdapter (
@@ -18,5 +19,9 @@ class PointRepositoryAdapter (
 
     override fun save(point: PointEntity) {
         pointJpaRepository.save(point)
+    }
+
+    override fun findById(userId: Long): Optional<PointEntity> {
+        return pointJpaRepository.findById(userId)
     }
 }

@@ -14,7 +14,7 @@ class UserController (
     private val createUserUseCase: CreateUserUseCase,
 ) {
 
-    @PostMapping("/user")
+    @PostMapping("/api/v1/user")
     fun createUser(
         @RequestBody request: CreateUserRequest,
     ): ApiResult<Unit> {

@@ -1,6 +1,8 @@
 package org.ktor_lecture.paymentservice.domain.entity
 
 import jakarta.persistence.*
+import org.ktor_lecture.paymentservice.domain.exception.ConcertException
+import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 
 @Entity
 @Table(name="payment")
@@ -15,17 +17,25 @@ class PaymentEntity (
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    val paymentStatus: PaymentStatus,
+    var paymentStatus: PaymentStatus,
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     val paymentType : PaymentType,
 ) : BaseEntity() {
+
+    fun cancel() {
+        if(this.paymentStatus != PaymentStatus.SUCCESS) {
+            throw ConcertException(ErrorCode.PAYMENT_NOT_SUCCESS)
+        }
+        this.paymentStatus = PaymentStatus.CANCEL
+    }
 }
 
 enum class PaymentStatus {
     SUCCESS,
     CANCEL,
+    FAILED,
     PENDING,
 }
 

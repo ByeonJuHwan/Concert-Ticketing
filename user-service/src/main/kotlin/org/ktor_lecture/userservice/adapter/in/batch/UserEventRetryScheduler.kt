@@ -14,7 +14,7 @@ class UsersEventRetryScheduler (
      * 이벤트의 상태가 SENT 가 아니면서,
      * CREATED_AT 이 현 시간 기준으로 10분 이상 넘어간 이벤트 재시도
      */
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000) // TODO 스케일 아웃을 대비한 lock 대비필요해보임
     fun userCreatedEventRetryScheduler() {
         userCreatedEventRetryUseCase.userCreatedEventRetryScheduler()
     }
