@@ -7,19 +7,20 @@ import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
 import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCommand
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
+import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.PAYMENT_SAVE
+import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.POINT_USE
+import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.RESERVATION_CONFIRM
+import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.SEAT_CONFIRM
 import org.ktor_lecture.paymentservice.application.service.saga.SagaExecution
+import org.ktor_lecture.paymentservice.application.service.saga.SagaType.PAYMENT
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
+import org.ktor_lecture.paymentservice.domain.status.ReservationStatus
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
-const val PAYMENT = "PAYMENT"
-const val POINT_USE = "POINT_USE"
-const val RESERVATION_CONFIRM = "RESERVATION_CONFIRM"
-const val SEAT_CONFIRM = "SEAT_CONFIRM"
-const val PAYMENT_SAVE = "PAYMENT_SAVE"
 
 @Component
 class PaymentCoordinator (
@@ -54,7 +55,6 @@ class PaymentCoordinator (
         var paymentId = 0L
         var pointHistoryId = 0L
 
-        // saga 1회 저장
         val sagaId = sagaExecution.setInitSaga(PAYMENT)
 
         try {
@@ -153,9 +153,9 @@ class PaymentCoordinator (
     }
 
     private fun checkReservationStatus(status: String) {
-        when (status) { // TODO 여기도 하드코딩 설정 필요해보임
-            "PAID" -> throw ConcertException(ErrorCode.RESERVATION_ALREADY_PAID)
-            "EXPIRED" -> throw ConcertException(ErrorCode.RESERVATION_EXPIRED)
+        when (status) {
+            ReservationStatus.PAID.name -> throw ConcertException(ErrorCode.RESERVATION_ALREADY_PAID)
+            ReservationStatus.EXPIRED.name -> throw ConcertException(ErrorCode.RESERVATION_EXPIRED)
             else -> return
         }
     }
