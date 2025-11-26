@@ -23,24 +23,12 @@ class SagaExecution (
         return sagaRepository.save(saga).id!!
     }
 
-    @Transactional
     override fun <T> executeStep(sagaId: Long, stepName: String, action: () -> T): T {
         val saga = findSagaById(sagaId)
-
         try {
-            saga.currentStep = stepName
-            sagaRepository.save(saga)
-
-            val result = action()
-
-            saga.addCompletedStep(stepName)
-            sagaRepository.save(saga)
-
-            return result
+            return processSagaStep(saga, stepName, action)
         } catch (e: Exception) {
-            saga.failedStep = stepName
-            saga.failed()
-            sagaRepository.save(saga)
+            failSagaStep(saga, stepName)
             throw e
         }
     }
@@ -70,6 +58,23 @@ class SagaExecution (
         val saga = findSagaById(sagaId)
 
         saga.compensated()
+        sagaRepository.save(saga)
+    }
+
+    fun <T> processSagaStep(saga: SagaEntity, stepName: String, action: () -> T): T {
+        saga.currentStep = stepName
+        sagaRepository.save(saga)
+
+        val result = action()
+
+        saga.addCompletedStep(stepName)
+        sagaRepository.save(saga)
+
+        return result
+    }
+
+    fun failSagaStep(saga: SagaEntity, stepName: String) {
+        saga.failed(stepName)
         sagaRepository.save(saga)
     }
 

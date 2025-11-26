@@ -71,8 +71,6 @@ class PaymentCoordinator (
             }
             pointHistoryId = pointResponse.pointHistoryId
 
-            log.info("point history id : $pointHistoryId")
-
             // 예약 확정
             sagaExecution.executeStep(sagaId, RESERVATION_CONFIRM) {
                 concertApiClient.changeReservationPaid(reservationId)
@@ -108,8 +106,7 @@ class PaymentCoordinator (
                 requestId = reservationId,
                 paymentId = paymentId
             )
-            e.printStackTrace()
-            throw e
+            throw ConcertException(ErrorCode.PAYMENT_FAILED)
         }
     }
 

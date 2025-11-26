@@ -54,7 +54,8 @@ class SagaEntity(
         }
     }
 
-    fun failed() {
+    fun failed(stepName: String) {
+        failedStep = stepName
         status = SagaStatus.FAILED
     }
 
