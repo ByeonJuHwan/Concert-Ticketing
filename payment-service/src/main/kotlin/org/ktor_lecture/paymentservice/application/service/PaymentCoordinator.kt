@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
 const val PAYMENT = "PAYMENT"
+const val POINT_USE = "POINT_USE"
+const val RESERVATION_CONFIRM = "RESERVATION_CONFIRM"
+const val SEAT_CONFIRM = "SEAT_CONFIRM"
+const val PAYMENT_SAVE = "PAYMENT_SAVE"
 
 @Component
 class PaymentCoordinator (
@@ -48,6 +52,7 @@ class PaymentCoordinator (
         val reservationId = reservation.reservationId.toString()
         val userId = reservation.userId.toString()
         var paymentId = 0L
+        var pointHistoryId = 0L
 
         // saga 1회 저장
         val sagaId = sagaExecution.setInitSaga(PAYMENT)
@@ -55,28 +60,31 @@ class PaymentCoordinator (
         try {
 
             // 포인트 차감
-            sagaExecution.executeStep(
+            val pointResponse = sagaExecution.executeStep(
                 sagaId,
-                "POINT_DEDUCT"
+                POINT_USE
             ) {
                 pointApiClient.use(
                     userId = userId,
                     amount = reservation.price,
                 )
             }
+            pointHistoryId = pointResponse.pointHistoryId
+
+            log.info("point history id : $pointHistoryId")
 
             // 예약 확정
-            sagaExecution.executeStep(sagaId, "RESERVATION_CONFIRM") {
+            sagaExecution.executeStep(sagaId, RESERVATION_CONFIRM) {
                 concertApiClient.changeReservationPaid(reservationId)
             }
 
             // 좌석 확정
-            sagaExecution.executeStep(sagaId, "SEAT_CONFIRM") {
+            sagaExecution.executeStep(sagaId, SEAT_CONFIRM) {
                 concertApiClient.changeSeatReserved(reservationId)
             }
 
             // 결제 저장
-            val payment: PaymentEntity = sagaExecution.executeStep(sagaId, "PAYMENT_SAVE") {
+            val payment: PaymentEntity = sagaExecution.executeStep(sagaId, PAYMENT_SAVE) {
                 paymentService.save(
                     PaymentCreateCommand(reservation.price)
                 )
@@ -93,29 +101,32 @@ class PaymentCoordinator (
             )
         } catch (e: Exception) {
             handleRollback(
-                sagaId,
-                userId,
-                reservation.price,
-                reservationId,
-                paymentId,
+                sagaId = sagaId,
+                userId = userId,
+                price = reservation.price,
+                pointHistoryId = pointHistoryId,
+                requestId = reservationId,
+                paymentId = paymentId
             )
             e.printStackTrace()
             throw e
         }
     }
 
-    private fun handleRollback(sagaId: Long, userId: String, price: Long, requestId: String, paymentId: Long) {
+    private fun handleRollback(sagaId: Long, userId: String, price: Long, pointHistoryId: Long, requestId: String, paymentId: Long) {
         sagaExecution.startCompensation(sagaId)
 
         val completedSteps = sagaExecution.getCompletedSteps(sagaId)
 
-        completedSteps.reversed().forEach { step ->
+        completedSteps
+            .reversed()
+            .forEach { step ->
             try {
                 when (step) {
-                    "POINT_DEDUCT" -> pointApiClient.cancel(userId, price)
-                    "RESERVATION_CONFIRM" -> concertApiClient.changeReservationPending(requestId)
-                    "SEAT_CONFIRM" -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
-                    "PAYMENT_SAVE" -> paymentService.cancelPayment(paymentId)
+                    POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
+                    RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
+                    SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
+                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
                 }
             } catch (e: Exception) {
                 log.error("보상실패: $step - ${e.message}")

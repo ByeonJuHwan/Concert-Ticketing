@@ -4,6 +4,7 @@ import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointCancel
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointConfirmRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointReserveRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointUseRequest
+import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
 import org.springframework.web.client.RestClient
 
@@ -38,23 +39,25 @@ class PointApiClientImpl(
             .toBodilessEntity()
     }
 
-    override fun use(userId: String, amount: Long) {
+    override fun use(userId: String, amount: Long): PointUseResponse {
         val request = PointUseRequest(
             userId = userId,
             amount = amount,
         )
 
-        restClient.post()
+        return restClient.post()
             .uri("/points/use")
             .body(request)
             .retrieve()
-            .toBodilessEntity()
+            .body(PointUseResponse::class.java)
+            ?: throw IllegalStateException("Point use response is null")
     }
 
-    override fun cancel(userId: String, amount: Long) {
+    override fun cancel(userId: String, pointHistoryId: Long, price: Long) {
         val request = PointCancelRequest(
             userId = userId,
-            amount = amount,
+            pointHistoryId = pointHistoryId,
+            amount = price,
         )
 
         restClient.post()

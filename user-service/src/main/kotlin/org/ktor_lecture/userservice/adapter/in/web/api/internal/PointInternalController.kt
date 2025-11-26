@@ -3,6 +3,7 @@ package org.ktor_lecture.userservice.adapter.`in`.web.api.internal
 import org.ktor_lecture.userservice.adapter.`in`.web.request.PointCancelRequest
 import org.ktor_lecture.userservice.adapter.`in`.web.request.PointUseRequest
 import org.ktor_lecture.userservice.adapter.`in`.web.response.CurrentPointResponse
+import org.ktor_lecture.userservice.adapter.`in`.web.response.PointUseResponse
 import org.ktor_lecture.userservice.application.port.`in`.point.PointCancelUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.PointUseUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.SearchCurrentPointsUseCase
@@ -27,8 +28,8 @@ class PointInternalController (
     @PostMapping("/use")
     fun use(
         @RequestBody request: PointUseRequest,
-    ) {
-        pointUseUseCase.use(request.toCommand())
+    ): PointUseResponse {
+        return pointUseUseCase.use(request.toCommand())
     }
 
     @PostMapping("/cancel")

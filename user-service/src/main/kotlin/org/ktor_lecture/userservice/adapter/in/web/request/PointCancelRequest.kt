@@ -4,7 +4,8 @@ import org.ktor_lecture.userservice.application.service.command.PointCancelComma
 
 data class PointCancelRequest(
     val userId: String,
+    val pointHistoryId: Long,
     val amount: Long,
 ) {
-    fun toCommand() = PointCancelCommand(userId, amount)
+    fun toCommand() = PointCancelCommand(userId, pointHistoryId, amount)
 }

@@ -30,11 +30,16 @@ class PointHistoryEntity(
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    val type: PointTransactionType,
+    var type: PointTransactionType,
 ) : BaseEntity() {
+
+    fun cancel() {
+        this.type = PointTransactionType.CANCEL
+    }
 }
 
 enum class PointTransactionType {
     CHARGE,
     USE,
+    CANCEL
 }
