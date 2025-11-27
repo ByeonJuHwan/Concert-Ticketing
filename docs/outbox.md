@@ -174,6 +174,111 @@ fun reservationEventRetryScheduler() {
 }
 ```
 
+---
+
+### 6. 재시도 분산 락 처리
+
+#### 문제 상황
+서버 스케일 아웃 환경에서는 동일한 재시도 스케줄러가 여러 인스턴스에서 동시에 실행되어, 같은 실패 이벤트를 중복 처리하는 문제가 발생합니다.
+
+예를 들어, 3대의 서버가 동시에 재시도 스케줄러를 실행하면:
+- Server 1: 실패 이벤트 조회 → Kafka 발행
+- Server 2: 동일한 실패 이벤트 조회 → Kafka 발행 (중복)
+- Server 3: 동일한 실패 이벤트 조회 → Kafka 발행 (중복)
+
+#### 해결 방안
+Redis 분산 락을 도입하여 여러 서버 중 **단 하나의 서버만** 재시도 작업을 수행하도록 구현했습니다.
+락을 획득한 서버만 스케줄러를 실행하고, 나머지 서버는 해당 주기를 skip함으로써 이벤트 중복 발행을 방지합니다.
+
+**구현 예시:**
+```kotlin
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class DistributedLock(
+    val key: String,
+    val leaseTime: Long = 10000  // 락 자동 해제 시간 (ms)
+)
+
+@Order(1)  // 트랜잭션보다 먼저 실행
+@Aspect
+@Component
+class DistributedLockAspect(
+    private val redisTemplate: StringRedisTemplate
+) {
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    @Around("@annotation(distributedLock)")
+    fun around(joinPoint: ProceedingJoinPoint, distributedLock: DistributedLock): Any? {
+        val key = distributedLock.key
+        val lockValue = UUID.randomUUID().toString()
+        var lockAcquired = false
+
+        try {
+            lockAcquired = redisTemplate.opsForValue()
+                .setIfAbsent(key, lockValue, Duration.ofMillis(distributedLock.leaseTime))
+                ?: false
+
+            if (!lockAcquired) {
+                log.info("다른 서버에서 실행 중 - 스킵: key={}", key)
+                return null
+            }
+
+            log.info("락 획득 성공: key={}", key)
+            return joinPoint.proceed()
+
+        } finally {
+            if (lockAcquired) {
+                redisTemplate.delete(key)
+            }
+        }
+    }
+}
+```
+
+**사용 예시:**
+```kotlin
+@Component
+class OutboxRetryScheduler(
+    private val outboxRetryUseCase: OutboxRetryUseCase
+) {
+    @Scheduled(fixedDelay = 60000)
+    @DistributedLock(key = "outbox:scheduler:retry", leaseTime = 30000)
+    fun retryFailedEvents() {
+        outboxRetryUseCase.retryFailedEvents()
+    }
+}
+```
+
+#### 주의사항
+
+**1. AOP 실행 순서**
+
+분산 락은 반드시 트랜잭션보다 먼저 실행되어야 합니다. 그렇지 않으면 트랜잭션 내에서 락을 획득하게 되어, 트랜잭션 롤백 시 락이 먼저 해제되는 문제가 발생할 수 있습니다.
+
+이를 위해 `@Order` 어노테이션으로 우선순위를 제어합니다:
+- `@Order(1)`: 분산 락 Aspect - 먼저 실행
+- `@Transactional`: 기본 Order = `Integer.MAX_VALUE` (2,147,483,647) - 나중 실행
+
+**2. 안전한 락 해제**
+
+락 해제 시 반드시 **자신이 획득한 락만 삭제**해야 합니다. 단순 `delete(key)`를 사용하면 다음과 같은 문제가 발생할 수 있습니다:
+```
+1. Server 1: 락 획득 (value = "uuid-1")
+2. [10초 경과 - 락 자동 만료]
+3. Server 2: 락 획득 (value = "uuid-2")
+4. Server 1: delete(key) 실행 → Server 2의 락 삭제! ❌
+```
+
+**3. leaseTime 설정**
+
+`leaseTime`은 스케줄러 평균 실행 시간의 2~3배로 설정해야합니다.
+- 너무 짧으면: 실행 중 락이 만료되어 중복 실행 발생
+- 너무 길면: 서버 장애 시 복구 지연
+
+이는 기본값은 우선 크게 잡고 모니터링을 통해서 평균 실행시간을 관찰후 조절하는 방법을 사용하는것이 좋아보입니다.
+
+---
+
 ## 정리하며...
 
 이전에는 주로 메시지 수신과 처리 즉 비즈니스 로직 처리에 초점을 맞추었지만, 이번 경험을 통해 이벤트 발행 과정에서 발생할 수 있는 문제 상황과
