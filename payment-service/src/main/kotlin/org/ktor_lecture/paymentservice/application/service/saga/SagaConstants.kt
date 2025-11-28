@@ -2,7 +2,6 @@ package org.ktor_lecture.paymentservice.application.service.saga
 
 object SagaType {
     const val PAYMENT = "PAYMENT"
-    const val ORDER = "ORDER"
 }
 
 object PaymentSagaStep {

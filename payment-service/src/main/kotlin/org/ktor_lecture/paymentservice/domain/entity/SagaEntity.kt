@@ -34,6 +34,9 @@ class SagaEntity(
     @Column(nullable = false, length = 20)
     var status: SagaStatus = SagaStatus.IN_PROGRESS,
 
+    @Column(name = "payload", columnDefinition = "TEXT")
+    var payload: String? = null,
+
     @Column
     var completedAt: LocalDateTime? = null
 ): BaseEntity() {
@@ -64,8 +67,9 @@ class SagaEntity(
         completedAt = LocalDateTime.now()
     }
 
-    fun compensating() {
+    fun compensating(payload: String) {
         status = SagaStatus.COMPENSATING
+        this.payload = payload
     }
 
     fun compensated() {

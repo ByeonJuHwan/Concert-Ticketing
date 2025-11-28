@@ -20,7 +20,6 @@ class UsersEventRetryScheduler (
     )
     @Scheduled(fixedRate = 60000)
     fun userCreatedEventRetryScheduler() {
-        Thread.sleep(10000)
         userCreatedEventRetryUseCase.userCreatedEventRetryScheduler()
     }
 }

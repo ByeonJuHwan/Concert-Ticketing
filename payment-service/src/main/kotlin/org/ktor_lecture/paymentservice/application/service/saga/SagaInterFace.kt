@@ -6,6 +6,6 @@ interface SagaStep {
     fun setInitSaga(sataType: String): Long
     fun completeSaga(sagaId: Long)
     fun getCompletedSteps(sagaId: Long): List<String>
-    fun startCompensation(sagaId: Long)
+    fun startCompensation(sagaId: Long, payload: String)
     fun completeCompensation(sagaId: Long)
 }

@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.application.service
 
+import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
 import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
@@ -13,11 +14,11 @@ import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.SEAT_CONFIRM
 import org.ktor_lecture.paymentservice.application.service.saga.SagaExecution
 import org.ktor_lecture.paymentservice.application.service.saga.SagaType.PAYMENT
+import org.ktor_lecture.paymentservice.common.JsonUtil
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.ktor_lecture.paymentservice.domain.status.ReservationStatus
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
@@ -30,7 +31,7 @@ class PaymentCoordinator (
     private val sagaExecution: SagaExecution,
 ) :PaymentUseCase {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
     /**
      * 결제 처리
@@ -80,6 +81,7 @@ class PaymentCoordinator (
             sagaExecution.executeStep(sagaId, SEAT_CONFIRM) {
                 concertApiClient.changeSeatReserved(reservationId)
             }
+            log.info("좌석 확정 api 완료")
 
             // 결제 저장
             val payment: PaymentEntity = sagaExecution.executeStep(sagaId, PAYMENT_SAVE) {
@@ -111,7 +113,18 @@ class PaymentCoordinator (
     }
 
     private fun handleRollback(sagaId: Long, userId: String, price: Long, pointHistoryId: Long, requestId: String, paymentId: Long) {
-        sagaExecution.startCompensation(sagaId)
+        val payload = JsonUtil.encodeToJson(
+            PaymentCompensation(
+                sagaId = sagaId,
+                userId = userId,
+                price = price,
+                historyId = pointHistoryId,
+                requestId = requestId,
+                paymentId = paymentId,
+            )
+        )
+
+        sagaExecution.startCompensation(sagaId, payload)
 
         val completedSteps = sagaExecution.getCompletedSteps(sagaId)
 
@@ -157,3 +170,13 @@ class PaymentCoordinator (
         }
     }
 }
+
+@Serializable
+data class PaymentCompensation(
+    val sagaId: Long,
+    val userId: String,
+    val price: Long,
+    val historyId: Long,
+    val requestId: String,
+    val paymentId: Long,
+)

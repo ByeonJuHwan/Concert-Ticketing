@@ -18,6 +18,7 @@ class ApiControllerAdvice : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(ConcertException::class)
     fun handleCustomException(e: ConcertException): ResponseEntity<ErrorResponse> {
+        e.printStackTrace()
         val errorCode = e.errorCode
         logger.error("[${errorCode.name}] [code : ${errorCode.status}] [message : ${e.message}]")
         return ResponseEntity(

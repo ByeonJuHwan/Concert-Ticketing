@@ -17,4 +17,8 @@ class SagaRepositoryAdapter (
     override fun findById(sagaId: Long): Optional<SagaEntity> {
         return sagaJpaRepository.findById(sagaId)
     }
+
+    override fun getFailedSagas(): List<SagaEntity> {
+        return sagaJpaRepository.getFailedSagas()
+    }
 }
