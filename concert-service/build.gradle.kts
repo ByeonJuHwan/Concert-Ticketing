@@ -53,6 +53,9 @@ dependencies {
 
     // serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 kotlin {

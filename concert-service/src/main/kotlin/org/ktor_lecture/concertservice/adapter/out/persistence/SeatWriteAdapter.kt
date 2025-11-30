@@ -14,4 +14,8 @@ class SeatWriteAdapter(
     override fun getSeatWithLock(seatId: Long): SeatEntity? {
         return seatJpaRepository.getSeatWithLock(seatId)
     }
+
+    override fun updateSeatStatusToAvailable(seatIds: List<Long>) {
+        seatJpaRepository.updateSeatStatusToAvailable(seatIds)
+    }
 }
