@@ -8,4 +8,6 @@ interface SagaStep {
     fun getCompletedSteps(sagaId: Long): List<String>
     fun startCompensation(sagaId: Long, payload: String)
     fun completeCompensation(sagaId: Long)
+    fun increaseRetryCount(sagaId: Long)
+    fun isRetryAvailable(sagaId: Long): Boolean
 }

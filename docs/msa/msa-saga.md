@@ -190,8 +190,95 @@ try {
 1. 실패 지점이 존재하고, 상태가 `FAILED`인 경우
 2. 실패 지점이 존재하고, 상태가 `COMPENSATING`이지만 일정 시간(예: 10분) 이상 완료되지 않은 경우
 3. 상태가 `IN_PROGRESS`이지만 특정 시간(예: 5분) 이상 진행 중인 경우 (타임아웃)
+4. 개발자에게 알림이 나간 `ALERT` 상태가 아닌 경우
 
 **재시도 제한**
 
 - 최대 재시도 횟수: 3회
 - 최대 재시도 초과 시 수동 처리 -> 알림으로 개발자가 바로 파악 가능하도록 대응
+
+```kotlin
+@DistributedLock(
+    key = "saga-retry-lock",
+)
+@Scheduled(fixedRate = 30000)
+fun retryFailSaga() {
+    retryFailSagaUseCase.retryFailSagas()
+}
+
+@Service
+class RetrySagaService (
+    private val sagaRepository: SagaRepository,
+    private val sagaCompensationStrategyMapper: SagaCompensationStrategyMapper,
+): RetryFailSagaUseCase {
+
+
+    override fun retryFailSagas() {
+        val failedSagaList = sagaRepository.getFailedSagas()
+
+        for (saga in failedSagaList) {
+            val strategy = sagaCompensationStrategyMapper.getStrategy(saga.sagaType)
+            strategy.compensate(saga)
+        }
+    }
+}
+
+override fun compensate(saga: SagaEntity) {
+    if (saga.payload == null) {
+        log.warn("Saga payload가 존재하지 않습니다")
+        return
+    }
+
+    val retryAvailable = saga.isRetryAvailable()
+
+    if(!retryAvailable) {
+        // 개발자에게 알림 발송
+        sendAlert(saga)
+        return
+    }
+
+    val payload: PaymentCompensation = JsonUtil.decodeFromJson<PaymentCompensation>(saga.payload!!)
+    
+    val completedSteps = saga.getCompletedStepList()
+
+    var allSuccess = true
+
+    completedSteps
+        .reversed()
+        .forEach { step ->
+        try {
+            when (step) {
+                POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
+                RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
+                SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
+                PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
+            }
+            throw RuntimeException("재시도 업데이트 예외 생성")
+        } catch (e: Exception) {
+            allSuccess = false
+            log.error("보상실패: $step - $e")
+        }
+    }
+
+    checkStepCompleted(saga, allSuccess)
+
+    sagaRepository.save(saga)
+}
+```
+
+위와 같이 스케줄러를 통해 주기적으로 실패한 SAGA를 조회하고, 보상 트랜잭션을 재시도합니다.
+
+하지만 재시도 전략도 결국 실패할수 있고 최대 재시도 횟수가 3회이므로 3회가 된 시점에는 개발자가 바로 파악할 수 있도록 알림을 보내서 수동으로 처리할 수 있도록 해야 합니다.
+
+
+## 마무리
+
+SAGA 패턴 도입과 재시도 전략 구축을 통해 다음과 같은 개선을 이루었습니다.
+
+**분산 트랜잭션 관리**
+- MSA 환경에서 여러 서비스에 걸친 트랜잭션의 최종적 일관성 보장
+- 장애 발생 시 자동 보상 트랜잭션 실행으로 데이터 정합성 유지
+
+**복구 가능성**
+- DB 기반 상태 관리로 서버 장애 시에도 진행 상황 추적 가능
+- 실패 지점부터 자동 재시도하여 일시적 장애에 대응

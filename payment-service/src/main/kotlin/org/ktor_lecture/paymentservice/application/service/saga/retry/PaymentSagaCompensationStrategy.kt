@@ -26,25 +26,41 @@ class PaymentSagaCompensationStrategy (
 
     private val log : Logger = LoggerFactory.getLogger(PaymentSagaCompensationStrategy::class.java)
 
+    /**
+     * 이 전략이 지원하는 Saga Type인지 확인
+     */
     override fun supports(sagaType: String): Boolean {
         return sagaType == SagaType.PAYMENT
     }
 
+    /**
+     * 재시도 보상 로직 구현
+     */
     override fun compensate(saga: SagaEntity) {
         if (saga.payload == null) {
             log.warn("Saga payload가 존재하지 않습니다")
             return
         }
 
-        val payload: PaymentCompensation = JsonUtil.decodeFromJson<PaymentCompensation>(saga.payload!!)
+        val retryAvailable = saga.isRetryAvailable()
 
-        val completedSteps = saga.getCompletedStepList()
+        if(!retryAvailable) {
+            // 개발자에게 알림 발송
+            sendAlert(saga)
+            return
+        }
+
+        val payload: PaymentCompensation = JsonUtil.decodeFromJson<PaymentCompensation>(saga.payload!!)
 
         val userId = payload.userId
         val price = payload.price
         val requestId = payload.requestId
         val pointHistoryId = payload.historyId
         val paymentId = payload.paymentId
+
+        val completedSteps = saga.getCompletedStepList()
+
+        var allSuccess = true
 
         completedSteps
             .reversed()
@@ -56,14 +72,29 @@ class PaymentSagaCompensationStrategy (
                     SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
                     PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
                 }
+                throw RuntimeException("재시도 업데이트 예외 생성")
             } catch (e: Exception) {
-                e.printStackTrace()
-                log.error("보상실패: $step - ${e.message}")
+                allSuccess = false
+                log.error("보상실패: $step - $e")
             }
         }
 
-        saga.complete()
+        checkStepCompleted(saga, allSuccess)
+
         sagaRepository.save(saga)
     }
 
+    private fun sendAlert(saga: SagaEntity) {
+        log.error("보상재시도 불가 알림 발송: ${saga.id}")
+        saga.alert()
+        sagaRepository.save(saga)
+    }
+
+    private fun checkStepCompleted(saga: SagaEntity, success: Boolean) {
+        if (success) {
+            saga.complete()
+        } else {
+            saga.increaseRetryCount()
+        }
+    }
 }

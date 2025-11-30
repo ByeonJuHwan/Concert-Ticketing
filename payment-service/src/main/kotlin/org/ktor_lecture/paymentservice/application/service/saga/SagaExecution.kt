@@ -8,11 +8,14 @@ import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.log
 
 @Component
 class SagaExecution (
     private val sagaRepository: SagaRepository,
 ): SagaStep {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     override fun setInitSaga(sataType: String): Long {
@@ -48,6 +51,9 @@ class SagaExecution (
     }
 
 
+    /**
+     * SAGA 작업 상태를 보상 처리중으로 변경
+     */
     override fun startCompensation(sagaId: Long, payload: String) {
         val saga = findSagaById(sagaId)
 
@@ -61,6 +67,18 @@ class SagaExecution (
 
         saga.compensated()
         sagaRepository.save(saga)
+    }
+
+    override fun increaseRetryCount(sagaId: Long) {
+        val saga = findSagaById(sagaId)
+
+        saga.increaseRetryCount()
+        sagaRepository.save(saga)
+    }
+
+    override fun isRetryAvailable(sagaId: Long): Boolean {
+        val saga = findSagaById(sagaId)
+        return saga.isRetryAvailable()
     }
 
     fun <T> processSagaStep(saga: SagaEntity, stepName: String, action: () -> T): T {

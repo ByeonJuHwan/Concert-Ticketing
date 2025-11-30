@@ -35,6 +35,7 @@ class SagaJpaRepositoryCustomImpl (
         return isFailedWithFailurePoint()
             .or(isCompensatingTimeout())
             .or(isInProgressTimeout())
+            .and(isNotAlert())
     }
 
     /**
@@ -62,6 +63,10 @@ class SagaJpaRepositoryCustomImpl (
 
         return saga.status.eq(SagaStatus.IN_PROGRESS)
             .and(saga.updatedAt.before(fiveMinutesAgo))
+    }
+
+    private fun isNotAlert(): BooleanExpression {
+        return !saga.status.eq(SagaStatus.ALERT)
     }
 
 }

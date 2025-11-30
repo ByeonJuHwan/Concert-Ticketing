@@ -10,6 +10,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
+const val MAX_RETRY = 3
+
 @Entity
 @Table(name = "saga")
 class SagaEntity(
@@ -36,6 +38,8 @@ class SagaEntity(
 
     @Column(name = "payload", columnDefinition = "TEXT")
     var payload: String? = null,
+
+    var retryCount: Int = 0,
 
     @Column
     var completedAt: LocalDateTime? = null
@@ -76,6 +80,18 @@ class SagaEntity(
         status = SagaStatus.COMPENSATED
         completedAt = LocalDateTime.now()
     }
+
+    fun increaseRetryCount() {
+        retryCount += 1
+    }
+
+    fun isRetryAvailable(): Boolean {
+        return retryCount < MAX_RETRY
+    }
+
+    fun alert() {
+        status = SagaStatus.ALERT
+    }
 }
 
 enum class SagaStatus {
@@ -83,5 +99,6 @@ enum class SagaStatus {
     COMPLETED,      // 완료
     FAILED,         // 실패
     COMPENSATING,   // 보상 중
-    COMPENSATED     // 보상 완료
+    COMPENSATED,    // 보상 완료
+    ALERT,          // 수동처리 알림 발송
 }

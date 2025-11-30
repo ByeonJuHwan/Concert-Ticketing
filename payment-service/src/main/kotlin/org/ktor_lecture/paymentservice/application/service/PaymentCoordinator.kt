@@ -81,7 +81,6 @@ class PaymentCoordinator (
             sagaExecution.executeStep(sagaId, SEAT_CONFIRM) {
                 concertApiClient.changeSeatReserved(reservationId)
             }
-            log.info("좌석 확정 api 완료")
 
             // 결제 저장
             val payment: PaymentEntity = sagaExecution.executeStep(sagaId, PAYMENT_SAVE) {
@@ -108,6 +107,8 @@ class PaymentCoordinator (
                 requestId = reservationId,
                 paymentId = paymentId
             )
+
+            log.error("결제처리 실패 롤백처리 완료: ${e.message}")
             throw ConcertException(ErrorCode.PAYMENT_FAILED)
         }
     }
