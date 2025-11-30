@@ -2,6 +2,7 @@ package org.ktor_lecture.concertservice.application.service
 
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatReservedUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatTemporarilyAssignedUseCase
+import org.ktor_lecture.concertservice.application.port.`in`.SeatReservationAvailableUseCase
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
 import org.ktor_lecture.concertservice.application.port.out.SeatRepository
 import org.ktor_lecture.concertservice.application.service.command.ChangeReservationTemporarilyAssignedCommand
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 class ConcertSeatService (
     private val reservationRepository: ReservationRepository,
     private val seatRepository: SeatRepository,
-): ChangeSeatReservedUseCase, ChangeSeatTemporarilyAssignedUseCase {
+): ChangeSeatReservedUseCase, ChangeSeatTemporarilyAssignedUseCase, SeatReservationAvailableUseCase {
 
     @Transactional
     override fun changeSeatStatusReserved(command: ChangeSeatStatusReservedCommand) {
@@ -37,5 +38,22 @@ class ConcertSeatService (
                     ?: throw ConcertException(ErrorCode.SEAT_NOT_FOUND)
 
         seat.temporarilyAssign()
+    }
+
+    @Transactional
+    override fun seatReservationAvailable() {
+        val expiredReservations = reservationRepository.findExpiredReservations()
+
+        if (expiredReservations.isEmpty()) {
+            return
+        }
+
+        val reservationIds = expiredReservations.map { it.id!! }
+        val seatIds = expiredReservations.map { it.seat.id!! }
+
+        if (reservationIds.isNotEmpty() && seatIds.isNotEmpty()) {
+            reservationRepository.updateReservationStatusToExpired(reservationIds)
+            seatRepository.updateSeatStatusToAvailable(seatIds)
+        }
     }
 }

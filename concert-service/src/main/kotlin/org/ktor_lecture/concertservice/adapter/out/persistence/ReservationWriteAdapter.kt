@@ -21,4 +21,12 @@ class ReservationWriteAdapter (
     override fun getReservationWithSeatInfo(reservationId: Long): ReservationEntity? {
         return reservationJpaRepository.findReservationAndSeatInfo(reservationId)
     }
+
+    override fun findExpiredReservations(): List<ReservationEntity> {
+        return reservationJpaRepository.findExpiredReservations()
+    }
+
+    override fun updateReservationStatusToExpired(reservationIds: List<Long>) {
+        reservationJpaRepository.updateReservationStatusToExpired(reservationIds)
+    }
 }
