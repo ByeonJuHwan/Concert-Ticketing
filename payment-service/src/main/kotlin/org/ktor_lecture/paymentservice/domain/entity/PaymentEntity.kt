@@ -25,9 +25,6 @@ class PaymentEntity (
 ) : BaseEntity() {
 
     fun cancel() {
-        if(this.paymentStatus != PaymentStatus.SUCCESS) {
-            throw ConcertException(ErrorCode.PAYMENT_NOT_SUCCESS)
-        }
         this.paymentStatus = PaymentStatus.CANCEL
     }
 }

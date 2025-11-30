@@ -5,13 +5,17 @@ import org.ktor_lecture.paymentservice.domain.entity.SagaEntity
 import org.ktor_lecture.paymentservice.domain.entity.SagaStatus
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.log
 
 @Component
 class SagaExecution (
     private val sagaRepository: SagaRepository,
 ): SagaStep {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     @Transactional
     override fun setInitSaga(sataType: String): Long {
@@ -29,6 +33,7 @@ class SagaExecution (
             return processSagaStep(saga, stepName, action)
         } catch (e: Exception) {
             failSagaStep(saga, stepName)
+            e.printStackTrace()
             throw e
         }
     }
@@ -45,11 +50,14 @@ class SagaExecution (
         return findSagaById(sagaId).getCompletedStepList()
     }
 
-    @Transactional
-    override fun startCompensation(sagaId: Long) {
+
+    /**
+     * SAGA 작업 상태를 보상 처리중으로 변경
+     */
+    override fun startCompensation(sagaId: Long, payload: String) {
         val saga = findSagaById(sagaId)
 
-        saga.compensating()
+        saga.compensating(payload)
         sagaRepository.save(saga)
     }
 
@@ -61,15 +69,25 @@ class SagaExecution (
         sagaRepository.save(saga)
     }
 
+    override fun increaseRetryCount(sagaId: Long) {
+        val saga = findSagaById(sagaId)
+
+        saga.increaseRetryCount()
+        sagaRepository.save(saga)
+    }
+
+    override fun isRetryAvailable(sagaId: Long): Boolean {
+        val saga = findSagaById(sagaId)
+        return saga.isRetryAvailable()
+    }
+
     fun <T> processSagaStep(saga: SagaEntity, stepName: String, action: () -> T): T {
         saga.currentStep = stepName
-        sagaRepository.save(saga)
 
         val result = action()
 
         saga.addCompletedStep(stepName)
         sagaRepository.save(saga)
-
         return result
     }
 

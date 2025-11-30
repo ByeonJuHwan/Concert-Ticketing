@@ -6,4 +6,5 @@ import java.util.Optional
 interface SagaRepository {
     fun save(saga: SagaEntity): SagaEntity
     fun findById(sagaId: Long): Optional<SagaEntity>
+    fun getFailedSagas(): List<SagaEntity>
 }
