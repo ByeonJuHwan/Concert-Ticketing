@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/queue/tokens")
+@RequestMapping("/api/v1/queue/tokens")
 class TokenController (
     private val createTokenUseCase: CreateTokenUseCase,
     private val getTokenStatusUseCase: GetTokenStatusUseCase,
