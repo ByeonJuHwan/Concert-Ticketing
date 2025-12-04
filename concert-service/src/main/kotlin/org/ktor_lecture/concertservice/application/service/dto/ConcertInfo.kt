@@ -17,10 +17,10 @@ data class ConcertInfo (
                 id = concert.id!!,
                 concertName = concert.concertName,
                 singer = concert.singer,
-                startDate = concert.startDate,
-                endDate = concert.endDate,
-                reserveStartDate = concert.reserveStartDate,
-                reserveEndDate = concert.reserveEndDate
+                startDate = concert.startDate.toString(),
+                endDate = concert.endDate.toString(),
+                reserveStartDate = concert.reserveStartDate.toString(),
+                reserveEndDate = concert.reserveEndDate.toString(),
             )
         }
     }

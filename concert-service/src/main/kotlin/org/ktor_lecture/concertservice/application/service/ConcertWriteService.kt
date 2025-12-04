@@ -1,18 +1,23 @@
 package org.ktor_lecture.concertservice.application.service
 
+import org.ktor_lecture.concertservice.adapter.out.search.document.ConcertDocument
 import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 import org.ktor_lecture.concertservice.application.port.`in`.ConcertUserCreateUseCase
+import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.out.ConcertReadRepository
 import org.ktor_lecture.concertservice.application.port.out.ConcertWriteRepository
 import org.ktor_lecture.concertservice.application.port.out.EventPublisher
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
 import org.ktor_lecture.concertservice.application.port.out.SeatRepository
+import org.ktor_lecture.concertservice.application.service.command.CreateConcertCommand
 import org.ktor_lecture.concertservice.application.service.command.ReserveSeatCommand
 import org.ktor_lecture.concertservice.application.service.dto.ReserveSeatInfo
+import org.ktor_lecture.concertservice.domain.entity.ConcertEntity
 import org.ktor_lecture.concertservice.domain.entity.ConcertUserEntity
 import org.ktor_lecture.concertservice.domain.entity.ReservationEntity
 import org.ktor_lecture.concertservice.domain.entity.SeatEntity
+import org.ktor_lecture.concertservice.domain.event.ConcertCreatedEvent
 import org.ktor_lecture.concertservice.domain.event.ReservationCreatedEvent
 import org.ktor_lecture.concertservice.domain.exception.ConcertException
 import org.ktor_lecture.concertservice.domain.exception.ErrorCode
@@ -28,7 +33,7 @@ class ConcertWriteService (
     private val seatRepository: SeatRepository,
     private val reservationRepository: ReservationRepository,
     @Qualifier("application") private val eventPublisher: EventPublisher,
-): ReserveSeatUseCase, ConcertUserCreateUseCase {
+): ReserveSeatUseCase, ConcertUserCreateUseCase, CreateConcertUseCase {
 
     /**
      * 좌석 임시 예약
@@ -76,5 +81,37 @@ class ConcertWriteService (
         )
 
         concertWriteRepository.createUser(user)
+    }
+
+    /**
+     * 콘서트를 생성한다
+     *
+     * 1. DB 저장
+     * 2. ElasticSearch Document 저장 -> Kafka로 이관
+     */
+    @Transactional
+    override fun createConcert(command: CreateConcertCommand) {
+        val concert = ConcertEntity(
+            concertName = command.concertName,
+            singer = command.singer,
+            startDate = command.startDate,
+            endDate = command.endDate,
+            reserveStartDate = command.reserveStartDate,
+            reserveEndDate = command.reserveEndDate,
+        )
+
+        val savedConcert = concertWriteRepository.saveConcert(concert)
+
+        val concertCreatedEvent = ConcertCreatedEvent(
+            id = savedConcert.id!!.toString(),
+            concertName = savedConcert.concertName,
+            singer = savedConcert.singer,
+            startDate = savedConcert.startDate.toString(),
+            endDate = savedConcert.endDate.toString(),
+            reserveStartDate = savedConcert.reserveStartDate.toString(),
+            reserveEndDate = savedConcert.reserveEndDate.toString(),
+        )
+
+        eventPublisher.publish(concertCreatedEvent)
     }
 }

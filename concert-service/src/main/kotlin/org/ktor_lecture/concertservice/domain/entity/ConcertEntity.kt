@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
+import java.time.LocalDate
 
 @Entity
 @Table(name = "concert" , indexes = [Index(name = "idx_start_date", columnList = "startDate")]) 
@@ -21,12 +22,12 @@ class ConcertEntity(
     @Column(nullable = false)
     val singer: String,
     @Column(nullable = false)
-    val startDate: String,
+    val startDate: LocalDate,
     @Column(nullable = false)
-    val endDate: String,
+    val endDate: LocalDate,
     @Column(nullable = false)
-    val reserveStartDate: String,
+    val reserveStartDate: LocalDate,
     @Column(nullable = false)
-    val reserveEndDate: String,
+    val reserveEndDate: LocalDate,
 ): BaseEntity() {
 }

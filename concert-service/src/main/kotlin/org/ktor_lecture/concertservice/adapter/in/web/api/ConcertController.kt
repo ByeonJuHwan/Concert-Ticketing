@@ -1,23 +1,24 @@
 package org.ktor_lecture.concertservice.adapter.`in`.web.api
 
-import io.swagger.v3.oas.annotations.tags.Tag
 import org.ktor_lecture.concertservice.adapter.`in`.web.ApiResult
+import org.ktor_lecture.concertservice.adapter.`in`.web.request.CreateConcertRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.*
+import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDatesUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchConcertUseCase
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "콘서트 API", description = "콘서트 예약 API")
 @RestController
-@RequestMapping("/concerts")
+@RequestMapping("/api/v1/concerts")
 class ConcertController (
     private val searchConcertUseCase: SearchConcertUseCase,
     private val searchAvailableDatesUseCase: SearchAvailableDatesUseCase,
     private val searchAvailableSeatUseCase: SearchAvailableSeatUseCase,
     private val reserveSeatUseCase: ReserveSeatUseCase,
+    private val createConcertUseCase: CreateConcertUseCase,
 ): ConcertControllerSwagger {
 
     @GetMapping
@@ -50,5 +51,12 @@ class ConcertController (
     ) : ApiResult<ConcertReservationStatusResponse> {
         val response = reserveSeatUseCase.reserveSeat(request.toCommand())
         return ApiResult(ConcertReservationStatusResponse.from(response))
+    }
+
+    @PostMapping
+    fun createConcert(
+        @RequestBody request: CreateConcertRequest,
+    ) {
+        createConcertUseCase.createConcert(request.toCommand())
     }
 }
