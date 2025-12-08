@@ -20,7 +20,9 @@ interface ConcertControllerSwagger {
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "콘서트 목록 조회 성공"),
     )
-    fun getConcerts(): ApiResult<List<ConcertsResponse>>
+    fun getConcerts(
+
+    ): ApiResult<List<ConcertsResponse>>
 
     @Operation(summary = "콘서트 날짜 조회 API", description = "콘서트의 예약 가능한 날짜를 조회합니다.")
     @ApiResponses(

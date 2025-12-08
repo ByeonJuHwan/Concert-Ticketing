@@ -9,6 +9,7 @@ import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class ConcertReadService (
@@ -16,8 +17,8 @@ class ConcertReadService (
 ) : SearchConcertUseCase, SearchAvailableDatesUseCase, SearchAvailableSeatUseCase {
 
     @Transactional(readOnly = true)
-    override fun getConcerts(): List<ConcertInfo> {
-        val concerts = concertReadRepository.getConcerts()
+    override fun getConcerts(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertInfo> {
+        val concerts = concertReadRepository.getConcerts(concertName, singer, startDate, endDate)
         return concerts.map { ConcertInfo.from(it) }
     }
 

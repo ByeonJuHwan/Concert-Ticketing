@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDate
 
 @Repository
-interface ConcertSearchRepository: ElasticsearchRepository<ConcertDocument, String> {
+interface ConcertSearchRepository: ElasticsearchRepository<ConcertDocument, String>, ConcertSearchRepositoryCustom {
 
     // 콘서트 이름 검색
     fun findByConcertNameContaining(concertName: String): List<ConcertDocument>

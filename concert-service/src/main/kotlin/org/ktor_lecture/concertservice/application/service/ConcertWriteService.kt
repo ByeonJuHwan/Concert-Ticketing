@@ -87,7 +87,7 @@ class ConcertWriteService (
      * 콘서트를 생성한다
      *
      * 1. DB 저장
-     * 2. ElasticSearch Document 저장 -> Kafka로 이관
+     * 2. ElasticSearch Document 저장 -> spring 내부 이벤트 발행
      */
     @Transactional
     override fun createConcert(command: CreateConcertCommand) {
