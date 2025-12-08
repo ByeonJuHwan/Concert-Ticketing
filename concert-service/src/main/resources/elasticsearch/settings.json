@@ -1,31 +1,25 @@
 {
-  "index": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0,
-    "analysis": {
-      "tokenizer": {
-        "nori_user_dict": {
-          "type": "nori_tokenizer",
-          "decompound_mode": "mixed"
-        }
-      },
-      "analyzer": {
-        "nori_analyzer": {
-          "type": "custom",
-          "tokenizer": "nori_user_dict",
-          "filter": [
-            "nori_part_of_speech",
-            "lowercase"
-          ]
-        }
-      },
-      "filter": {
-        "nori_part_of_speech": {
-          "type": "nori_part_of_speech",
-          "stoptags": [
-            "E", "IC", "J", "MAG", "MM", "SP", "SSC", "SSO", "SC", "SE", "XPN", "XSA", "XSN", "XSV", "UNA", "NA", "VSV"
-          ]
-        }
+  "analysis": {
+    "filter": {
+      "concert_synonyms": {
+        "type": "synonym",
+        "synonyms": [
+          "콘서트, concert",
+          "공연, performance, show",
+          "페스티벌, festival, 축제"
+        ]
+      }
+    },
+    "analyzer": {
+      "concert_name_analyzer": {
+        "char_filter": [],
+        "tokenizer": "nori_tokenizer",
+        "filter": [
+          "nori_part_of_speech",
+          "nori_readingform",
+          "lowercase",
+          "concert_synonyms"
+        ]
       }
     }
   }

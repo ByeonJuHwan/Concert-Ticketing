@@ -12,4 +12,5 @@ interface ConcertReadRepository {
     fun getAvailableDates(concertId: Long): List<ConcertOptionEntity>
     fun getAvailableSeats(concertOptionId: Long): List<SeatEntity>
     fun findUserById(userId: Long): Optional<ConcertUserEntity>
+    fun getConcertSuggestions(query: String): List<String>
 }

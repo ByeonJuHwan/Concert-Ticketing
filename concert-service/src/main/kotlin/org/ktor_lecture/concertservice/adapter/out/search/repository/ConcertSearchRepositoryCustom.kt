@@ -2,8 +2,10 @@ package org.ktor_lecture.concertservice.adapter.out.search.repository
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import org.ktor_lecture.concertservice.adapter.out.search.document.ConcertDocument
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
@@ -15,6 +17,8 @@ interface ConcertSearchRepositoryCustom {
         startDate: String?,
         endDate: String?
     ): List<ConcertDocument>
+
+    fun getSuggestions(query: String): List<String>
 }
 
 class ConcertSearchRepositoryCustomImpl(
@@ -81,6 +85,27 @@ class ConcertSearchRepositoryCustomImpl(
         return elasticSearchOperations
             .search(nativeQuery, ConcertDocument::class.java)
             .map { it.content }
+            .toList()
+    }
+
+    override fun getSuggestions(keyword: String): List<String> {
+        val query = MultiMatchQuery.of { m ->
+            m.query(keyword)
+                .fields(
+                    "concertName.auto_complete",
+                    "concertName.auto_complete._2gram",
+                    "concertName.auto_complete._3gram"
+                )
+                .type(TextQueryType.BoolPrefix)
+        }._toQuery()
+
+        val nativeQuery = NativeQuery.builder()
+            .withQuery(query)
+            .build()
+
+        return elasticSearchOperations
+            .search(nativeQuery, ConcertDocument::class.java)
+            .map { it.content.concertName }
             .toList()
     }
 }

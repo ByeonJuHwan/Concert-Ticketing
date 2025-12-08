@@ -5,6 +5,7 @@ import org.ktor_lecture.concertservice.adapter.`in`.web.request.CreateConcertReq
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.*
 import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
+import org.ktor_lecture.concertservice.application.port.`in`.GetConcertSuggestionUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDatesUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
@@ -14,12 +15,13 @@ import java.time.LocalDate
 
 @RestController
 @RequestMapping("/api/v1/concerts")
-class ConcertController (
+class ConcertController(
     private val searchConcertUseCase: SearchConcertUseCase,
     private val searchAvailableDatesUseCase: SearchAvailableDatesUseCase,
     private val searchAvailableSeatUseCase: SearchAvailableSeatUseCase,
     private val reserveSeatUseCase: ReserveSeatUseCase,
     private val createConcertUseCase: CreateConcertUseCase,
+    private val getConcertSuggestionUseCase: GetConcertSuggestionUseCase,
 ) {
 
     @GetMapping
@@ -69,5 +71,13 @@ class ConcertController (
         @RequestBody request: CreateConcertRequest,
     ) {
         createConcertUseCase.createConcert(request.toCommand())
+    }
+
+    @GetMapping("/suggestions")
+    fun getConcertSuggestions(
+        @RequestParam query: String,
+    ): ApiResult<List<String>> {
+        val suggestions = getConcertSuggestionUseCase.getConcertSuggestions(query)
+        return ApiResult(suggestions)
     }
 }

@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.application.service
 
+import org.ktor_lecture.concertservice.application.port.`in`.GetConcertSuggestionUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDatesUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchConcertUseCase
@@ -14,7 +15,7 @@ import java.time.LocalDate
 @Service
 class ConcertReadService (
     private val concertReadRepository: ConcertReadRepository,
-) : SearchConcertUseCase, SearchAvailableDatesUseCase, SearchAvailableSeatUseCase {
+) : SearchConcertUseCase, SearchAvailableDatesUseCase, SearchAvailableSeatUseCase, GetConcertSuggestionUseCase {
 
     @Transactional(readOnly = true)
     override fun getConcerts(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertInfo> {
@@ -32,5 +33,9 @@ class ConcertReadService (
     override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatInfo> {
         val availableSeats = concertReadRepository.getAvailableSeats(concertOptionId)
         return availableSeats.map { ConcertSeatInfo.from(it) }
+    }
+
+    override fun getConcertSuggestions(query: String): List<String> {
+        return concertReadRepository.getConcertSuggestions(query)
     }
 }

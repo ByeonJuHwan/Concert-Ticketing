@@ -56,6 +56,10 @@ class ConcertReadAdapter (
         return concertUserJpaRepository.findById(userId)
     }
 
+    override fun getConcertSuggestions(query: String): List<String> {
+        return concertSearchRepository.getSuggestions(query)
+    }
+
     private fun searchWithJpa(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertEntity> {
         try {
             return concertJpaRepository.findConcertsByOptions(concertName, singer, startDate, endDate)
