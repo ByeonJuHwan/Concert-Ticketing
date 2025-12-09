@@ -101,11 +101,13 @@ class ConcertSearchRepositoryCustomImpl(
 
         val nativeQuery = NativeQuery.builder()
             .withQuery(query)
+            .withMaxResults(10)
             .build()
 
         return elasticSearchOperations
             .search(nativeQuery, ConcertDocument::class.java)
             .map { it.content.concertName }
+            .distinct()
             .toList()
     }
 }

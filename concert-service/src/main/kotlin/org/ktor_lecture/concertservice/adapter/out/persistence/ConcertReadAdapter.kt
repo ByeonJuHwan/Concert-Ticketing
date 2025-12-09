@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.adapter.out.persistence
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import org.ktor_lecture.concertservice.adapter.out.persistence.jpa.ConcertJpaRepository
 import org.ktor_lecture.concertservice.adapter.out.persistence.jpa.ConcertOptionJpaRepository
 import org.ktor_lecture.concertservice.adapter.out.persistence.jpa.ConcertSeatJpaRepository
@@ -24,10 +25,11 @@ class ConcertReadAdapter (
     private val concertUserJpaRepository: ConcertUserJpaRepository,
     private val concertSearchRepository: ConcertSearchRepository,
 ): ConcertReadRepository {
+
     override fun getConcerts(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertEntity> {
-        try {
+        return try {
             val documents = concertSearchRepository.searchByOptions(concertName, singer, startDate?.toString(), endDate?.toString())
-            return documents
+            documents
                 .map { d ->
                     ConcertEntity(
                         id = d.id.toLong(),
@@ -40,7 +42,7 @@ class ConcertReadAdapter (
                     )
                 }
         } catch (_: Exception) {
-            return searchWithJpa(concertName, singer, startDate, endDate)
+            searchWithJpa(concertName, singer, startDate, endDate)
         }
     }
 
@@ -56,8 +58,13 @@ class ConcertReadAdapter (
         return concertUserJpaRepository.findById(userId)
     }
 
+    @RateLimiter(name = "autocomplete", fallbackMethod = "throwRateLimitEx")
     override fun getConcertSuggestions(query: String): List<String> {
         return concertSearchRepository.getSuggestions(query)
+    }
+
+    private fun throwRateLimitEx(query: String, ex: Throwable): List<String> {
+        throw ConcertException(ErrorCode.RATE_LIMIT_EXCEEDED)
     }
 
     private fun searchWithJpa(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertEntity> {

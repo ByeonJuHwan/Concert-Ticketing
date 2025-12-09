@@ -59,6 +59,9 @@ dependencies {
 
     // ElasticSearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+
+    // Resilience4j
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.1.0")
 }
 
 kotlin {

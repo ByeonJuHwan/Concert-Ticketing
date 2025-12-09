@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 
 enum class ErrorCode(val code: String, val message: String, val status: HttpStatus) {
     USER_NOT_FOUND("404", "존재하는 회원이 없습니다", HttpStatus.NOT_FOUND),
+    RATE_LIMIT_EXCEEDED("429", "요청이 너무 많습니다",HttpStatus.TOO_MANY_REQUESTS),
     TOKEN_NOT_FOUND("401", "토큰이 존재하지 않습니다", HttpStatus.UNAUTHORIZED),
     SEAT_NOT_FOUND("404", "존재하는 좌석이 없습니다", HttpStatus.NOT_FOUND),
     SEAT_NOT_AVAILABLE("409", "예약 가능한 상태가 아닙니다", HttpStatus.CONFLICT),
