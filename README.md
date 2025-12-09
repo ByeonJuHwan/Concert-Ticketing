@@ -47,6 +47,14 @@
 
 ---
 
+## 장애전파 방지 : Circuit Breaker
+
+MSA 환경에서 서비스 안정성을 위해 Circuit Breaker를 도입했습니다.
+
+**[Circuit Breaker](docs/msa/circuit-breaker.md)**
+
+---
+
 ## 분산 트랜잭션: SAGA 패턴
 
 MSA 환경에서 여러 서비스에 걸친 트랜잭션의 최종적 일관성을 SAGA 패턴과 자동 재시도 전략으로 보장했습니다.
