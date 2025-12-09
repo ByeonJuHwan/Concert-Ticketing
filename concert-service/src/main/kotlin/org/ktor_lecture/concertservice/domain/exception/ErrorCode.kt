@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 
 enum class ErrorCode(val code: String, val message: String, val status: HttpStatus) {
     USER_NOT_FOUND("404", "존재하는 회원이 없습니다", HttpStatus.NOT_FOUND),
+    RATE_LIMIT_EXCEEDED("429", "요청이 너무 많습니다",HttpStatus.TOO_MANY_REQUESTS),
     TOKEN_NOT_FOUND("401", "토큰이 존재하지 않습니다", HttpStatus.UNAUTHORIZED),
     SEAT_NOT_FOUND("404", "존재하는 좌석이 없습니다", HttpStatus.NOT_FOUND),
     SEAT_NOT_AVAILABLE("409", "예약 가능한 상태가 아닙니다", HttpStatus.CONFLICT),
@@ -14,5 +15,6 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
     RESERVATION_OUTBOX_NOT_FOUND("404", "예약의 아웃박스를 찾을수 없습니다", HttpStatus.NOT_FOUND),
     SEAT_NOT_TEMPORARILY_ASSIGNED("400", "좌석이 임시예약 상태가 아닙니다", HttpStatus.BAD_REQUEST),
     SEAT_NOT_RESERVED("400","좌석이 예약 상태가 아닙니다", HttpStatus.BAD_REQUEST),
+    CONCERT_SEARCH_ERROR("500", "콘서트 검색에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
 }

@@ -1,34 +1,48 @@
 package org.ktor_lecture.concertservice.adapter.`in`.web.api
 
-import io.swagger.v3.oas.annotations.tags.Tag
 import org.ktor_lecture.concertservice.adapter.`in`.web.ApiResult
+import org.ktor_lecture.concertservice.adapter.`in`.web.request.CreateConcertRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.*
+import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
+import org.ktor_lecture.concertservice.application.port.`in`.GetConcertSuggestionUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDatesUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchConcertUseCase
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 
-@Tag(name = "콘서트 API", description = "콘서트 예약 API")
 @RestController
-@RequestMapping("/concerts")
-class ConcertController (
+@RequestMapping("/api/v1/concerts")
+class ConcertController(
     private val searchConcertUseCase: SearchConcertUseCase,
     private val searchAvailableDatesUseCase: SearchAvailableDatesUseCase,
     private val searchAvailableSeatUseCase: SearchAvailableSeatUseCase,
     private val reserveSeatUseCase: ReserveSeatUseCase,
-): ConcertControllerSwagger {
+    private val createConcertUseCase: CreateConcertUseCase,
+    private val getConcertSuggestionUseCase: GetConcertSuggestionUseCase,
+) {
 
     @GetMapping
-    override fun getConcerts(): ApiResult<List<ConcertsResponse>> {
-        val concerts = searchConcertUseCase.getConcerts()
+    fun getConcerts(
+        @RequestParam(required = false) concertName: String?,
+        @RequestParam(required = false) singer: String?,
+        @RequestParam(required = false) startDate: LocalDate?,
+        @RequestParam(required = false) endDate: LocalDate?,
+    ): ApiResult<List<ConcertsResponse>> {
+        val concerts = searchConcertUseCase.getConcerts(
+            concertName,
+            singer,
+            startDate,
+            endDate
+        )
         return ApiResult(data = ConcertsResponse.fromList(concerts))
     }
 
 
     @GetMapping("/{concertId}/available-dates")
-    override fun getAvailableDates(
+    fun getAvailableDates(
         @PathVariable concertId: Long,
     ): ApiResult<List<ConcertAvailableDatesResponse>> {
         val dates = searchAvailableDatesUseCase.getAvailableDates(concertId)
@@ -37,7 +51,7 @@ class ConcertController (
 
 
     @GetMapping("/{concertOptionId}/available-seats")
-    override fun getAvailableSeats(
+    fun getAvailableSeats(
         @PathVariable concertOptionId: Long,
     ): ApiResult<ConcertAvailableSeatsResponse> {
         val seats = searchAvailableSeatUseCase.getAvailableSeats(concertOptionId)
@@ -45,10 +59,25 @@ class ConcertController (
     }
 
     @PostMapping("/reserve-seat")
-    override fun reserveSeat(
+    fun reserveSeat(
         @RequestBody request: ReserveSeatRequest
-    ) : ApiResult<ConcertReservationStatusResponse> {
+    ): ApiResult<ConcertReservationStatusResponse> {
         val response = reserveSeatUseCase.reserveSeat(request.toCommand())
         return ApiResult(ConcertReservationStatusResponse.from(response))
+    }
+
+    @PostMapping
+    fun createConcert(
+        @RequestBody request: CreateConcertRequest,
+    ) {
+        createConcertUseCase.createConcert(request.toCommand())
+    }
+
+    @GetMapping("/suggestions")
+    fun getConcertSuggestions(
+        @RequestParam query: String,
+    ): ApiResult<List<String>> {
+        val suggestions = getConcertSuggestionUseCase.getConcertSuggestions(query)
+        return ApiResult(suggestions)
     }
 }

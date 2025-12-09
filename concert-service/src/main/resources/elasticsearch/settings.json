@@ -1,0 +1,26 @@
+{
+  "analysis": {
+    "filter": {
+      "concert_synonyms": {
+        "type": "synonym",
+        "synonyms": [
+          "콘서트, concert",
+          "공연, performance, show",
+          "페스티벌, festival, 축제"
+        ]
+      }
+    },
+    "analyzer": {
+      "concert_name_analyzer": {
+        "char_filter": [],
+        "tokenizer": "nori_tokenizer",
+        "filter": [
+          "nori_part_of_speech",
+          "nori_readingform",
+          "lowercase",
+          "concert_synonyms"
+        ]
+      }
+    }
+  }
+}
