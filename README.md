@@ -75,6 +75,8 @@ MSA 환경에서 각 서비스에 중복되던 토큰 검증 로직을 API Gatew
 
 콘서트 검색 성능 개선을 위해 Elasticsearch를 도입했습니다.
 
+**[ElasticSearch](docs/elasticsearch.md)**
+
 ---
 
 ## 동시성 이슈
