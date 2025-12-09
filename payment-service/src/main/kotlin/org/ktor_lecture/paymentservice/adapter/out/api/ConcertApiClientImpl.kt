@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.adapter.out.api
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeReservationPaidRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSeatReservedRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSeatTemporarilyAssignedRequest
@@ -10,7 +11,7 @@ import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.springframework.web.client.RestClient
 
-class ConcertApiClientImpl(
+open class ConcertApiClientImpl(
     private val restClient: RestClient,
 ): ConcertApiClient {
 
@@ -33,6 +34,7 @@ class ConcertApiClientImpl(
             .toBodilessEntity()
     }
 
+    @CircuitBreaker(name = "concertService")
     override fun changeReservationPaid(requestId: String) {
         val request = ChangeReservationPaidRequest(requestId)
 
@@ -44,6 +46,7 @@ class ConcertApiClientImpl(
 
     }
 
+    @CircuitBreaker(name = "concertService")
     override fun changeSeatReserved(requestId: String) {
         val request = ChangeSeatReservedRequest(requestId)
 

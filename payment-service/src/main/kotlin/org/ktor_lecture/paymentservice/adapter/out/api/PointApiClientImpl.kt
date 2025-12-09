@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.adapter.out.api
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointCancelRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointConfirmRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointReserveRequest
@@ -8,7 +9,7 @@ import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
 import org.springframework.web.client.RestClient
 
-class PointApiClientImpl(
+open class PointApiClientImpl(
     private val restClient: RestClient,
 ): PointApiClient {
 
@@ -39,6 +40,7 @@ class PointApiClientImpl(
             .toBodilessEntity()
     }
 
+    @CircuitBreaker(name = "userService")
     override fun use(userId: String, amount: Long): PointUseResponse {
         val request = PointUseRequest(
             userId = userId,
