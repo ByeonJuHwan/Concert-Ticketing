@@ -58,6 +58,9 @@ class PointService (
         )
     }
 
+    /**
+     * 현재 자신이 보유한 포인트 정보를 반환합니다 -> 포인트 정보가 없다면 기본 포인트 정보를 반환합니다
+     */
     @Transactional
     override fun getCurrentPoint(userId: Long): CurrentPointResponse {
         val user = userReadRepository.findById(userId).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
@@ -80,7 +83,7 @@ class PointService (
      */
     @Transactional
     override fun use(command: PointUseCommand): PointUseResponse {
-        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+        val user = userReadRepository.findById(command.userId).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
 
         val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
 
@@ -110,9 +113,8 @@ class PointService (
      */
     @Transactional
     override fun cancel(command: PointCancelCommand) {
-        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+        val user = userReadRepository.findById(command.userId).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
         val pointHistory = pointHistoryRepository.findById(command.pointHistoryId).orElseThrow { throw ConcertException(ErrorCode.POINT_HISTORY_NOT_FOUND) }
-
 
         val point = pointRepository.getCurrentPoint(user) ?: PointEntity(user = user, point = 0L)
 
