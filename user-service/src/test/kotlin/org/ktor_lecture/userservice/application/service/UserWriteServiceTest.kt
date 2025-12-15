@@ -20,7 +20,7 @@ class UserWriteServiceTest {
     private lateinit var userWriteRepository: UserWriteRepository
 
     @InjectMockKs
-    private lateinit var userWriteService: UserWriteService
+    private lateinit var userService: UserService
 
     @Test
     fun `유저 회원가입`() {
@@ -31,7 +31,7 @@ class UserWriteServiceTest {
         every { userWriteRepository.save(any())} returns savedUser
 
         // when
-        userWriteService.createUser(command)
+        userService.createUser(command)
 
         // then
         verify(exactly = 1) { userWriteRepository.save(any()) }
