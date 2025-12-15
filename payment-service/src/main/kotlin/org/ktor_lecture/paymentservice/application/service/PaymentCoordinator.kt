@@ -2,6 +2,7 @@ package org.ktor_lecture.paymentservice.application.service
 
 import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
+import org.ktor_lecture.paymentservice.adapter.out.api.grpc.point.PointGrpcAdapter
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
 import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
 import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient

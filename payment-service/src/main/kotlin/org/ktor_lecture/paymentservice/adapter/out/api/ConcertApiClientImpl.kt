@@ -9,8 +9,10 @@ import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservati
 import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
+import org.springframework.context.annotation.Primary
 import org.springframework.web.client.RestClient
 
+@Primary
 open class ConcertApiClientImpl(
     private val restClient: RestClient,
 ): ConcertApiClient {

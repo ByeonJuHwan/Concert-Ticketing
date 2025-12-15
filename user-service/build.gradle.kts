@@ -1,3 +1,5 @@
+import com.google.protobuf.gradle.*
+
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
@@ -6,6 +8,7 @@ plugins {
 
     kotlin("plugin.serialization") version "1.9.25"
     kotlin("plugin.jpa") version "1.9.25"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 group = "org.ktor_lecture"
@@ -47,6 +50,19 @@ dependencies {
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // grpc
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
+    implementation("io.grpc:grpc-protobuf:1.60.0")
+    implementation("io.grpc:grpc-stub:1.60.0")
+    implementation("com.google.protobuf:protobuf-kotlin:4.28.2")
+    implementation("com.google.protobuf:protobuf-java:4.28.2")
+
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
 }
 
 kotlin {
@@ -59,6 +75,44 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.1"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.60.0"
+        }
+        create("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.plugins {
+                create("grpc")
+                create("grpckt")
+            }
+            task.builtins {
+                create("kotlin")
+            }
+        }
+    }
+}
+
+sourceSets{
+    getByName("main"){
+        java {
+            srcDirs(
+                "build/generated/source/proto/main/java",
+                "build/generated/source/proto/main/kotlin",
+                "build/generated/source/proto/main/grpckt",
+                "build/generated/source/proto/main/grpc"
+            )
+        }
+    }
 }
 
 tasks.withType<Test> {

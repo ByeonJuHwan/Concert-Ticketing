@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_package = "com.concert.concert.grpc";
+
+option java_multiple_files = true;
+
+package concert.concert;
+
+service ConcertService {
+  rpc ChangeReservationPaid (GrpcChangeReservationPaidRequest) returns (GrpcChangeReservationPaidResponse);
+  rpc ChangeSeatReserved (GrpcChangeSeatReservedRequest) returns (GrpcChangeSeatReservedResponse);
+}
+
+message GrpcChangeReservationPaidRequest {
+  string reservation_id = 1;
+}
+
+message GrpcChangeReservationPaidResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GrpcChangeSeatReservedRequest {
+  string request_id = 1;
+}
+
+message GrpcChangeSeatReservedResponse {
+  bool success = 1;
+  string message = 2;
+}
