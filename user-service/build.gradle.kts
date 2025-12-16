@@ -44,9 +44,15 @@ dependencies {
     // kafka
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.testcontainers:kafka")
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // testContainer
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:mariadb:1.19.0")
 }
 
 kotlin {
