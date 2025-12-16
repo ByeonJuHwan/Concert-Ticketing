@@ -11,9 +11,15 @@ import java.util.Optional
 class UserReadRepositoryAdapter (
     private val userJpaRepository: UserJpaRepository,
 ): UserReadRepository {
+
     @Transactional(readOnly = true)
     override fun findById(userId: Long): Optional<UserEntity> {
         return userJpaRepository.findById(userId)
+    }
+
+    @Transactional(readOnly = true)
+    override fun findAll(): List<UserEntity> {
+        return userJpaRepository.findAll()
     }
 
 }
