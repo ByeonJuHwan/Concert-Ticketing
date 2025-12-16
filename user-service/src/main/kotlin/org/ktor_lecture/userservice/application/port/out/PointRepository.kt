@@ -9,4 +9,5 @@ interface PointRepository {
     fun getCurrentPoint(user: UserEntity): PointEntity?
     fun save(point: PointEntity)
     fun findById(userId: Long): Optional<PointEntity>
+    fun deleteAll()
 }

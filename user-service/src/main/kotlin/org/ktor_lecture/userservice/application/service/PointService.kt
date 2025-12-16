@@ -17,6 +17,7 @@ import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
 import org.ktor_lecture.userservice.domain.entity.PointTransactionType
 import org.ktor_lecture.userservice.domain.exception.ConcertException
 import org.ktor_lecture.userservice.domain.exception.ErrorCode
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
