@@ -31,12 +31,13 @@ class PointControllerTest() : IntegrationTestBase() {
     @Autowired
     private lateinit var chargePointUseCase: ChargePointUseCase
 
-
+    private var testUserId = 0L
 
     @BeforeEach
     fun setUp() {
         val savedUser = userWriteRepository.save(UserEntity(name = "test"))
         pointRepository.save(PointEntity(user = savedUser, point = 0L))
+        testUserId = savedUser.id!!
     }
 
     @AfterEach
@@ -52,7 +53,7 @@ class PointControllerTest() : IntegrationTestBase() {
         val executorService = Executors.newFixedThreadPool(32)
         val latch = CountDownLatch(threadCount)
 
-        val user = userReadRepository.findById(1L).orElseThrow()
+        val user = userReadRepository.findById(testUserId).orElseThrow()
 
         val request = PointChargeRequest(user.id!!, chargePoint)
 
@@ -76,7 +77,7 @@ class PointControllerTest() : IntegrationTestBase() {
     @Test
     fun `getCurrentPoint_현재 포인트를 조회한다`() {
         // when
-        mockMvc.get("/api/v1/points/current/1")
+        mockMvc.get("/api/v1/points/current/$testUserId")
             .andExpect {
                 status { isOk() }
                 status { isOk() }
