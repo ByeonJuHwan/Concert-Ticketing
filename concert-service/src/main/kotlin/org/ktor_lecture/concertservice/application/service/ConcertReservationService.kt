@@ -48,7 +48,7 @@ class ConcertReservationService (
 
     @Transactional
     override fun changeReservationPaid(command: ReservationPaidCommand) {
-        val reservation = reservationRepository.getReservation(command.requestId.toLong())
+        val reservation = reservationRepository.getReservation(command.reservationId)
                     .orElseThrow { throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND) }
 
         reservation.changeStatus(ReservationStatus.PAID)
@@ -56,7 +56,7 @@ class ConcertReservationService (
 
     @Transactional
     override fun changeReservationPending(command: ChangeReservationPendingCommand) {
-        val reservation = reservationRepository.getReservation(command.requestId.toLong())
+        val reservation = reservationRepository.getReservation(command.reservationId)
                             .orElseThrow { throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND) }
 
         reservation.changeStatus(ReservationStatus.PENDING)
