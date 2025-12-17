@@ -3,7 +3,7 @@ package org.ktor_lecture.concertservice.adapter.`in`.web.request
 import org.ktor_lecture.concertservice.application.service.command.ChangeReservationPendingCommand
 
 data class ChangeReservationPendingRequest (
-    val requestId: String,
+    val reservationId: Long,
 ) {
-    fun toCommand() = ChangeReservationPendingCommand(requestId)
+    fun toCommand() = ChangeReservationPendingCommand(reservationId)
 }

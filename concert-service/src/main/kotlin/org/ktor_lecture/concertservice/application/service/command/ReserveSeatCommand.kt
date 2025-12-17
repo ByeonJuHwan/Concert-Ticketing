@@ -6,5 +6,5 @@ data class ReserveSeatCommand(
 )
 
 data class ChangeSeatStatusReservedCommand(
-    val requestId: String,
+    val reservationId: Long,
 )

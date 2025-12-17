@@ -1,5 +1,5 @@
 package org.ktor_lecture.concertservice.application.service.command
 
 data class ChangeReservationTemporarilyAssignedCommand(
-    val requestId: String,
+    val reservationId: Long,
 )
