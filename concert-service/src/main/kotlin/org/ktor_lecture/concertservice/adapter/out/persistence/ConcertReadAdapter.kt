@@ -13,6 +13,7 @@ import org.ktor_lecture.concertservice.domain.entity.ConcertUserEntity
 import org.ktor_lecture.concertservice.domain.entity.SeatEntity
 import org.ktor_lecture.concertservice.domain.exception.ConcertException
 import org.ktor_lecture.concertservice.domain.exception.ErrorCode
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.util.Optional
@@ -54,13 +55,19 @@ class ConcertReadAdapter (
         return concertSeatJpaRepository.findByConcertOptionId(concertOptionId)
     }
 
-    override fun findUserById(userId: Long): Optional<ConcertUserEntity> {
-        return concertUserJpaRepository.findById(userId)
+    override fun findUserById(userId: Long): Result<ConcertUserEntity> {
+        return runCatching {
+            concertUserJpaRepository.findByIdOrNull(userId) ?: throw ConcertException(ErrorCode.USER_NOT_FOUND)
+        }
     }
 
     @RateLimiter(name = "autocomplete", fallbackMethod = "throwRateLimitEx")
     override fun getConcertSuggestions(query: String): List<String> {
         return concertSearchRepository.getSuggestions(query)
+    }
+
+    override fun findAllUser(): List<ConcertUserEntity> {
+        return concertUserJpaRepository.findAll()
     }
 
     private fun throwRateLimitEx(query: String, ex: Throwable): List<String> {

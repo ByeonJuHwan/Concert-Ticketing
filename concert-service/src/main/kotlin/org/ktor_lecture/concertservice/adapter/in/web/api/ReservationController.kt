@@ -53,7 +53,6 @@ class ReservationController(
     fun changeSeatStatus(
         @RequestBody request: ChangeSeatReservedRequest
     ) {
-        throw RuntimeException("서킷브레이커 테스트")
         changeSeatReservedUseCase.changeSeatStatusReserved(request.toCommand())
     }
 

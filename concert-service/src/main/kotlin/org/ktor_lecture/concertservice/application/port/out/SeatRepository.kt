@@ -6,4 +6,6 @@ interface SeatRepository {
 
     fun getSeatWithLock(seatId: Long): SeatEntity?
     fun updateSeatStatusToAvailable(seatIds: List<Long>)
+    fun save(seat: SeatEntity): SeatEntity
+    fun deleteAll()
 }

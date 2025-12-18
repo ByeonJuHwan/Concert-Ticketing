@@ -40,7 +40,6 @@ class ConcertController(
         return ApiResult(data = ConcertsResponse.fromList(concerts))
     }
 
-
     @GetMapping("/{concertId}/available-dates")
     fun getAvailableDates(
         @PathVariable concertId: Long,
@@ -48,7 +47,6 @@ class ConcertController(
         val dates = searchAvailableDatesUseCase.getAvailableDates(concertId)
         return ApiResult(data = ConcertAvailableDatesResponse.fromList(dates))
     }
-
 
     @GetMapping("/{concertOptionId}/available-seats")
     fun getAvailableSeats(

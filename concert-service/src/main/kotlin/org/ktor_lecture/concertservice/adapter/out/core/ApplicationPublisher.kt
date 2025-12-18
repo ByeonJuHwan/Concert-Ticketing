@@ -22,6 +22,6 @@ class ApplicationPublisher(
     }
 
     override fun publish(topic: String, event: DomainEvent) {
-        log.info("내부 이벤트에서는 사요하지 않음")
+        log.info("내부 이벤트에서는 사용하지 않음")
     }
 }

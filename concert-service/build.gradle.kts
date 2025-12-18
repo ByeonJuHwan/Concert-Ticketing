@@ -50,6 +50,7 @@ dependencies {
     // kafka
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.testcontainers:kafka")
 
     // serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
@@ -59,6 +60,7 @@ dependencies {
 
     // ElasticSearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+    testImplementation("org.testcontainers:elasticsearch:1.19.0")
 
     // Resilience4j
     implementation("io.github.resilience4j:resilience4j-spring-boot3:2.1.0")
@@ -67,6 +69,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
+
+    // testContainer
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:mariadb:1.19.0")
 }
 
 kotlin {

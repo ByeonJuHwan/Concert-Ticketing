@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 object ConcertFixtures {
 
     fun createConcert(
-        id: Long = 1L,
+        id: Long? = 1L,
         concertName: String = "test_concert",
         singer: String = "test_singer",
         startDate: LocalDate = LocalDate.now(),
@@ -40,7 +40,7 @@ object ConcertFixtures {
         }
 
     fun createConcertOption(
-        id: Long = 1L,
+        id: Long? = 1L,
         concert: ConcertEntity = createConcert(),
         availableSeats: Int = 100,
         concertDate: String = "20251201",
@@ -66,7 +66,7 @@ object ConcertFixtures {
     }
 
     fun createSeat (
-        id: Long = 1L,
+        id: Long? = 1L,
         concertOption: ConcertOptionEntity = createConcertOption(),
         seatStatus: SeatStatus = SeatStatus.AVAILABLE,
         price: Long = 100L,
@@ -91,7 +91,15 @@ object ConcertFixtures {
         }
     }
 
-    fun createConcertUser(): ConcertUserEntity = ConcertUserEntity(1L, "test")
+    fun createConcertUser(id: Long? = 1L): ConcertUserEntity = ConcertUserEntity(id, "test::$id")
+
+    fun createConcertUsers(count: Int = 10) =
+        (1..count).map {
+            ConcertUserEntity(
+                id = it.toLong(),
+                name = "test::$it",
+            )
+        }
 
     fun createReservation(
         id: Long = 1L,
