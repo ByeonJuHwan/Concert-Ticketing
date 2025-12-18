@@ -46,8 +46,7 @@ class ConcertWriteService (
     @Transactional
     override fun reserveSeat(command: ReserveSeatCommand): ReserveSeatInfo {
         // 유저 정보 조회
-        val user: ConcertUserEntity = concertReadRepository.findUserById(command.userId)
-            .orElseThrow { ConcertException(ErrorCode.USER_NOT_FOUND) }
+        val user: ConcertUserEntity = concertReadRepository.findUserById(command.userId).getOrThrow()
 
         // 예약가능한 좌석인지 확인하고 좌석 임시배정후 잠그기
         val seat: SeatEntity = seatRepository.getSeatWithLock(command.seatId) ?: throw ConcertException(ErrorCode.SEAT_NOT_FOUND)
@@ -65,6 +64,7 @@ class ConcertWriteService (
         eventPublisher.publish(ReservationCreatedEvent(savedReservation.id!!))
 
         return ReserveSeatInfo(
+            reservationId = savedReservation.id!!,
             status = reservation.status,
             reservationExpireTime = reservation.expiresAt,
         )

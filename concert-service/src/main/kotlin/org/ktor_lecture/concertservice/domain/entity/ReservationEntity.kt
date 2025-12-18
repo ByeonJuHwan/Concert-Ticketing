@@ -33,7 +33,7 @@ class ReservationEntity(
     val seat: SeatEntity,
 
     @Column(nullable = false)
-    val expiresAt: LocalDateTime,
+    val expiresAt: LocalDateTime = LocalDateTime.now().plusMinutes(5),
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

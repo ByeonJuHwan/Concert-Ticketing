@@ -60,7 +60,7 @@ class ConcertWriteServiceTest {
 
         val reservation = createReservation(user = user, seat = seat)
 
-        every { concertReadRepository.findUserById(user.id!!) } returns Optional.of(user)
+        every { concertReadRepository.findUserById(user.id!!) } returns Result.success(user)
         every { seatRepository.getSeatWithLock(seat.id!!)} returns seat
         every { reservationRepository.save(any())} returns reservation
         every { eventPublisher.publish(any())} just runs
@@ -85,7 +85,7 @@ class ConcertWriteServiceTest {
         val concertOptionEntity = createConcertOption(concert = concert)
         val seat = createSeat(concertOption = concertOptionEntity, seatStatus = SeatStatus.TEMPORARILY_ASSIGNED)
 
-        every { concertReadRepository.findUserById(user.id!!) } returns Optional.of(user)
+        every { concertReadRepository.findUserById(user.id!!) } returns Result.success(user)
         every { seatRepository.getSeatWithLock(seat.id!!)} returns seat
 
         val command = ReserveSeatCommand (
@@ -103,7 +103,7 @@ class ConcertWriteServiceTest {
 
     @Test
     fun `콘서트 서비스 유저를 생성한다`() {
-        every { concertWriteRepository.createUser(any()) } just runs
+        every { concertWriteRepository.createUser(any()) } returnsArgument  0
 
         val event = UserCreatedEvent(
             userId = "1",
