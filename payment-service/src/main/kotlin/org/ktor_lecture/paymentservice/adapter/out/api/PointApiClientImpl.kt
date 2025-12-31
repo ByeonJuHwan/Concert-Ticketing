@@ -4,7 +4,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointCancelRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.point.PointUseRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
-import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.springframework.context.annotation.Primary
 import org.springframework.web.client.RestClient
 

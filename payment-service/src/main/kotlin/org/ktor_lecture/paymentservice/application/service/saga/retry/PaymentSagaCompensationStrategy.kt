@@ -1,7 +1,7 @@
 package org.ktor_lecture.paymentservice.application.service.saga.retry
 
-import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
-import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.ConcertApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.ktor_lecture.paymentservice.application.port.out.SagaRepository
 import org.ktor_lecture.paymentservice.application.service.PaymentCompensation
 import org.ktor_lecture.paymentservice.application.service.PaymentService

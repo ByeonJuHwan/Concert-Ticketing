@@ -1,6 +1,6 @@
 package org.ktor_lecture.paymentservice.adapter.`in`.consumer
 
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUserCreateUseCase
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUserCreateUseCase
 import org.ktor_lecture.paymentservice.common.JsonUtil
 import org.ktor_lecture.paymentservice.domain.event.UserCreatedEvent
 import org.slf4j.LoggerFactory

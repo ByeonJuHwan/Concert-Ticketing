@@ -6,7 +6,7 @@ import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSea
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ChangeSeatTemporarilyAssignedRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.request.concert.ReservationExpiredRequest
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
-import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.ConcertApiClient
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.springframework.context.annotation.Primary

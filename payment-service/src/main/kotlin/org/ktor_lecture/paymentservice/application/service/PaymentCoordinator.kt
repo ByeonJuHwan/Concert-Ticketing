@@ -2,11 +2,10 @@ package org.ktor_lecture.paymentservice.application.service
 
 import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
-import org.ktor_lecture.paymentservice.adapter.out.api.grpc.point.PointGrpcAdapter
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
-import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
-import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUseCase
+import org.ktor_lecture.paymentservice.application.port.out.http.ConcertApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCommand
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.PAYMENT_SAVE

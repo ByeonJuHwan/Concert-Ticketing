@@ -16,7 +16,7 @@ service PointService {
 }
 
 message GrpcPointUseRequest {
-  string user_id = 1;
+  int64 user_id = 1;
   int64 amount = 2;
 }
 

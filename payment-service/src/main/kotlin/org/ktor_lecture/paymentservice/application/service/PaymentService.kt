@@ -1,7 +1,7 @@
 package org.ktor_lecture.paymentservice.application.service
 
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentCreateUseCase
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUserCreateUseCase
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentCreateUseCase
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUserCreateUseCase
 import org.ktor_lecture.paymentservice.application.port.out.PaymentRepository
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity

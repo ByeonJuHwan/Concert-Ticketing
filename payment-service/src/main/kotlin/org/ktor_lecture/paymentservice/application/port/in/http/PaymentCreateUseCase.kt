@@ -1,4 +1,4 @@
-package org.ktor_lecture.paymentservice.application.port.`in`
+package org.ktor_lecture.paymentservice.application.port.`in`.http
 
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity

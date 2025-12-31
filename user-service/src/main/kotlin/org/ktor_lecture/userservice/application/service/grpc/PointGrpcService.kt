@@ -24,16 +24,13 @@ class PointGrpcService(
         log.info("gRPC 포인트 사용 요청: userId=${request.userId}, amount=${request.amount}")
 
         return try {
-            // 1. Command 객체 생성
             val command = PointUseCommand(
                 userId = request.userId,
                 amount = request.amount
             )
 
-            // 2. 기존 비즈니스 로직 호출 (트랜잭션 포함)
             val result = pointService.use(command)
 
-            // 3. 도메인 Response → gRPC Response 변환
             grpcPointUseResponse {
                 userId = result.userId
                 pointHistoryId = result.pointHistoryId
@@ -44,7 +41,11 @@ class PointGrpcService(
 
             val status = when (e.errorCode) {
                 ErrorCode.USER_NOT_FOUND -> Status.NOT_FOUND
+                    .withDescription("사용자를 찾을수 없습니다")
+                    .withCause(e)
                 ErrorCode.POINT_NOT_ENOUGH -> Status.FAILED_PRECONDITION
+                    .withDescription("포인트가 부족합니다")
+                    .withCause(e)
                 else -> Status.INTERNAL
             }
 
