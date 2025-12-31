@@ -2,6 +2,7 @@ package org.ktor_lecture.paymentservice.adapter.out.api.grpc.point
 
 import com.concert.point.grpc.GrpcPointUseResponse
 import com.concert.point.grpc.PointServiceGrpcKt
+import com.concert.point.grpc.grpcPointCancelRequest
 import com.concert.point.grpc.grpcPointUseRequest
 import com.concert.point.grpc.grpcPointUseResponse
 import io.grpc.Status
@@ -65,5 +66,32 @@ class PointGrpcAdapter : PointGrpcClient {
     }
 
     override suspend fun cancel(userId: Long, pointHistoryId: Long, price: Long) {
+        log.info("gRPC 포인트 취소 호출: userId=$userId")
+
+        val request = grpcPointCancelRequest {
+            this.userId = userId
+            this.pointHistoryId = pointHistoryId
+            this.amount = price
+        }
+
+        try {
+            val response = pointStub.cancelPoint(request)
+            log.info("gRPC 포인트 취소 성공: userId=$userId, message = ${response.message}")
+        } catch (e: StatusException) {
+            log.error("gRPC 포인트 사용 호출 실패: userId=$userId, price = $price", e)
+
+            when (e.status.code) {
+                Status.Code.INTERNAL -> {
+                    throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+                }
+                else -> {
+                    throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR, e.message)
+                }
+            }
+
+        } catch (e: Exception) {
+            log.error("예상치 못한 에러: userId=$userId", e)
+            throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+        }
     }
 }

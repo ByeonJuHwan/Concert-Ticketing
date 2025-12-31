@@ -110,7 +110,7 @@ class PointService (
      */
     @Transactional
     override fun cancel(command: PointCancelCommand) {
-        val user = userReadRepository.findById(command.userId.toLong()).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
+        val user = userReadRepository.findById(command.userId).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
         val pointHistory = pointHistoryRepository.findById(command.pointHistoryId).orElseThrow { throw ConcertException(ErrorCode.POINT_HISTORY_NOT_FOUND) }
 
 

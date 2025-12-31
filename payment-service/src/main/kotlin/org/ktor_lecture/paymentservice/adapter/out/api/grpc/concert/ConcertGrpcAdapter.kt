@@ -144,4 +144,12 @@ class ConcertGrpcAdapter : ConcertGrpcClient {
             throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
         }
     }
+
+    override suspend fun changeReservationPending(reservationId: Long) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun changeSeatTemporarilyAssigned(reservationId: Long) {
+        TODO("Not yet implemented")
+    }
 }

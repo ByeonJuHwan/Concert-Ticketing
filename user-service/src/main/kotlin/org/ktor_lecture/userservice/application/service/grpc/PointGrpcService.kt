@@ -1,13 +1,17 @@
 package org.ktor_lecture.userservice.application.service.grpc
 
+import com.concert.point.grpc.GrpcPointCancelRequest
+import com.concert.point.grpc.GrpcPointCancelResponse
 import com.concert.point.grpc.GrpcPointUseRequest
 import com.concert.point.grpc.GrpcPointUseResponse
 import com.concert.point.grpc.PointServiceGrpcKt
+import com.concert.point.grpc.grpcPointCancelResponse
 import com.concert.point.grpc.grpcPointUseResponse
 import io.grpc.Status
 import io.grpc.StatusException
 import net.devh.boot.grpc.server.service.GrpcService
 import org.ktor_lecture.userservice.application.service.PointService
+import org.ktor_lecture.userservice.application.service.command.PointCancelCommand
 import org.ktor_lecture.userservice.application.service.command.PointUseCommand
 import org.ktor_lecture.userservice.domain.exception.ConcertException
 import org.ktor_lecture.userservice.domain.exception.ErrorCode
@@ -59,6 +63,54 @@ class PointGrpcService(
             throw StatusException (
                 Status.INTERNAL
                     .withDescription("포인트 사용 중 오류가 발생했습니다")
+                    .withCause(e)
+            )
+        }
+    }
+
+    /**
+     * gRPC: 포인트 취소 처리
+     */
+    override suspend fun cancelPoint(request: GrpcPointCancelRequest): GrpcPointCancelResponse {
+        log.info("gRPC 포인트 취소 요청: userId=${request.userId}, amount=${request.amount}")
+
+        return try {
+            val command = PointCancelCommand(
+                userId = request.userId,
+                pointHistoryId = request.pointHistoryId,
+                amount = request.amount,
+            )
+
+            pointService.cancel(command)
+
+            grpcPointCancelResponse {
+                success = true
+                message = "포인트 사용 취소 요청 성공"
+            }
+        } catch (e: ConcertException) {
+            log.error("포인트 사용취소 실패 code=${e.errorCode}, message=${e.message}")
+
+            when (e.errorCode) {
+                ErrorCode.USER_NOT_FOUND -> {
+                    throw StatusException (
+                        Status.NOT_FOUND.withDescription(e.message).withCause(e)
+                    )
+                }
+                ErrorCode.POINT_HISTORY_NOT_FOUND -> {
+                    throw StatusException (
+                        Status.NOT_FOUND.withDescription(e.message).withCause(e)
+                    )
+                }
+                else -> throw StatusException (
+                    Status.INTERNAL.withDescription(e.message).withCause(e)
+                )
+            }
+        } catch (e: Exception) {
+            log.error("포인트 사용 취소 중 예상치 못한 오류", e)
+
+            throw StatusException (
+                Status.INTERNAL
+                    .withDescription("포인트 사용 취소 중 오류가 발생했습니다")
                     .withCause(e)
             )
         }

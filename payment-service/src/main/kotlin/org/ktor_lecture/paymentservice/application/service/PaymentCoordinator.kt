@@ -19,6 +19,7 @@ import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.ktor_lecture.paymentservice.domain.status.ReservationStatus
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
@@ -31,7 +32,7 @@ class PaymentCoordinator (
     private val sagaExecution: SagaExecution,
 ) :PaymentUseCase {
 
-    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     /**
      * 결제 처리
@@ -141,6 +142,7 @@ class PaymentCoordinator (
                 }
             } catch (e: Exception) {
                 log.error("보상실패: $step - ${e.message}")
+                throw e
             }
         }
 

@@ -13,8 +13,12 @@ package concert.point;
 // 유저 포인트 사용 요청 처리
 service PointService {
   rpc UsePoint (GrpcPointUseRequest) returns (GrpcPointUseResponse);
+  rpc CancelPoint (GrpcPointCancelRequest) returns (GrpcPointCancelResponse);
 }
 
+/*
+  유저 포인트 사용 요청
+*/
 message GrpcPointUseRequest {
   int64 user_id = 1;
   int64 amount = 2;
@@ -24,4 +28,19 @@ message GrpcPointUseResponse {
   int64 user_id = 1;
   int64 point_history_id = 2;
   int64 remaining_points = 3;
+}
+
+/*
+  유저 포인트 사용 취소 요청
+ */
+
+message GrpcPointCancelRequest {
+  int64 user_id = 1;
+  int64 point_history_id = 2;
+  int64 amount = 3;
+}
+
+message GrpcPointCancelResponse {
+  bool success = 1;
+  string message = 2;
 }

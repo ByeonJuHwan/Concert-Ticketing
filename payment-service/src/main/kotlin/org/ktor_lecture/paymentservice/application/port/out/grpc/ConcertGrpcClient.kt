@@ -8,4 +8,6 @@ interface ConcertGrpcClient {
     suspend fun reservationExpiredAndSeatAvaliable(reservationId: Long)
     suspend fun changeReservationPaid(reservationId: Long)
     suspend fun changeSeatReserved(reservationId: Long)
+    suspend fun changeReservationPending(reservationId: Long)
+    suspend fun changeSeatTemporarilyAssigned(reservationId: Long)
 }
