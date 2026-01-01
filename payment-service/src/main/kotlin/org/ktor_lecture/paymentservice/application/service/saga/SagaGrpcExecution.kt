@@ -1,0 +1,102 @@
+package org.ktor_lecture.paymentservice.application.service.saga
+
+import org.ktor_lecture.paymentservice.application.port.out.SagaRepository
+import org.ktor_lecture.paymentservice.domain.entity.SagaEntity
+import org.ktor_lecture.paymentservice.domain.entity.SagaStatus
+import org.ktor_lecture.paymentservice.domain.exception.ConcertException
+import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+
+@Component
+class SagaGrpcExecution(
+    private val sagaRepository: SagaRepository,
+) : SagaGrpcStep {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
+
+    @Transactional
+    override fun setInitSaga(sataType: String): Long {
+        val saga = SagaEntity(
+            sagaType = sataType,
+            status = SagaStatus.IN_PROGRESS,
+        )
+
+        return sagaRepository.save(saga).id!!
+    }
+
+    override suspend fun <T> executeStep(sagaId: Long, stepName: String, action: suspend () -> T): T {
+        val saga = findSagaById(sagaId)
+        try {
+            return processSagaStep(saga, stepName, action)
+        } catch (e: Exception) {
+            failSagaStep(saga, stepName)
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    @Transactional
+    override fun completeSaga(sagaId: Long) {
+        val saga = findSagaById(sagaId)
+
+        saga.complete()
+        sagaRepository.save(saga)
+    }
+
+    override fun getCompletedSteps(sagaId: Long): List<String> {
+        return findSagaById(sagaId).getCompletedStepList()
+    }
+
+
+    /**
+     * SAGA 작업 상태를 보상 처리중으로 변경
+     */
+    override fun startCompensation(sagaId: Long, payload: String) {
+        val saga = findSagaById(sagaId)
+
+        saga.compensating(payload)
+        sagaRepository.save(saga)
+    }
+
+    @Transactional
+    override fun completeCompensation(sagaId: Long) {
+        val saga = findSagaById(sagaId)
+
+        saga.compensated()
+        sagaRepository.save(saga)
+    }
+
+    override fun increaseRetryCount(sagaId: Long) {
+        val saga = findSagaById(sagaId)
+
+        saga.increaseRetryCount()
+        sagaRepository.save(saga)
+    }
+
+    override fun isRetryAvailable(sagaId: Long): Boolean {
+        val saga = findSagaById(sagaId)
+        return saga.isRetryAvailable()
+    }
+
+    suspend fun <T> processSagaStep(saga: SagaEntity, stepName: String, action: suspend () -> T): T {
+        saga.currentStep = stepName
+
+        val result = action()
+
+        saga.addCompletedStep(stepName)
+        sagaRepository.save(saga)
+        return result
+    }
+
+    fun failSagaStep(saga: SagaEntity, stepName: String) {
+        saga.failed(stepName)
+        sagaRepository.save(saga)
+    }
+
+    private fun findSagaById(sagaId: Long): SagaEntity {
+        return sagaRepository.findById(sagaId)
+                            .orElseThrow { ConcertException(ErrorCode.SAGA_NOT_FOUND) }
+    }
+}

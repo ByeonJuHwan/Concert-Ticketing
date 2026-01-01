@@ -3,7 +3,7 @@ package org.ktor_lecture.paymentservice.adapter.`in`.web.api
 import org.ktor_lecture.paymentservice.adapter.`in`.web.ApiResult
 import org.ktor_lecture.paymentservice.adapter.`in`.web.request.PaymentRequest
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUseCase
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

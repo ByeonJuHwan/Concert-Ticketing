@@ -16,5 +16,6 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
     PAYMENT_NOT_FOUND("404", "존재하는 결제가 없습니다", HttpStatus.NOT_FOUND),
     PAYMENT_FAILED("500", "결제에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     SAGA_NOT_FOUND("404", "SAGA ID 가 존재하지 않습니다", HttpStatus.NOT_FOUND),
+    UNKNOWN_STEP("500", "존재하지 않는 SAGA_STEP 입니다", HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
 }

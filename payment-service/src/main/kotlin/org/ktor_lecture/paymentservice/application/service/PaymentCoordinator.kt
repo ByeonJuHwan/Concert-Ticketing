@@ -3,9 +3,9 @@ package org.ktor_lecture.paymentservice.application.service
 import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
-import org.ktor_lecture.paymentservice.application.port.`in`.PaymentUseCase
-import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
-import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
+import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUseCase
+import org.ktor_lecture.paymentservice.application.port.out.http.ConcertApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCommand
 import org.ktor_lecture.paymentservice.application.service.command.PaymentCreateCommand
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.PAYMENT_SAVE
@@ -19,6 +19,7 @@ import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.ktor_lecture.paymentservice.domain.status.ReservationStatus
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
@@ -31,7 +32,7 @@ class PaymentCoordinator (
     private val sagaExecution: SagaExecution,
 ) :PaymentUseCase {
 
-    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     /**
      * 결제 처리
@@ -137,10 +138,11 @@ class PaymentCoordinator (
                     POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
                     RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
                     SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
-                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
+                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, sagaId.toString())
                 }
             } catch (e: Exception) {
                 log.error("보상실패: $step - ${e.message}")
+                throw e
             }
         }
 

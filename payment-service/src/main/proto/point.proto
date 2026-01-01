@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+// Java/Kotlin 프로젝트용 패키지 설정
+option java_package = "com.concert.point.grpc";
+
+// 각 클래스를 별도 파일로 생성 (코드 가독성)
+option java_multiple_files = true;
+
+// proto 네임스페이스 (다른 proto 파일과 구분)
+package concert.point;
+
+
+// 유저 포인트 사용 요청 처리
+service PointService {
+  rpc UsePoint (GrpcPointUseRequest) returns (GrpcPointUseResponse);
+  rpc CancelPoint (GrpcPointCancelRequest) returns (GrpcPointCancelResponse);
+}
+
+/*
+  유저 포인트 사용 요청
+*/
+message GrpcPointUseRequest {
+  int64 user_id = 1;
+  int64 amount = 2;
+}
+
+message GrpcPointUseResponse {
+  int64 user_id = 1;
+  int64 point_history_id = 2;
+  int64 remaining_points = 3;
+}
+
+/*
+  유저 포인트 사용 취소 요청
+ */
+
+message GrpcPointCancelRequest {
+  string sagaId = 1;
+  int64 user_id = 2;
+  int64 point_history_id = 3;
+  int64 amount = 4;
+}
+
+message GrpcPointCancelResponse {
+  bool success = 1;
+  string message = 2;
+}

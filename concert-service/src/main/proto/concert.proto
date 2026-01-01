@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+option java_package = "com.concert.concert.grpc";
+
+option java_multiple_files = true;
+
+package concert.concert;
+
+service ConcertService {
+  // 결제
+  rpc GetReservation(GrpcGetReservationRequest) returns (GrpcConcertReservationResponse);
+  rpc ReservationExpiredAndSeatAvaliable (GrpcReservationExpiredAndSeatAvaliableRequest) returns (GrpcReservationExpiredAndSeatAvaliableResponse);
+  rpc ChangeReservationPaid (GrpcChangeReservationPaidRequest) returns (GrpcChangeReservationPaidResponse);
+  rpc ChangeSeatReserved (GrpcChangeSeatReservedRequest) returns (GrpcChangeSeatReservedResponse);
+
+  // 결제 취소
+  rpc ChangeReservationPending(GrpcChangeReservationPendingRequest) returns (GrpcChangeReservationPendingResponse);
+  rpc ChangeSeatTemporarilyAssigned(GrpcChangeSeatTemporarilyAssignedRequest) returns (GrpcChangeSeatTemporarilyAssignedResponse);
+}
+
+/**
+  예약 조회
+ */
+message GrpcGetReservationRequest {
+  int64 reservation_id = 1;
+}
+
+message GrpcConcertReservationResponse {
+  int64 reservation_id = 1;
+  int64 user_id = 2;
+  int64 seat_id = 3;
+  int32 seat_no = 4;
+  string status = 5;
+  int64 price = 6;
+  string expiresAt = 7;
+}
+
+/**
+  예약 만료 변경 및 좌석 예약 가능 처리
+ */
+
+message GrpcReservationExpiredAndSeatAvaliableRequest {
+  int64 reservation_id = 1;
+}
+
+message GrpcReservationExpiredAndSeatAvaliableResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/**
+  예약 결제 완료 처리
+ */
+message GrpcChangeReservationPaidRequest {
+  int64 reservation_id = 1;
+}
+
+message GrpcChangeReservationPaidResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/**
+  좌석 예약 처리
+ */
+message GrpcChangeSeatReservedRequest {
+  int64 reservation_id = 1;
+}
+
+message GrpcChangeSeatReservedResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/**
+  예약 상태 PENDING 처리
+ */
+
+message GrpcChangeReservationPendingRequest {
+  string sagaId = 1;
+  int64 reservation_id = 2;
+}
+
+message GrpcChangeReservationPendingResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/*
+  좌석 임시 예약 상태 변경
+ */
+
+message GrpcChangeSeatTemporarilyAssignedRequest{
+  string sagaId = 1;
+  int64 reservation_id = 2;
+}
+
+message GrpcChangeSeatTemporarilyAssignedResponse {
+  bool success = 1;
+  string message = 2;
+}

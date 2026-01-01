@@ -14,9 +14,18 @@ class SagaRetryScheduler (
     @DistributedLock(
         key = "saga-retry-lock",
     )
-    @Scheduled(fixedRate = 30000)
+//    @Scheduled(fixedRate = 30000) http retry 스케줄러는 잠시 주석처리
     fun retryFailSaga() {
         retryFailSagaUseCase.retryFailSagas()
     }
 
+
+    // 30초마다 스케줄러동작
+    @DistributedLock(
+        key = "saga-grpc-retry-lock",
+    )
+    @Scheduled(fixedRate = 30000)
+    suspend fun retryGrpcFailSaga() {
+        retryFailSagaUseCase.retryGrpcFailSagas()
+    }
 }

@@ -253,7 +253,6 @@ override fun compensate(saga: SagaEntity) {
                 SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
                 PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
             }
-            throw RuntimeException("재시도 업데이트 예외 생성")
         } catch (e: Exception) {
             allSuccess = false
             log.error("보상실패: $step - $e")
@@ -270,6 +269,70 @@ override fun compensate(saga: SagaEntity) {
 
 하지만 재시도 전략도 결국 실패할수 있고 최대 재시도 횟수가 3회이므로 3회가 된 시점에는 개발자가 바로 파악할 수 있도록 알림을 보내서 수동으로 처리할 수 있도록 해야 합니다.
 
+## 멱등성 문제
+
+현재 로직으로도 동작에서 단 1번의 재시도 과정에서 예외 없이 재시도 처리가 된 경우 문제가없었지만, 여러번의 재시도 과정이 되어야 하는 경우에는 문제가 발생했습니다.
+
+각 보상 Step이 여러 번 실행되어도 결과가 동일해야 하는 **멱등성(Idempotency)** 이 보장되지 않았기 때문입니다.
+
+**시나리오:**
+
+1. 재시도 보상 트랜잭션 1차 시도
+   - POINT_USE 보상 성공 (포인트 1000원 충전)
+   - SEAT_CONFIRM 보상 실패
+2. 재시도 보상 트랜잭션 2차 재시도
+   - POINT_USE 보상 **재실행** (포인트 1000원 추가 충전) ❌
+   - SEAT_CONFIRM 보상 성공
+
+**결과:** 포인트가 중복으로 충전되어 사용자에게 2000원이 지급됨
+
+`sagaId`를 멱등성 키(Idempotency Key)로 사용하여 동일한 보상 요청이 중복 실행되는 것을 방지하도록 했습니다.
+
+1. 이미 처리된 요청이지 확인하기 위한 테이블 추가
+
+```kotlin
+@Entity
+@Table(
+    indexes = [Index(name = "idx_saga_id", columnList = "sagaId", unique = true)]
+)
+class IdempotencyEntity (
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
+
+    @Column(nullable = false, unique = true)
+    val sagaId: String,
+): BaseEntity()
+```
+
+2. 재시도 처리되는 요청 제일 처음 로직으로 이미 처리된 요청인지 확인
+3. 처음 요청의 경우 다음 요청의 멱등성 체크를 위해 ID 저장
+
+```kotlin
+@Transactional
+override fun cancelPayment(paymentId: Long, sagaId: String) {
+    // 멱등성 체크
+    val idempotency = idempotencyRepository.findBySagaId(sagaId)
+    if (idempotency != null) {
+        log.info("이미 요청된 결제 취소 상태 변경 요청입니다 sagaId=$sagaId")
+        return
+    }
+
+    val payment = paymentRepository.findById(paymentId)
+        .orElseThrow { throw ConcertException(ErrorCode.PAYMENT_NOT_FOUND) }
+
+    payment.cancel()
+
+    // 다음 요청을 위해 요청 저장
+    idempotencyRepository.save(
+        IdempotencyEntity(
+            sagaId = sagaId,
+        )
+    )
+}
+```
+
+멱등성을 보장하게 수정함으로써 동일한 보상 요청이 여러 번 실행되어도 결과가 동일하게 수행되도록 개선했습니다.
 
 ## 마무리
 

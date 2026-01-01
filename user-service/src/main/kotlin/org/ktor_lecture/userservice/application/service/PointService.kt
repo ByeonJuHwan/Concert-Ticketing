@@ -6,12 +6,14 @@ import org.ktor_lecture.userservice.application.port.`in`.point.ChargePointUseCa
 import org.ktor_lecture.userservice.application.port.`in`.point.PointCancelUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.PointUseUseCase
 import org.ktor_lecture.userservice.application.port.`in`.point.SearchCurrentPointsUseCase
+import org.ktor_lecture.userservice.application.port.out.IdempotencyRepository
 import org.ktor_lecture.userservice.application.port.out.PointHistoryRepository
 import org.ktor_lecture.userservice.application.port.out.PointRepository
 import org.ktor_lecture.userservice.application.port.out.UserReadRepository
 import org.ktor_lecture.userservice.application.service.command.ChargePointCommand
 import org.ktor_lecture.userservice.application.service.command.PointCancelCommand
 import org.ktor_lecture.userservice.application.service.command.PointUseCommand
+import org.ktor_lecture.userservice.domain.entity.IdempotencyEntity
 import org.ktor_lecture.userservice.domain.entity.PointEntity
 import org.ktor_lecture.userservice.domain.entity.PointHistoryEntity
 import org.ktor_lecture.userservice.domain.entity.PointTransactionType
@@ -26,7 +28,10 @@ class PointService (
     private val userReadRepository: UserReadRepository,
     private val pointRepository: PointRepository,
     private val pointHistoryRepository: PointHistoryRepository,
+    private val idempotencyRepository: IdempotencyRepository,
 ): ChargePointUseCase, SearchCurrentPointsUseCase, PointUseUseCase, PointCancelUseCase {
+
+    private val log = LoggerFactory.getLogger(PointService::class.java)
 
     /**
      * 포인트를 충전합니다
@@ -107,13 +112,24 @@ class PointService (
 
     /**
      * 유저 포인트 감소
-     * 1. 유저 조회
-     * 2. 포인트 히스토리 조회
-     * 3. 포인트 취소(롤백)
-     * 4. 포인트 히스토리 취소 상태 변경
+     * 1. 멱등성 체크
+     * --- 처음 들어오는 요청의 경우 아래 과정 진행
+     * 2. 유저 조회
+     * 3. 포인트 히스토리 조회
+     * 4. 포인트 취소(롤백)
+     * 5. 포인트 히스토리 취소 상태 변경
+     * 6. 멱등성 저장
      */
     @Transactional
     override fun cancel(command: PointCancelCommand) {
+        val sagaId = command.sagaId
+
+        val idempotency = idempotencyRepository.findBySagaId(sagaId)
+        if (idempotency != null) {
+            log.info("이미 취소된 요청입니다 sagaId: $sagaId")
+            return
+        }
+
         val user = userReadRepository.findById(command.userId).orElseThrow { throw ConcertException(ErrorCode.USER_NOT_FOUND) }
         val pointHistory = pointHistoryRepository.findById(command.pointHistoryId).orElseThrow { throw ConcertException(ErrorCode.POINT_HISTORY_NOT_FOUND) }
 
@@ -121,5 +137,11 @@ class PointService (
 
         point.cancel(command.amount)
         pointHistory.cancel()
+
+        idempotencyRepository.save(
+            IdempotencyEntity(
+                sagaId = sagaId,
+            )
+        )
     }
 }

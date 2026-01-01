@@ -1,15 +1,8 @@
-package org.ktor_lecture.paymentservice.application.port.out
+package org.ktor_lecture.paymentservice.application.port.out.http
 
 import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 
 interface PointApiClient {
-    fun reservePoints(
-        requestId: String,
-        userId: String,
-        reserveAmount: Long,
-    )
-
-    fun conformPoints(requestId: String)
 
     fun use(
         userId: String,

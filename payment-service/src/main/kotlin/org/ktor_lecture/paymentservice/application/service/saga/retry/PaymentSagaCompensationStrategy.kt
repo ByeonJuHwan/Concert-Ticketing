@@ -1,7 +1,7 @@
 package org.ktor_lecture.paymentservice.application.service.saga.retry
 
-import org.ktor_lecture.paymentservice.application.port.out.ConcertApiClient
-import org.ktor_lecture.paymentservice.application.port.out.PointApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.ConcertApiClient
+import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.ktor_lecture.paymentservice.application.port.out.SagaRepository
 import org.ktor_lecture.paymentservice.application.service.PaymentCompensation
 import org.ktor_lecture.paymentservice.application.service.PaymentService
@@ -70,9 +70,8 @@ class PaymentSagaCompensationStrategy (
                     POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
                     RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
                     SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
-                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
+                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, saga.id.toString())
                 }
-                throw RuntimeException("재시도 업데이트 예외 생성")
             } catch (e: Exception) {
                 allSuccess = false
                 log.error("보상실패: $step - $e")
