@@ -64,9 +64,6 @@ class SeatEntity(
     }
 
     fun temporarilyAssign() {
-        if(seatStatus != SeatStatus.RESERVED) {
-            throw ConcertException(ErrorCode.SEAT_NOT_RESERVED)
-        }
         this.seatStatus = SeatStatus.TEMPORARILY_ASSIGNED
     }
 }

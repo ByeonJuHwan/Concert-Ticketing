@@ -3,14 +3,20 @@ package org.ktor_lecture.concertservice.application.service.grpc
 import com.concert.concert.grpc.ConcertServiceGrpcKt
 import com.concert.concert.grpc.GrpcChangeReservationPaidRequest
 import com.concert.concert.grpc.GrpcChangeReservationPaidResponse
+import com.concert.concert.grpc.GrpcChangeReservationPendingRequest
+import com.concert.concert.grpc.GrpcChangeReservationPendingResponse
 import com.concert.concert.grpc.GrpcChangeSeatReservedRequest
 import com.concert.concert.grpc.GrpcChangeSeatReservedResponse
+import com.concert.concert.grpc.GrpcChangeSeatTemporarilyAssignedRequest
+import com.concert.concert.grpc.GrpcChangeSeatTemporarilyAssignedResponse
 import com.concert.concert.grpc.GrpcConcertReservationResponse
 import com.concert.concert.grpc.GrpcGetReservationRequest
 import com.concert.concert.grpc.GrpcReservationExpiredAndSeatAvaliableRequest
 import com.concert.concert.grpc.GrpcReservationExpiredAndSeatAvaliableResponse
 import com.concert.concert.grpc.grpcChangeReservationPaidResponse
+import com.concert.concert.grpc.grpcChangeReservationPendingResponse
 import com.concert.concert.grpc.grpcChangeSeatReservedResponse
+import com.concert.concert.grpc.grpcChangeSeatTemporarilyAssignedResponse
 import com.concert.concert.grpc.grpcConcertReservationResponse
 import com.concert.concert.grpc.grpcReservationExpiredAndSeatAvaliableResponse
 import io.grpc.Status
@@ -18,6 +24,8 @@ import io.grpc.StatusException
 import net.devh.boot.grpc.server.service.GrpcService
 import org.ktor_lecture.concertservice.application.service.ConcertReservationService
 import org.ktor_lecture.concertservice.application.service.ConcertSeatService
+import org.ktor_lecture.concertservice.application.service.command.ChangeReservationPendingCommand
+import org.ktor_lecture.concertservice.application.service.command.ChangeReservationTemporarilyAssignedCommand
 import org.ktor_lecture.concertservice.application.service.command.ChangeSeatStatusReservedCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationExpiredCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationPaidCommand
@@ -144,6 +152,9 @@ class ConcertGrpcService(
         }
     }
 
+    /**
+     * gGPC: Concert-Service 의 좌석 상태를 예약으로 변경합니다
+     */
     override suspend fun changeSeatReserved(request: GrpcChangeSeatReservedRequest): GrpcChangeSeatReservedResponse {
         log.info("gRPC 좌석 상태 확정 변경 요청 : ${request.reservationId}")
 
@@ -180,6 +191,86 @@ class ConcertGrpcService(
             }
         } catch (e: Exception) {
             log.error("좌석 예약 상태변경 예외 발생", e)
+            throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    /**
+     * gGPC: Concert-Service 의 예약상태를 PENDING 으로 변경합니다
+     */
+    override suspend fun changeReservationPending(request: GrpcChangeReservationPendingRequest): GrpcChangeReservationPendingResponse {
+        log.info("gRPC 예약 상태 PENDING 변경 요청 : ${request.reservationId}")
+
+        val command = ChangeReservationPendingCommand(
+            sagaId = request.sagaId,
+            reservationId = request.reservationId,
+        )
+        
+        try {
+            concertReservationService.changeReservationPending(command)
+
+            return grpcChangeReservationPendingResponse {
+                success = true
+                message = "gRPC 예약 상태 PENDING 변경 요청 성공"
+            }
+
+        } catch (e: ConcertException) {
+            log.error("예약 PENDING 상태 변경 비즈니스 예외 발생", e)
+
+            when (e.errorCode) {
+                ErrorCode.RESERVATION_NOT_FOUND -> throw StatusException(
+                    Status.NOT_FOUND.withDescription(e.message).withCause(e)
+                )
+
+                else -> throw StatusException(
+                    Status.INTERNAL.withDescription(e.message).withCause(e)
+                )
+            }
+        } catch (e: Exception) {
+            log.error("예약 PENDING 상태 변경 예외 발생", e)
+            throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    /**
+     * gGPC: Concert-Service 의 좌석 상태를 임시예약으로 변경합니다
+     */
+    override suspend fun changeSeatTemporarilyAssigned(request: GrpcChangeSeatTemporarilyAssignedRequest): GrpcChangeSeatTemporarilyAssignedResponse {
+        log.info("gRPC 좌석 상태 임시예약 변경 요청 : ${request.reservationId}")
+
+        val command = ChangeReservationTemporarilyAssignedCommand(
+            sagaId = request.sagaId,
+            reservationId = request.reservationId,
+        )
+
+        try {
+            concertSeatService.changeSeatTemporarilyAssigned(command)
+            return grpcChangeSeatTemporarilyAssignedResponse {
+                success = true
+                message = "gRPC 좌석 상태 임시예약 변경 요청 성공"
+            }
+        } catch (e: ConcertException) {
+            log.error("좌석 상태 임시예약 변경 비즈니스 예외 발생", e)
+
+            when (e.errorCode) {
+                ErrorCode.RESERVATION_NOT_FOUND -> throw StatusException(
+                    Status.NOT_FOUND.withDescription(e.message).withCause(e)
+                )
+
+                ErrorCode.SEAT_NOT_FOUND -> throw StatusException(
+                    Status.NOT_FOUND.withDescription(e.message).withCause(e)
+                )
+
+                ErrorCode.SEAT_NOT_RESERVED -> throw StatusException(
+                    Status.INVALID_ARGUMENT.withDescription(e.message).withCause(e)
+                )
+
+                else -> throw StatusException(
+                    Status.INTERNAL.withDescription(e.message).withCause(e)
+                )
+            }
+        } catch (e: Exception) {
+            log.error("예약 PENDING 상태 변경 예외 발생", e)
             throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
         }
     }

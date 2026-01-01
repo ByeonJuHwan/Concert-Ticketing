@@ -138,7 +138,7 @@ class PaymentCoordinator (
                     POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
                     RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
                     SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
-                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
+                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, sagaId.toString())
                 }
             } catch (e: Exception) {
                 log.error("보상실패: $step - ${e.message}")

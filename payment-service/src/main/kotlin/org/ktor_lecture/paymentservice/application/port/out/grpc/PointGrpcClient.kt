@@ -5,5 +5,5 @@ import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 interface PointGrpcClient {
 
     suspend fun use(userId: Long, amount: Long): PointUseResponse
-    suspend fun cancel(userId: Long, pointHistoryId: Long, price: Long)
+    suspend fun cancel(userId: Long, pointHistoryId: Long, price: Long, sagaId: String)
 }

@@ -3,7 +3,8 @@ package org.ktor_lecture.concertservice.adapter.`in`.web.request
 import org.ktor_lecture.concertservice.application.service.command.ChangeReservationTemporarilyAssignedCommand
 
 data class ChangeSeatTemporarilyAssignedRequest(
-    val requestId: String,
+    val sagaId: String,
+    val reservationId: Long,
 ) {
-    fun toCommand() = ChangeReservationTemporarilyAssignedCommand(requestId)
+    fun toCommand() = ChangeReservationTemporarilyAssignedCommand(sagaId, reservationId)
 }

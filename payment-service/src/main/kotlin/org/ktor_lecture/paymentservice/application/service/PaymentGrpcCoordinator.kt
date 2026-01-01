@@ -51,7 +51,7 @@ class PaymentGrpcCoordinator (
             // 포인트 차감
             val pointResponse = sagaGrpcExecution.executeStep(
                 sagaId = sagaId,
-                stepName = PAYMENT
+                stepName = POINT_USE,
             ) {
                 pointGrpcClient.use(
                     userId = userId,
@@ -131,16 +131,16 @@ class PaymentGrpcCoordinator (
         sagaGrpcExecution.startCompensation(sagaId, payload)
 
         val completedSteps = sagaGrpcExecution.getCompletedSteps(sagaId)
-
+        
         completedSteps
             .reversed()
             .forEach { step ->
             try {
                 when (step) {
-                    POINT_USE -> pointGrpcClient.cancel(userId, pointHistoryId, price)
-                    RESERVATION_CONFIRM -> concertGrpcClient.changeReservationPending(reservationId)
-                    SEAT_CONFIRM -> concertGrpcClient.changeSeatTemporarilyAssigned(reservationId)
-                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId)
+                    POINT_USE -> pointGrpcClient.cancel(userId, pointHistoryId, price, createSagaKey(sagaId, step))
+                    RESERVATION_CONFIRM -> concertGrpcClient.changeReservationPending(reservationId, createSagaKey(sagaId, step))
+                    SEAT_CONFIRM -> concertGrpcClient.changeSeatTemporarilyAssigned(reservationId, createSagaKey(sagaId, step))
+                    PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, createSagaKey(sagaId, step))
                 }
             } catch (e: Exception) {
                 log.error("보상실패: $step - ${e.message}")
@@ -172,6 +172,10 @@ class PaymentGrpcCoordinator (
             ReservationStatus.EXPIRED.name -> throw ConcertException(ErrorCode.RESERVATION_EXPIRED)
             else -> return
         }
+    }
+
+    private fun createSagaKey(sagaId: Long, stepName: String): String {
+        return sagaId.toString() + "_" + stepName
     }
 }
 

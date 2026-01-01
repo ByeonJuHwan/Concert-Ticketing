@@ -79,6 +79,7 @@ class PointGrpcService(
                 userId = request.userId,
                 pointHistoryId = request.pointHistoryId,
                 amount = request.amount,
+                sagaId = request.sagaId,
             )
 
             pointService.cancel(command)

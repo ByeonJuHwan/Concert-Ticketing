@@ -3,7 +3,9 @@ package org.ktor_lecture.paymentservice.adapter.out.api.grpc.concert
 import com.concert.concert.grpc.ConcertServiceGrpcKt
 import com.concert.concert.grpc.GrpcConcertReservationResponse
 import com.concert.concert.grpc.grpcChangeReservationPaidRequest
+import com.concert.concert.grpc.grpcChangeReservationPendingRequest
 import com.concert.concert.grpc.grpcChangeSeatReservedRequest
+import com.concert.concert.grpc.grpcChangeSeatTemporarilyAssignedRequest
 import com.concert.concert.grpc.grpcGetReservationRequest
 import com.concert.concert.grpc.grpcReservationExpiredAndSeatAvaliableRequest
 import io.grpc.Status
@@ -145,11 +147,57 @@ class ConcertGrpcAdapter : ConcertGrpcClient {
         }
     }
 
-    override suspend fun changeReservationPending(reservationId: Long) {
-        TODO("Not yet implemented")
+    override suspend fun changeReservationPending(reservationId: Long, sagaId: String) {
+        log.info("grpc 예약 PENDING 상태 변경 호출: reservationId = $reservationId")
+
+        val request = grpcChangeReservationPendingRequest {
+            this.sagaId = sagaId
+            this.reservationId = reservationId
+        }
+        try {
+            val response = concertStub.changeReservationPending(request)
+            log.info(response.message)
+        } catch (e: StatusException) {
+            log.error("예약 PENDING 상태 변경 호출 실패", e)
+
+            when (e.status.code) {
+                Status.Code.INTERNAL -> {
+                    throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+                }
+                else -> {
+                    throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR, e.message)
+                }
+            }
+        } catch (e: Exception) {
+            log.error("예상치 못한 에러 발생", e)
+            throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    override suspend fun changeSeatTemporarilyAssigned(reservationId: Long) {
-        TODO("Not yet implemented")
+    override suspend fun changeSeatTemporarilyAssigned(reservationId: Long, sagaId: String) {
+        log.info("grpc 좌석 임시예약 상태 롤백 호출: reservationId = $reservationId")
+
+        val request = grpcChangeSeatTemporarilyAssignedRequest {
+            this.sagaId = sagaId
+            this.reservationId = reservationId
+        }
+        try {
+            val response = concertStub.changeSeatTemporarilyAssigned(request)
+            log.info(response.message)
+        } catch (e: StatusException) {
+             log.error("좌석 임시 예약 상태 변경 호출 실패", e)
+
+             when (e.status.code) {
+                 Status.Code.INTERNAL -> {
+                     throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+                 }
+                 else -> {
+                     throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR, e.message)
+                 }
+             }
+         } catch (e: Exception) {
+             log.error("예상치 못한 에러 발생", e)
+             throw ConcertException(ErrorCode.INTERNAL_SERVER_ERROR)
+         }
     }
 }

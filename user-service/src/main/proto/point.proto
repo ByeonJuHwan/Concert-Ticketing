@@ -35,9 +35,10 @@ message GrpcPointUseResponse {
  */
 
 message GrpcPointCancelRequest {
-  int64 user_id = 1;
-  int64 point_history_id = 2;
-  int64 amount = 3;
+  string sagaId = 1;
+  int64 user_id = 2;
+  int64 point_history_id = 3;
+  int64 amount = 4;
 }
 
 message GrpcPointCancelResponse {

@@ -7,10 +7,15 @@ option java_multiple_files = true;
 package concert.concert;
 
 service ConcertService {
+  // 결제
   rpc GetReservation(GrpcGetReservationRequest) returns (GrpcConcertReservationResponse);
   rpc ReservationExpiredAndSeatAvaliable (GrpcReservationExpiredAndSeatAvaliableRequest) returns (GrpcReservationExpiredAndSeatAvaliableResponse);
   rpc ChangeReservationPaid (GrpcChangeReservationPaidRequest) returns (GrpcChangeReservationPaidResponse);
   rpc ChangeSeatReserved (GrpcChangeSeatReservedRequest) returns (GrpcChangeSeatReservedResponse);
+
+  // 결제 취소
+  rpc ChangeReservationPending(GrpcChangeReservationPendingRequest) returns (GrpcChangeReservationPendingResponse);
+  rpc ChangeSeatTemporarilyAssigned(GrpcChangeSeatTemporarilyAssignedRequest) returns (GrpcChangeSeatTemporarilyAssignedResponse);
 }
 
 /**
@@ -63,6 +68,34 @@ message GrpcChangeSeatReservedRequest {
 }
 
 message GrpcChangeSeatReservedResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/**
+  예약 상태 PENDING 처리
+ */
+
+message GrpcChangeReservationPendingRequest {
+  string sagaId = 1;
+  int64 reservation_id = 2;
+}
+
+message GrpcChangeReservationPendingResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+/*
+  좌석 임시 예약 상태 변경
+ */
+
+message GrpcChangeSeatTemporarilyAssignedRequest{
+  string sagaId = 1;
+  int64 reservation_id = 2;
+}
+
+message GrpcChangeSeatTemporarilyAssignedResponse {
   bool success = 1;
   string message = 2;
 }

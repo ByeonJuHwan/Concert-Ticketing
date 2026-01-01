@@ -65,10 +65,11 @@ class PointGrpcAdapter : PointGrpcClient {
         }
     }
 
-    override suspend fun cancel(userId: Long, pointHistoryId: Long, price: Long) {
+    override suspend fun cancel(userId: Long, pointHistoryId: Long, price: Long, sagaId: String) {
         log.info("gRPC 포인트 취소 호출: userId=$userId")
 
         val request = grpcPointCancelRequest {
+            this.sagaId = sagaId
             this.userId = userId
             this.pointHistoryId = pointHistoryId
             this.amount = price
