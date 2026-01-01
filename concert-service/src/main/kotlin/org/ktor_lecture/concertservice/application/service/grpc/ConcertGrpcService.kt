@@ -120,7 +120,7 @@ class ConcertGrpcService(
 
         return try {
             val command = ReservationPaidCommand(
-                requestId = request.reservationId
+                reservationId = request.reservationId
             )
 
             concertReservationService.changeReservationPaid(command)
@@ -159,7 +159,7 @@ class ConcertGrpcService(
         log.info("gRPC 좌석 상태 확정 변경 요청 : ${request.reservationId}")
 
         val command = ChangeSeatStatusReservedCommand (
-            requestId = request.reservationId,
+            reservationId = request.reservationId
         )
 
         return try {
