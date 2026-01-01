@@ -29,4 +29,8 @@ class ReservationWriteAdapter (
     override fun updateReservationStatusToExpired(reservationIds: List<Long>) {
         reservationJpaRepository.updateReservationStatusToExpired(reservationIds)
     }
+
+    override fun deleteAll() {
+        reservationJpaRepository.deleteAll()
+    }
 }

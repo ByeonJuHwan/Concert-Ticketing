@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ReservationEventService (
-    private val txAdvice: TxAdvice,
     private val outBoxRepository: OutBoxRepository,
     @Qualifier("kafka") private val eventPublisher: EventPublisher,
 ) : ReservationCreatedOutBoxUseCase, SendReservationCreatedUseCase, ReservationCreatedEventRetryUseCase {
@@ -55,6 +54,7 @@ class ReservationEventService (
      * 2. 재시도 횟수 체크
      * 3. 이벤트 재발송
      */
+    @Transactional
     override fun retryReservationCreatedEvent() {
         val outboxes = outBoxRepository.getFailedEvents()
 
@@ -64,31 +64,29 @@ class ReservationEventService (
         }
 
         outboxes.forEach { outBox ->
-            txAdvice.run {
-                try {
-                    if (outBox.retryCount >= outBox.maxRetryCount) {
-                        log.warn("최대 재시도 횟수 초가: eventId = {}", outBox.eventId)
-                        outBoxRepository.updateStatus(outBox.eventId, OutboxStatus.CANT_RETRY)
-                        return@run
-                    }
-
-                    val reservationCreatedEvent = JsonUtil.decodeFromJson<ReservationCreatedEvent>(outBox.payload)
-
-                    outBoxRepository.increaseRetryCount(outBox.eventId)
-
-                    eventPublisher.publish("reservation.create",reservationCreatedEvent)
-                } catch (e: SerializationException) {
-                    // 직렬화 에러
-                    log.error("Event 직렬화 에러 : {}", outBox.eventId, e)
+            try {
+                if (outBox.retryCount >= outBox.maxRetryCount) {
+                    log.warn("최대 재시도 횟수 초가: eventId = {}", outBox.eventId)
                     outBoxRepository.updateStatus(outBox.eventId, OutboxStatus.CANT_RETRY)
-                } catch (e: IllegalArgumentException) {
-                    // 유효하지 않은 요청값
-                    log.error("유효하지 않은 이벤트 요청값 error : {}", outBox.eventId, e)
-                    outBoxRepository.updateStatus(outBox.eventId, OutboxStatus.CANT_RETRY)
-                } catch (e: Exception) {
-                    log.error("재시도 에러 발생 : {}", outBox.eventId, e)
-                    outBoxRepository.increaseRetryCount(outBox.eventId)
+                    return
                 }
+
+                val reservationCreatedEvent = JsonUtil.decodeFromJson<ReservationCreatedEvent>(outBox.payload)
+
+                outBoxRepository.increaseRetryCount(outBox.eventId)
+
+                eventPublisher.publish("reservation.create",reservationCreatedEvent)
+            } catch (e: SerializationException) {
+                // 직렬화 에러
+                log.error("Event 직렬화 에러 : {}", outBox.eventId, e)
+                outBoxRepository.updateStatus(outBox.eventId, OutboxStatus.CANT_RETRY)
+            } catch (e: IllegalArgumentException) {
+                // 유효하지 않은 요청값
+                log.error("유효하지 않은 이벤트 요청값 error : {}", outBox.eventId, e)
+                outBoxRepository.updateStatus(outBox.eventId, OutboxStatus.CANT_RETRY)
+            } catch (e: Exception) {
+                log.error("재시도 에러 발생 : {}", outBox.eventId, e)
+                outBoxRepository.increaseRetryCount(outBox.eventId)
             }
         }
     }

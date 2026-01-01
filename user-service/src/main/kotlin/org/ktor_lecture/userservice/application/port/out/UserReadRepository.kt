@@ -5,4 +5,5 @@ import java.util.Optional
 
 interface UserReadRepository {
     fun findById(userId: Long): Optional<UserEntity>
+    fun findAll(): List<UserEntity>
 }

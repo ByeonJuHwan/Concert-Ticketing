@@ -14,7 +14,6 @@ class OutBoxRepositoryAdapter(
     private val outBoxJpaRepository: OutBoxJpaRepository,
 ) : OutBoxRepository {
 
-    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
     override fun save(outBox: OutBox) {
         outBoxJpaRepository.save(outBox)
@@ -22,8 +21,6 @@ class OutBoxRepositoryAdapter(
 
     @Transactional
     override fun updateStatus(eventId: String, status: OutboxStatus) {
-        log.info("=== 비즈니스 로직 실행 ===")
-        log.info("트랜잭션 활성: {}", TransactionSynchronizationManager.isActualTransactionActive())
         outBoxJpaRepository.updateStatus(eventId, status)
     }
 

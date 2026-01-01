@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class UserWriteService(
+class UserService(
     private val userWriteRepository: UserWriteRepository,
     @Qualifier("application") private val eventPublisher: EventPublisher,
 ) : CreateUserUseCase {
