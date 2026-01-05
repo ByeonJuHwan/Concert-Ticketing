@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory
 
 @GrpcService
 class PointGrpcService(
-    private val pointService: PointService  // 기존 서비스 재사용!
+    private val pointService: PointService
 ) : PointServiceGrpcKt.PointServiceCoroutineImplBase() {
 
     private val log = LoggerFactory.getLogger(javaClass)
