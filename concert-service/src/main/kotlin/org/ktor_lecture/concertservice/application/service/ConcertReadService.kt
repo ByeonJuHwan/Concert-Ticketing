@@ -10,6 +10,7 @@ import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
 import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
