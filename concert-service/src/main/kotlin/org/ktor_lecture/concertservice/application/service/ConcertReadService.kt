@@ -8,6 +8,7 @@ import org.ktor_lecture.concertservice.application.port.out.ConcertReadRepositor
 import org.ktor_lecture.concertservice.application.service.dto.ConcertDateInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
+import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -23,7 +24,7 @@ class ConcertReadService (
      * 1. ElasticSearch 에서 조회
      * 2. 예외 발생시 DB Like 문 조횐
      */
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     override fun getConcerts(concertName: String?, singer: String?, startDate: LocalDate?, endDate: LocalDate?): List<ConcertInfo> {
         val concerts = concertReadRepository.getConcerts(concertName, singer, startDate, endDate)
         return concerts.map { ConcertInfo.from(it) }
@@ -33,7 +34,7 @@ class ConcertReadService (
      * 선택한 콘서트의 구체적인 정보를 조회한다
      * ex) 콘서트 장소, 콘서트 시작 날짜, 콘서트 종료 날짜...
      */
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     override fun getAvailableDates(concertId: Long): List<ConcertDateInfo> {
         val concertsDates = concertReadRepository.getAvailableDates(concertId)
         return concertsDates.map { ConcertDateInfo.from(it) }
@@ -42,7 +43,7 @@ class ConcertReadService (
     /**
      * 선택한 콘서트 날짜의 좌석 정보를 조회한다
      */
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     override fun getAvailableSeats(concertOptionId: Long): List<ConcertSeatInfo> {
         val availableSeats = concertReadRepository.getAvailableSeats(concertOptionId)
         return availableSeats.map { ConcertSeatInfo.from(it) }

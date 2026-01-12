@@ -2,16 +2,15 @@ package org.ktor_lecture.concertservice.application.service
 
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationResponse
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeReservationPendingUseCase
-import org.ktor_lecture.concertservice.application.port.`in`.ChangeSeatReservedUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationExpiredUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationPaidUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchReservationUseCase
 import org.ktor_lecture.concertservice.application.port.out.IdempotencyRepository
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
 import org.ktor_lecture.concertservice.application.service.command.ChangeReservationPendingCommand
-import org.ktor_lecture.concertservice.application.service.command.ChangeSeatStatusReservedCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationExpiredCommand
 import org.ktor_lecture.concertservice.application.service.command.ReservationPaidCommand
+import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
 import org.ktor_lecture.concertservice.domain.entity.IdempotencyEntity
 import org.ktor_lecture.concertservice.domain.exception.ConcertException
 import org.ktor_lecture.concertservice.domain.exception.ErrorCode
@@ -29,6 +28,7 @@ class ConcertReservationService (
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
+    @ReadOnlyTransactional
     override fun getReservation(reservationId: Long): ConcertReservationResponse {
         val reservation = reservationRepository.getReservationWithSeatInfo(reservationId)
             ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)

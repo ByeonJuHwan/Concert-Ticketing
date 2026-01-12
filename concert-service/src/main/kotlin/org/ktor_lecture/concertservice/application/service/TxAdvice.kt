@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.application.service
 
+import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -18,7 +19,7 @@ class TransactionAdvice : TransactionRunner {
         return func()
     }
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     override fun <T> readOnly(func: () -> T?): T? {
         return func()
     }
