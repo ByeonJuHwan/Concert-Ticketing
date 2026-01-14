@@ -14,7 +14,7 @@ open class PointApiClientImpl(
 ): PointApiClient {
 
     @CircuitBreaker(name = "userService")
-    override fun use(userId: String, amount: Long): PointUseResponse {
+    override fun use(userId: Long, amount: Long): PointUseResponse {
         val request = PointUseRequest(
             userId = userId,
             amount = amount,
@@ -28,7 +28,7 @@ open class PointApiClientImpl(
             ?: throw IllegalStateException("Point use response is null")
     }
 
-    override fun cancel(userId: String, pointHistoryId: Long, price: Long) {
+    override fun cancel(userId: Long, pointHistoryId: Long, price: Long) {
         val request = PointCancelRequest(
             userId = userId,
             pointHistoryId = pointHistoryId,

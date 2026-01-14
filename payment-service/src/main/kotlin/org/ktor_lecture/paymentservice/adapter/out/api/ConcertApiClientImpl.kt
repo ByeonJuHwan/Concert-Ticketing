@@ -37,8 +37,8 @@ open class ConcertApiClientImpl(
     }
 
     @CircuitBreaker(name = "concertService")
-    override fun changeReservationPaid(requestId: String) {
-        val request = ChangeReservationPaidRequest(requestId)
+    override fun changeReservationPaid(reservationId: Long) {
+        val request = ChangeReservationPaidRequest(reservationId)
 
         restClient.post()
             .uri("/reservations/paid")
@@ -49,8 +49,8 @@ open class ConcertApiClientImpl(
     }
 
     @CircuitBreaker(name = "concertService")
-    override fun changeSeatReserved(requestId: String) {
-        val request = ChangeSeatReservedRequest(requestId)
+    override fun changeSeatReserved(reservationId: Long) {
+        val request = ChangeSeatReservedRequest(reservationId)
 
         restClient.post()
             .uri("/reservations/seat/reserved")
@@ -59,8 +59,8 @@ open class ConcertApiClientImpl(
             .toBodilessEntity()
     }
 
-    override fun changeReservationPending(requestId: String) {
-        val request = ChangeReservationPaidRequest(requestId)
+    override fun changeReservationPending(reservationId: Long) {
+        val request = ChangeReservationPaidRequest(reservationId)
 
         restClient.post()
             .uri("/reservations/pending")
@@ -69,8 +69,8 @@ open class ConcertApiClientImpl(
             .toBodilessEntity()
     }
 
-    override fun changeSeatTemporarilyAssigned(requestId: String) {
-        val request = ChangeSeatTemporarilyAssignedRequest(requestId)
+    override fun changeSeatTemporarilyAssigned(reservationId: Long) {
+        val request = ChangeSeatTemporarilyAssignedRequest(reservationId)
 
         restClient.post()
             .uri("/reservations/seat/temporarily-assign")

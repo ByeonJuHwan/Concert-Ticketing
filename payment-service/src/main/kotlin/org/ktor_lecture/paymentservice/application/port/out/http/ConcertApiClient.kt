@@ -5,9 +5,9 @@ import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservati
 interface ConcertApiClient {
     fun getReservation(reservationId: Long): ConcertReservationResponse
     fun reservationExpiredAndSeatAvaliable(reservationId: Long)
-    fun changeReservationPaid(requestId: String)
-    fun changeSeatReserved(requestId: String)
-    fun changeReservationPending(requestId: String)
-    fun changeSeatTemporarilyAssigned(requestId: String)
+    fun changeReservationPaid(reservationId: Long)
+    fun changeSeatReserved(reservationId: Long)
+    fun changeReservationPending(reservationId: Long)
+    fun changeSeatTemporarilyAssigned(reservationId: Long)
 
 }

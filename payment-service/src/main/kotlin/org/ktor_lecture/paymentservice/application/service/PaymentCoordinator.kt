@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.application.service
 
+import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
@@ -52,8 +53,8 @@ class PaymentCoordinator (
         validateReservation(reservation)
 
 
-        val reservationId = reservation.reservationId.toString()
-        val userId = reservation.userId.toString()
+        val reservationId = reservation.reservationId
+        val userId = reservation.userId
         var paymentId = 0L
         var pointHistoryId = 0L
 
@@ -105,7 +106,7 @@ class PaymentCoordinator (
                 userId = userId,
                 price = reservation.price,
                 pointHistoryId = pointHistoryId,
-                requestId = reservationId,
+                reservationId = reservationId,
                 paymentId = paymentId
             )
 
@@ -114,14 +115,14 @@ class PaymentCoordinator (
         }
     }
 
-    private fun handleRollback(sagaId: Long, userId: String, price: Long, pointHistoryId: Long, requestId: String, paymentId: Long) {
+    private fun handleRollback(sagaId: Long, userId: Long, price: Long, pointHistoryId: Long, reservationId: Long, paymentId: Long) {
         val payload = JsonUtil.encodeToJson(
             PaymentCompensation(
                 sagaId = sagaId,
                 userId = userId,
                 price = price,
                 historyId = pointHistoryId,
-                requestId = requestId,
+                reservationId = reservationId,
                 paymentId = paymentId,
             )
         )
@@ -136,8 +137,8 @@ class PaymentCoordinator (
             try {
                 when (step) {
                     POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
-                    RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
-                    SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
+                    RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(reservationId)
+                    SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(reservationId)
                     PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, sagaId.toString())
                 }
             } catch (e: Exception) {
@@ -177,9 +178,9 @@ class PaymentCoordinator (
 @Serializable
 data class PaymentCompensation(
     val sagaId: Long,
-    val userId: String,
+    val userId: Long,
     val price: Long,
     val historyId: Long,
-    val requestId: String,
+    val reservationId: Long,
     val paymentId: Long,
 )

@@ -4,10 +4,7 @@ import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 
 interface PointApiClient {
 
-    fun use(
-        userId: String,
-        amount: Long,
-    ): PointUseResponse
+    fun use(userId: Long, amount: Long): PointUseResponse
 
-    fun cancel(userId: String, pointHistoryId: Long, price: Long)
+    fun cancel(userId: Long, pointHistoryId: Long, price: Long)
 }
