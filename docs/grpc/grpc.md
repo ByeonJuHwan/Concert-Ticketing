@@ -43,7 +43,7 @@ RESTful API는 널리 사용되는 API 이지만 장점만 있는것은 아니�
 
 실제로 `Protocol Buffers` 를 사용해서 데이터 직렬화를 하면 얼마나 데이터가 감소하는지 테스트 및 확인해본 결과 약 84% 이상의 크기 절감 효과가 있었습니다.
 
-[직렬과 크기 비교 문서](docs/grpc/binary-serialization.md)
+[직렬과 크기 비교 문서](binary-serialization.md)
 
 ---
 
