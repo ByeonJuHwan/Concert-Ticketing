@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.ktor_lecture.userservice.application.port.out.EventPublisher
 import org.ktor_lecture.userservice.application.port.out.OutBoxRepository
+import org.ktor_lecture.userservice.common.JsonUtil
 import org.ktor_lecture.userservice.domain.entity.OutBox
 import org.ktor_lecture.userservice.domain.entity.OutboxStatus
 import org.ktor_lecture.userservice.domain.event.UserCreatedEvent
@@ -120,4 +121,26 @@ class UserEventServiceTest {
         verify(exactly = 1) { eventPublisher.publish(any())}
     }
 
+
+    @Test
+    fun `텍스트 vs 바이너리 직렬화 비교`() {
+        val event = UserCreatedEvent(
+            userId = "userId",
+            userName = "test",
+        )
+        
+        // Json 직렬화
+        val jsonBytes = JsonUtil.encodeToJson(event).toByteArray()
+        println("JSON 크기: ${jsonBytes.size} bytes")
+        println("JSON 내용: ${String(jsonBytes)}")
+    
+        // ProtoBuf 직렬화
+        val protobufBytes = event.toString().toByteArray()
+        println("Protobuf 크기: ${protobufBytes.size} bytes")
+        println("Protobuf 내용: ${protobufBytes.joinToString(" ") { "%02X".format(it) }}")
+
+        // 비교
+        val reduction = ((jsonBytes.size - protobufBytes.size) * 100.0 / jsonBytes.size)
+        println("크기 절감: ${"%.1f".format(reduction)}%")
+    }
 }

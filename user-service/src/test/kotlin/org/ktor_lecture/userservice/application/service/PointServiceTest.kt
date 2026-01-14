@@ -181,7 +181,7 @@ class PointServiceTest {
         val user = UserEntity(id = userId, name = "test")
         val point = PointEntity(user = user, point = initialPoints)
         val pointHistory = PointHistoryEntity(pointHistoryId, user, usePoints, PointTransactionType.USE)
-        val command = PointCancelCommand(userId, pointHistoryId, cancelPoints)
+        val command = PointCancelCommand(user.id.toString(), userId, pointHistoryId, cancelPoints)
 
         every { userReadRepository.findById(userId) } returns Optional.of(user)
         every { pointHistoryRepository.findById(pointHistoryId) } returns Optional.of(pointHistory)
@@ -202,7 +202,7 @@ class PointServiceTest {
         val cancelPoints = 1000L
 
         val user = UserEntity(id = userId, name = "test")
-        val command = PointCancelCommand(userId, pointHistoryId, cancelPoints)
+        val command = PointCancelCommand(userId.toString(), userId, pointHistoryId, cancelPoints)
 
         every { userReadRepository.findById(userId) } returns Optional.of(user)
         every { pointHistoryRepository.findById(pointHistoryId) } returns Optional.empty()
