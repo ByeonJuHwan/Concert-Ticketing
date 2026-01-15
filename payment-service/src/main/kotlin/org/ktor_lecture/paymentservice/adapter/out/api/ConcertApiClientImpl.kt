@@ -11,6 +11,7 @@ import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.springframework.context.annotation.Primary
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.body
 
 @Primary
 open class ConcertApiClientImpl(
@@ -22,7 +23,7 @@ open class ConcertApiClientImpl(
         return restClient.get()
             .uri("/reservations/$reservationId")
             .retrieve()
-            .body(ConcertReservationResponse::class.java)
+            .body<ConcertReservationResponse>()
             ?: throw ConcertException(ErrorCode.RESERVATION_NOT_FOUND)
     }
 
