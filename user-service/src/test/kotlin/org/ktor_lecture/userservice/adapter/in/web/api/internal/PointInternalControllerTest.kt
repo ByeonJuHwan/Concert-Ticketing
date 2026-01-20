@@ -112,10 +112,11 @@ class PointInternalControllerTest() : IntegrationTestBase() {
 
         pointUseUseCase.use(useCommand)
 
-        val cancelCommand = PointCancelCommand (
-            user.id!!,
-            1L,
-            usePoint
+        val cancelCommand = PointCancelCommand(
+            sagaId = user.id.toString(),
+            userId = user.id!!,
+            pointHistoryId = 1L,
+            amount = usePoint,
         )
 
         // when

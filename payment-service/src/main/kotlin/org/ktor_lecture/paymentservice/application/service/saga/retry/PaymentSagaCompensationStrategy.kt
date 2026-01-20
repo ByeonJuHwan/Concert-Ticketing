@@ -54,7 +54,7 @@ class PaymentSagaCompensationStrategy (
 
         val userId = payload.userId
         val price = payload.price
-        val requestId = payload.requestId
+        val reservationId = payload.reservationId
         val pointHistoryId = payload.historyId
         val paymentId = payload.paymentId
 
@@ -68,8 +68,8 @@ class PaymentSagaCompensationStrategy (
             try {
                 when (step) {
                     POINT_USE -> pointApiClient.cancel(userId, pointHistoryId, price)
-                    RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(requestId)
-                    SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(requestId)
+                    RESERVATION_CONFIRM -> concertApiClient.changeReservationPending(reservationId)
+                    SEAT_CONFIRM -> concertApiClient.changeSeatTemporarilyAssigned(reservationId)
                     PAYMENT_SAVE -> paymentService.cancelPayment(paymentId, saga.id.toString())
                 }
             } catch (e: Exception) {
