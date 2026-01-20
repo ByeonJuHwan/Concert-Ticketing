@@ -67,6 +67,11 @@ dependencies {
     implementation("com.google.protobuf:protobuf-kotlin:3.25.1")
     implementation("com.google.protobuf:protobuf-java:3.25.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+
+    // testContainer
+    testImplementation("org.testcontainers:testcontainers:1.19.0")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.0")
+    testImplementation("org.testcontainers:mariadb:1.19.0")
 }
 
 kotlin {
