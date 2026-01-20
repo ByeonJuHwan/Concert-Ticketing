@@ -33,22 +33,20 @@
 #### 동시성 제어
 - **[좌석 예약 동시성 이슈 해결](docs/synchronicity.md)**
   - 동일한 좌석에 대한 동시 예약 요청 문제 해결
-  - 분산락을 활용한 동시성 제어
-  - 트랜잭션 범위 최적화와 사이드 이펙트 분석
+  - 락을 사용할때의 트랜잭션 범위 설정
 
 #### 성능 최적화
 - **[인덱스 설계 및 쿼리 최적화](docs/index.md)**
-  - 데이터베이스 풀스캔 방지를 위한 인덱스 설계
+  - 데이터베이스 조회 최적화 위한 인덱스 설계
   - 조회 API 성능 개선 사례 및 측정 결과
 
 - **[캐싱 전략 수립](docs/caching.md)**
-  - Redis를 활용한 읽기 성능 향상
-  - 캐싱 적용 대상 분석 및 데이터 정합성 고려사항
+  - 로컬캐싱, Redis 를 사용한 캐싱 작성
   - 캐싱 적용 전후 성능 비교
 
 #### 이벤트 기반 아키텍처 도입
 - **[이벤트 드리븐 방식 적용](docs/event.md)**
-  - ApplicationEventPublisher에서 Kafka로의 전환 과정
+  - `ApplicationEventPublisher` 에서 `Kafka`로의 전환 과정
   - 이벤트 기반 서비스 간 통신 구현
 
 - **[아웃박스 패턴 구현](docs/outbox.md)**
@@ -77,18 +75,6 @@
   - gRPC 기반 서비스 간 통신 구현
   - 성능 개선 결과 및 장단점 분석
 
-- **[바이너리 직렬화](docs/grpc/binary-serialization.md)**
-  - Protocol Buffers를 활용한 효율적인 데이터 전송
-  - JSON 대비 직렬화 성능 비교
-
-- **[HTTP/2 멀티플렉싱](docs/grpc/multiplexing.md)**
-  - HTTP/2의 멀티플렉싱을 통한 성능 향상
-  - 단일 커넥션에서 다중 요청 처리
-
-- **[Kotlin Coroutine 활용](docs/grpc/coroutine.md)**
-  - gRPC-Kotlin의 코루틴 기반 비동기 처리
-  - 논블로킹 I/O를 통한 성능 최적화
-
 #### 분산 시스템 안정성 확보
 - **[Circuit Breaker 적용](docs/msa/circuit-breaker.md)**
   - Resilience4j를 활용한 장애 전파 방지
@@ -99,18 +85,22 @@
   - 자동 재시도 전략 구현
 
 - **[최종적 일관성 구현](docs/msa/eventual-consistency.md)**
-  - Kafka 기반 이벤트 발행을 통한 데이터 복제
+  - `Kafka` 기반 이벤트 발행을 통한 데이터 복제
   - 서비스 간 결합도 감소 및 데이터 동기화 전략
 
 #### 검색 시스템 개선
 - **[Elasticsearch 도입](docs/elasticsearch.md)**
-  - MySQL LIKE 쿼리에서 Elasticsearch로 전환
+  - MySQL LIKE 쿼리에서 `Elasticsearch`로 전환
   - 자동완성 및 퍼지 검색 구현
   - 콘서트 검색 성능 향상
 
 ---
 
 ## 📊 성능 테스트 및 운영
+
+### JPA READ ONLY 최적화
+- **[JPA READ ONLY 쿼리 최적화](docs/transactional-read-only.md)**
+  - 조회 전용 트랜잭션 설정을 통한 성능 향상
 
 ### 부하 테스트
 - **[부하테스트 결과](docs/performance.md)**
@@ -155,6 +145,5 @@ Concert-Ticketing/
 ├── payment-service/      # 결제 서비스
 ├── token-service/        # 대기열 토큰 서비스
 ├── user-service/         # 사용자 관리 서비스
-├── gateway-service/      # API Gateway
-└── search/              # Elasticsearch 검색 서비스
+└── gateway-service/      # API Gateway
 ```
