@@ -88,6 +88,9 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:1.19.0")
     testImplementation("org.testcontainers:junit-jupiter:1.19.0")
     testImplementation("org.testcontainers:mariadb:1.19.0")
+
+    // objectMapper
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }
 
 kotlin {
