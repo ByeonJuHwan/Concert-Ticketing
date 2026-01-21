@@ -9,6 +9,7 @@ import org.ktor_lecture.concertservice.application.service.dto.ConcertDateInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
 import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -34,8 +35,11 @@ class ConcertReadService (
      * 선택한 콘서트의 구체적인 정보를 조회한다
      * ex) 콘서트 장소, 콘서트 시작 날짜, 콘서트 종료 날짜...
      */
+    @Cacheable("concertDates")
     @ReadOnlyTransactional
     override fun getAvailableDates(concertId: Long): List<ConcertDateInfo> {
+        Thread.sleep(2000)
+
         val concertsDates = concertReadRepository.getAvailableDates(concertId)
         return concertsDates.map { ConcertDateInfo.from(it) }
     }

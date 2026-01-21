@@ -208,19 +208,47 @@ Spring의 `CacheManager` 추상화는 다양한 캐시 구현체를 쉽게 교�
 
 ```kotlin
 @Bean
-fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory) : RedisCacheManager {
-   val config  = RedisCacheConfiguration.defaultCacheConfig() // redis 캐시의 기본 설정
-      .entryTtl(Duration.ofSeconds(3)) // 캐시의 만료 시간을 3초로 설정
-      .disableCachingNullValues() // null 값은 캐시하지 않음
-      .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())) // key 는 StringRedisSerializer 로 직렬화
-      .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())) // value 는 GenericJackson2JsonRedisSerializer 로 직렬화
+fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory): RedisCacheManager {
+    val objectMapper = ObjectMapper()
+        .registerModule(KotlinModule.Builder().build()) // Kotlin data class 지원
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // 날짜를 timestamp가 아닌 ISO-8601 형식으로 저장
+        .activateDefaultTyping( // 타입 정보를 JSON에 포함시켜 역직렬화 시 올바른 타입으로 변환
+            BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Any::class.java)
+                .build(),
+            ObjectMapper.DefaultTyping.NON_FINAL
+        )
 
-   return RedisCacheManager.builder(redisConnectionFactory).cacheDefaults(config).build()
+    val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+
+    val config = RedisCacheConfiguration.defaultCacheConfig()
+        .entryTtl(Duration.ofDays(1)) // 캐시의 만료 시간을 1일로 설정
+        .disableCachingNullValues() // null 값은 캐시하지 않음
+        .serializeKeysWith(
+            RedisSerializationContext.SerializationPair
+                .fromSerializer(StringRedisSerializer()) // key는 문자열로 직렬화
+        )
+        .serializeValuesWith(
+            RedisSerializationContext.SerializationPair
+                .fromSerializer(serializer) // value는 JSON으로 직렬화 (타입 정보 포함)
+        )
+
+    return RedisCacheManager.builder(redisConnectionFactory)
+        .cacheDefaults(config)
+        .build()
 }
 ```
 
-위와 같이 `RedisCacheManager` 빈을 등록하면 Redis 캐시를 사용할 수 있습니다. 이제 `@Cacheable` 어노테이션을 사용하여 캐싱을 적용할 수 있습니다.
-기존 로컬 캐시와 똑같은 방법으로 캐싱을 적용할 수 있습니다.
+> 날짜를 timestamp가 아닌 ISO-8601 형식으로 하는 이유: 
+> - Timestamp: `1733356800000` (언제인지 바로 알기 어려움)
+> - ISO-8601: `"2025-12-05"` (날짜를 즉시 파악 가능)
+
+위와 같이 `RedisCacheManager` 빈을 등록하면 Redis 캐시를 사용할 수 있습니다. 
+
+**주요 설정 포인트:**
+- **ObjectMapper 설정**: Kotlin data class를 올바르게 직렬화/역직렬화하기 위해 `KotlinModule`을 등록합니다.
+- **타입 정보 포함**: `activateDefaultTyping`을 통해 JSON에 타입 정보(`@class`)를 포함시켜, 역직렬화 시 `LinkedHashMap`이 아닌 원래 타입으로 복원됩니다.
+- **Serializer**: Key는 `StringRedisSerializer`, Value는 `GenericJackson2JsonRedisSerializer`를 사용합니다.
 
 **구현 및 테스트는 위 로컬 캐시와 동일합니다. (캐시 구현체만 변경하여 Redis를 사용하도록 DI 했기때문에)**
 
