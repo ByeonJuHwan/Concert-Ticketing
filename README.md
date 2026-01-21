@@ -62,7 +62,6 @@
 - **[모놀리식 → MSA 전환 과정](docs/msa/msa-convert.md)**
   - MSA 전환 전략 및 서비스 분리 기준
   - 전환 과정에서 발생한 기술적 문제 및 해결 방안
-  - 성능 개선 결과 (200 TPS → 2000+ TPS)
 
 - **[API Gateway 도입](docs/msa/gateway.md)**
   - Interceptor에서 API Gateway로의 전환
