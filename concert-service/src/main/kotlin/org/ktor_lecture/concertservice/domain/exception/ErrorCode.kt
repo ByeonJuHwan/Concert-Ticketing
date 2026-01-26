@@ -16,5 +16,6 @@ enum class ErrorCode(val code: String, val message: String, val status: HttpStat
     SEAT_NOT_TEMPORARILY_ASSIGNED("400", "좌석이 임시예약 상태가 아닙니다", HttpStatus.BAD_REQUEST),
     SEAT_NOT_RESERVED("400","좌석이 예약 상태가 아닙니다", HttpStatus.BAD_REQUEST),
     CONCERT_SEARCH_ERROR("500", "콘서트 검색에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    FAILED_TO_HANDLE_CACHE("500", "캐시 작업에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INTERNAL_SERVER_ERROR("500", "에러가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
 }

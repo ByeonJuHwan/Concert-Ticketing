@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.config
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -28,7 +28,6 @@ class RedisConfig {
     @Value("\${spring.data.redis.port}")
     private lateinit var port: String
 
-    @Primary
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
         return LettuceConnectionFactory(host, port.toInt())
@@ -43,20 +42,12 @@ class RedisConfig {
         return template
     }
 
-
-    @Bean
-    fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory): RedisCacheManager {
-        val objectMapper = ObjectMapper()
-            .registerModule(KotlinModule.Builder().build())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder()
-                    .allowIfBaseType(Any::class.java)
-                    .build(),
-                ObjectMapper.DefaultTyping.NON_FINAL
-            )
-
-        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+    @Bean("redisCacheManager")
+    fun redisCacheManager(
+        redisConnectionFactory: RedisConnectionFactory,
+        redisObjectMapper: ObjectMapper
+    ): RedisCacheManager {
+        val serializer = GenericJackson2JsonRedisSerializer(redisObjectMapper)
 
         val config = RedisCacheConfiguration.defaultCacheConfig()
             .entryTtl(Duration.ofDays(1))
