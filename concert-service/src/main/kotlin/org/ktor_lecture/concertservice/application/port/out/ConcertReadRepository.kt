@@ -14,4 +14,5 @@ interface ConcertReadRepository {
     fun findUserById(userId: Long): Result<ConcertUserEntity>
     fun getConcertSuggestions(query: String): List<String>
     fun findAllUser(): List<ConcertUserEntity>
+    fun findConcertOptionById(concertOptionId: Long): Result<ConcertOptionEntity>
 }

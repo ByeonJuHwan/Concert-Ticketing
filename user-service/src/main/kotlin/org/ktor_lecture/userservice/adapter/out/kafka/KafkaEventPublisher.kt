@@ -27,7 +27,7 @@ class KafkaEventPublisher (
      */
     override fun publish(event: DomainEvent) {
         kafkaTemplate.send(
-            "user.create",
+            KafkaTopics.User.CREATED,
             event.eventId,
             JsonUtil.encodeToJson(event)
         ).whenComplete { _, exception ->

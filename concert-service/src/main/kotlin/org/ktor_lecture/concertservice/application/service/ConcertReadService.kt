@@ -5,19 +5,23 @@ import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDate
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchConcertUseCase
 import org.ktor_lecture.concertservice.application.port.out.ConcertReadRepository
+import org.ktor_lecture.concertservice.application.service.cache.ConcertDatesCache
 import org.ktor_lecture.concertservice.application.service.dto.ConcertDateInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
+import org.ktor_lecture.concertservice.common.CacheManager
+import org.ktor_lecture.concertservice.common.LocalCache
 import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
 class ConcertReadService (
     private val concertReadRepository: ConcertReadRepository,
+    private val cacheManager: CacheManager,
 ) : SearchConcertUseCase, SearchAvailableDatesUseCase, SearchAvailableSeatUseCase, GetConcertSuggestionUseCase {
+
+    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
     /**
      * 콘서트를 조회한다
@@ -35,13 +39,25 @@ class ConcertReadService (
      * 선택한 콘서트의 구체적인 정보를 조회한다
      * ex) 콘서트 장소, 콘서트 시작 날짜, 콘서트 종료 날짜...
      */
-    @Cacheable("concertDates")
     @ReadOnlyTransactional
     override fun getAvailableDates(concertId: Long): List<ConcertDateInfo> {
-        Thread.sleep(2000)
+        val cached = cacheManager.getOrPut(
+            cache = LocalCache.MetaCache,
+            key = "${ConcertDatesCache::class.java.simpleName}:${concertId}",
+            clazz = ConcertDatesCache::class.java,
+        ) {
+            ConcertDatesCache.from(concertReadRepository.getAvailableDates(concertId))
+        }
 
-        val concertsDates = concertReadRepository.getAvailableDates(concertId)
-        return concertsDates.map { ConcertDateInfo.from(it) }
+        if (cached == null) {
+            log.info("Cache Miss : DB 직접 조회")
+            return concertReadRepository.getAvailableDates(concertId)
+                .map { ConcertDateInfo.from(it) }
+        }
+
+        log.info("캐시 Hit : 캐시 반환")
+
+        return cached.dates.map { ConcertDateInfo.from(it) }
     }
 
     /**

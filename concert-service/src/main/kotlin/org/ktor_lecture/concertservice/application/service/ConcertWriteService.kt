@@ -1,6 +1,6 @@
 package org.ktor_lecture.concertservice.application.service
 
-import org.ktor_lecture.concertservice.adapter.out.search.document.ConcertDocument
+import org.ktor_lecture.concertservice.application.port.`in`.ChangeConcertOptionUseCase
 import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 import org.ktor_lecture.concertservice.application.port.`in`.ConcertUserCreateUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
@@ -10,14 +10,21 @@ import org.ktor_lecture.concertservice.application.port.out.ConcertWriteReposito
 import org.ktor_lecture.concertservice.application.port.out.EventPublisher
 import org.ktor_lecture.concertservice.application.port.out.ReservationRepository
 import org.ktor_lecture.concertservice.application.port.out.SeatRepository
+import org.ktor_lecture.concertservice.application.service.cache.ConcertDatesCache
+import org.ktor_lecture.concertservice.application.service.command.ChangeConcertOptionCommand
 import org.ktor_lecture.concertservice.application.service.command.CreateConcertCommand
 import org.ktor_lecture.concertservice.application.service.command.ReserveSeatCommand
 import org.ktor_lecture.concertservice.application.service.dto.ReserveSeatInfo
+import org.ktor_lecture.concertservice.common.ActionType
+import org.ktor_lecture.concertservice.common.CacheManager
+import org.ktor_lecture.concertservice.common.LocalCache
 import org.ktor_lecture.concertservice.domain.entity.ConcertEntity
+import org.ktor_lecture.concertservice.domain.entity.ConcertOptionEntity
 import org.ktor_lecture.concertservice.domain.entity.ConcertUserEntity
 import org.ktor_lecture.concertservice.domain.entity.ReservationEntity
 import org.ktor_lecture.concertservice.domain.entity.SeatEntity
 import org.ktor_lecture.concertservice.domain.event.ConcertCreatedEvent
+import org.ktor_lecture.concertservice.domain.event.ConcertOptionChangeEvent
 import org.ktor_lecture.concertservice.domain.event.ReservationCreatedEvent
 import org.ktor_lecture.concertservice.domain.exception.ConcertException
 import org.ktor_lecture.concertservice.domain.exception.ErrorCode
@@ -30,10 +37,11 @@ import java.time.LocalDateTime
 class ConcertWriteService (
     private val concertWriteRepository: ConcertWriteRepository,
     private val concertReadRepository: ConcertReadRepository,
+    private val cacheManager: CacheManager,
     private val seatRepository: SeatRepository,
     private val reservationRepository: ReservationRepository,
     @Qualifier("application") private val eventPublisher: EventPublisher,
-): ReserveSeatUseCase, ConcertUserCreateUseCase, CreateConcertUseCase {
+): ReserveSeatUseCase, ConcertUserCreateUseCase, CreateConcertUseCase, ChangeConcertOptionUseCase {
 
     /**
      * 좌석 임시 예약
@@ -113,5 +121,47 @@ class ConcertWriteService (
         )
 
         eventPublisher.publish(concertCreatedEvent)
+    }
+
+    /**
+     * 콘서트 옵션을 수정한다
+     */
+    @Transactional
+    override fun changeConcertOption(concertId: Long, concertOptionId: Long, command: ChangeConcertOptionCommand) {
+        val concertOption = searchConcertOption(concertOptionId)
+        concertOption.update(
+            availableSeats = command.availableSeats,
+            concertDate = command.concertDate,
+            concertTime = command.concertTime,
+            concertVenue = command.concertVenue,
+        )
+        val concertOptionChangeEvent = createConcertOptionEvent(concertId, concertOption)
+        refreshCache(concertId)
+
+        eventPublisher.publish(concertOptionChangeEvent)
+    }
+
+    private fun createConcertOptionEvent(concertId: Long, concertOption: ConcertOptionEntity): ConcertOptionChangeEvent {
+        return ConcertOptionChangeEvent(
+            concertId = concertId,
+            concertOptionId = concertOption.id!!,
+            availableSeats = concertOption.availableSeats,
+            concertDate = concertOption.concertDate,
+            concertTime = concertOption.concertTime,
+            concertVenue = concertOption.concertVenue,
+        )
+
+    }
+
+    private fun searchConcertOption(concertOptionId: Long): ConcertOptionEntity {
+        return concertReadRepository.findConcertOptionById(concertOptionId).getOrThrow()
+    }
+
+    private fun refreshCache(concertId: Long) {
+        val key = "${ConcertDatesCache::class.java.simpleName}:${concertId}"
+
+        cacheManager.handleCacheByAction(ActionType.UPDATE, LocalCache.MetaCache, key) {
+            ConcertDatesCache.from(concertReadRepository.getAvailableDates(concertId))
+        }
     }
 }
