@@ -1,6 +1,5 @@
 package org.ktor_lecture.concertservice.common
 
-import com.concert.concert.grpc.Concert
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -12,7 +11,6 @@ import org.ktor_lecture.concertservice.domain.exception.ErrorCode
 import org.springframework.cache.support.SimpleCacheManager
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.stereotype.Component
-import java.time.Duration
 
 @Component
 class CacheManager(
@@ -48,14 +46,30 @@ class CacheManager(
     fun <T> get(cache: MyCache, key: String, clazz: Class<T>): T? =
         runCatching {
             val wrapper = getByCache(cache).get(key)
-                ?: throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE, "cache miss")
+                ?: throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE, "캐시가 존재하지 않습니다")
 
             val rawValue = wrapper.get()
-                ?: throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE, "cache value is null")
+                ?: throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE, "캐시 데이터가 null 입니다")
 
-            return objectMapper.convertValue(rawValue, clazz)
+            when (cache.type) {
+                CacheType.LOCAL -> {
+                    if (clazz.isInstance(rawValue)) {
+                        rawValue as T
+                    } else {
+                        throw IllegalArgumentException("로컬 캐시의 타입과 맞지 않습니다")
+                    }
+                }
+                CacheType.REDIS -> {
+                    when {
+                        clazz.isInstance(rawValue) -> rawValue as T
+                        rawValue is Map<*, *> -> objectMapper.convertValue(rawValue, clazz)
+                        rawValue is LinkedHashMap<*, *> -> objectMapper.convertValue(rawValue, clazz)
+                        else -> throw IllegalArgumentException("변환 불가 ${rawValue::class.java} : $clazz")
+                    }
+                }
+            }
         }.recoverCatching { exception ->
-            log.error("Cache.get threw exception!", exception)
+            log.error("캐시 작업 실패", exception)
             evict(cache, key)
             throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE, exception.message, exception)
         }.getOrThrow()
@@ -77,6 +91,20 @@ class CacheManager(
             CacheType.LOCAL -> localCacheManager.getCache(cache.name)
             CacheType.REDIS -> redisCacheManager.getCache(cache.name)
         } ?: throw ConcertException(ErrorCode.FAILED_TO_HANDLE_CACHE)
+
+
+    fun <T> handleCacheByAction(actionType: ActionType, cache: MyCache, key: String, block: () -> T?) {
+        when (actionType) {
+            ActionType.CREATE, ActionType.UPDATE -> {
+                block()?.also {
+                    put(cache, key, it)
+                }
+            }
+            ActionType.DELETE -> {
+                evict(cache, key)
+            }
+        }
+    }
 }
 
 enum class CacheType{
@@ -85,22 +113,20 @@ enum class CacheType{
 
 sealed class MyCache(
     val type: CacheType,
-    val description: String,
-    val ttl: Duration,
 ) {
     val name: String = this.javaClass.simpleName
 }
 
-sealed class LocalCache(
-    description: String,
-    ttl: Duration = Duration.ofHours(1),
-) : MyCache(CacheType.LOCAL, description, ttl) {
-    data object MetaCache : LocalCache("메타 정보", Duration.ofHours(1))
+sealed class LocalCache: MyCache(CacheType.LOCAL) {
+    data object MetaCache : LocalCache()
 }
 
-sealed class RedisCache(
-    description: String,
-    ttl: Duration = Duration.ofHours(1),
-) : MyCache(CacheType.REDIS, description, ttl) {
-    data object MetaCache : RedisCache("메타 정보", Duration.ofHours(1))
+sealed class RedisCache : MyCache(CacheType.REDIS) {
+    data object MetaCache : RedisCache()
+}
+
+enum class ActionType {
+    CREATE,
+    UPDATE,
+    DELETE
 }

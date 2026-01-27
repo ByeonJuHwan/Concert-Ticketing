@@ -70,6 +70,10 @@ class ConcertReadAdapter (
         return concertUserJpaRepository.findAll()
     }
 
+    override fun findConcertOptionById(concertOptionId: Long): Result<ConcertOptionEntity> {
+        return runCatching { concertOptionJpaRepository.findByIdOrNull(concertOptionId) ?: throw ConcertException(ErrorCode.CONCERT_OPTION_NOT_FOUND) }
+    }
+
     private fun throwRateLimitEx(query: String, ex: Throwable): List<String> {
         throw ConcertException(ErrorCode.RATE_LIMIT_EXCEEDED)
     }

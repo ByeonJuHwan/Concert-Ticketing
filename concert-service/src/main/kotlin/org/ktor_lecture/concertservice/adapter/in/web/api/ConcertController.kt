@@ -1,9 +1,11 @@
 package org.ktor_lecture.concertservice.adapter.`in`.web.api
 
 import org.ktor_lecture.concertservice.adapter.`in`.web.ApiResult
+import org.ktor_lecture.concertservice.adapter.`in`.web.request.ChangeConcertOptionRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.CreateConcertRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.request.ReserveSeatRequest
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.*
+import org.ktor_lecture.concertservice.application.port.`in`.ChangeConcertOptionUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.CreateConcertUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.GetConcertSuggestionUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReserveSeatUseCase
@@ -22,6 +24,7 @@ class ConcertController(
     private val reserveSeatUseCase: ReserveSeatUseCase,
     private val createConcertUseCase: CreateConcertUseCase,
     private val getConcertSuggestionUseCase: GetConcertSuggestionUseCase,
+    private val changeConcertOptionUseCase: ChangeConcertOptionUseCase,
 ) {
 
     @GetMapping
@@ -77,5 +80,14 @@ class ConcertController(
     ): ApiResult<List<String>> {
         val suggestions = getConcertSuggestionUseCase.getConcertSuggestions(query)
         return ApiResult(suggestions)
+    }
+
+    @PutMapping("/{concertId}/concert-option/{concertOptionId}/available-dates")
+    fun changeConcertOption(
+        @PathVariable concertId: Long,
+        @PathVariable concertOptionId: Long,
+        @RequestBody request: ChangeConcertOptionRequest,
+    ) {
+        changeConcertOptionUseCase.changeConcertOption(concertId, concertOptionId, request.toCommand())
     }
 }

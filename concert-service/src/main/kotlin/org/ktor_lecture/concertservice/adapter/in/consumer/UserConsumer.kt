@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.adapter.`in`.consumer
 
+import org.ktor_lecture.concertservice.adapter.out.kafka.KafkaTopics
 import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 import org.ktor_lecture.concertservice.application.port.`in`.ConcertUserCreateUseCase
 import org.ktor_lecture.concertservice.common.JsonUtil
@@ -19,7 +20,7 @@ class UserConsumer (
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @KafkaListener(
-        topics = ["user.create"],
+        topics = [KafkaTopics.User.CREATED],
         groupId = "reservation-user-create-group",
         concurrency = "3",
     )

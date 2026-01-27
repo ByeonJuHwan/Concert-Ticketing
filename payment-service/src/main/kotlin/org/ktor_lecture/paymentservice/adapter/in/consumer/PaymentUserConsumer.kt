@@ -1,5 +1,6 @@
 package org.ktor_lecture.paymentservice.adapter.`in`.consumer
 
+import org.ktor_lecture.paymentservice.adapter.out.kafka.KafkaTopics
 import org.ktor_lecture.paymentservice.application.port.`in`.http.PaymentUserCreateUseCase
 import org.ktor_lecture.paymentservice.common.JsonUtil
 import org.ktor_lecture.paymentservice.domain.event.UserCreatedEvent
@@ -50,7 +51,7 @@ class PaymentUserConsumer (
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @KafkaListener(
-        topics = ["user.create"],
+        topics = [KafkaTopics.User.CREATED],
         groupId = "payment-user-create-group",
         concurrency = "3",
     )

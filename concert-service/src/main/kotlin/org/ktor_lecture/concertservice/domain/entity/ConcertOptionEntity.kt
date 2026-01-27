@@ -28,12 +28,24 @@ class ConcertOptionEntity(
     val concert: ConcertEntity,
 
     @Column(nullable = false)
-    val availableSeats: Int,
+    var availableSeats: Int,
     @Column(nullable = false)
-    val concertDate: String,
+    var concertDate: String,
     @Column(nullable = false)
-    val concertTime: String,
+    var concertTime: String,
     @Column(nullable = false)
-    val concertVenue: String,
+    var concertVenue: String,
 ) : BaseEntity() {
+
+    fun update(
+        availableSeats: Int,
+        concertDate: String,
+        concertTime: String,
+        concertVenue: String,
+    ) {
+        this.availableSeats = availableSeats
+        this.concertDate = concertDate
+        this.concertTime = concertTime
+        this.concertVenue = concertVenue
+    }
 }

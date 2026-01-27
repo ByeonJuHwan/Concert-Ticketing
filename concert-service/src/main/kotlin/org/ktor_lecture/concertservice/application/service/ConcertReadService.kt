@@ -5,13 +5,13 @@ import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableDate
 import org.ktor_lecture.concertservice.application.port.`in`.SearchAvailableSeatUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.SearchConcertUseCase
 import org.ktor_lecture.concertservice.application.port.out.ConcertReadRepository
+import org.ktor_lecture.concertservice.application.service.cache.ConcertDatesCache
 import org.ktor_lecture.concertservice.application.service.dto.ConcertDateInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertInfo
 import org.ktor_lecture.concertservice.application.service.dto.ConcertSeatInfo
 import org.ktor_lecture.concertservice.common.CacheManager
 import org.ktor_lecture.concertservice.common.LocalCache
 import org.ktor_lecture.concertservice.domain.annotation.ReadOnlyTransactional
-import org.ktor_lecture.concertservice.domain.entity.ConcertOptionEntity
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -74,13 +74,5 @@ class ConcertReadService (
      */
     override fun getConcertSuggestions(query: String): List<String> {
         return concertReadRepository.getConcertSuggestions(query)
-    }
-}
-
-data class ConcertDatesCache(
-    val dates: List<ConcertOptionEntity>
-) {
-    companion object {
-        fun from(dates: List<ConcertOptionEntity>) = ConcertDatesCache(dates)
     }
 }
