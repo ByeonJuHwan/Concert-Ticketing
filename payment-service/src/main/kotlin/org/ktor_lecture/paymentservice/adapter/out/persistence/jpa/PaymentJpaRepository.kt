@@ -4,4 +4,5 @@ import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface PaymentJpaRepository: JpaRepository<PaymentEntity, Long> {
+    fun findByUserId(userId: Long): List<PaymentEntity>
 }

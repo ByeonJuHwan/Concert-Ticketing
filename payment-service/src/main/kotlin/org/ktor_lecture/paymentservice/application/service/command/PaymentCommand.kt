@@ -6,4 +6,6 @@ data class PaymentCommand (
 
 data class PaymentCreateCommand(
     val price: Long,
+    val reservationId: Long,
+    val userId: Long,
 )

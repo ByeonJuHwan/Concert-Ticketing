@@ -1,6 +1,7 @@
 package org.ktor_lecture.concertservice.adapter.out.persistence.jpa
 
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.ktor_lecture.concertservice.domain.entity.QConcertUserEntity
 import org.ktor_lecture.concertservice.domain.entity.QReservationEntity
 import org.ktor_lecture.concertservice.domain.entity.QSeatEntity
 import org.ktor_lecture.concertservice.domain.entity.ReservationEntity
@@ -20,6 +21,7 @@ interface ReservationJpaRepository: JpaRepository<ReservationEntity, Long>, Rese
 interface ReservationRepositoryCustom {
     fun findReservationAndSeatInfo(reservationId: Long): ReservationEntity?
     fun findExpiredReservations(): List<ReservationEntity>
+    fun searchUserReservations(userId: Long): List<ReservationEntity>
 }
 
 class ReservationJpaRepositoryImpl (
@@ -46,6 +48,17 @@ class ReservationJpaRepositoryImpl (
             .selectFrom(reservation)
             .join(reservation.seat, seat).fetchJoin()
             .where(reservation.expiresAt.lt(now))
+            .fetch()
+    }
+
+    override fun searchUserReservations(userId: Long): List<ReservationEntity> {
+        val reservation = QReservationEntity.reservationEntity
+        val concertUser = QConcertUserEntity.concertUserEntity
+
+        return queryFactory
+            .selectFrom(reservation)
+            .innerJoin(reservation.user, concertUser).fetchJoin()
+            .where(reservation.user.id.eq(userId))
             .fetch()
     }
 }

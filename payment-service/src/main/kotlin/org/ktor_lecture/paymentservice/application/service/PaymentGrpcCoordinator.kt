@@ -12,9 +12,7 @@ import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.POINT_USE
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.RESERVATION_CONFIRM
 import org.ktor_lecture.paymentservice.application.service.saga.PaymentSagaStep.SEAT_CONFIRM
-import org.ktor_lecture.paymentservice.application.service.saga.SagaExecution
 import org.ktor_lecture.paymentservice.application.service.saga.SagaGrpcExecution
-import org.ktor_lecture.paymentservice.application.service.saga.SagaStep
 import org.ktor_lecture.paymentservice.application.service.saga.SagaType.PAYMENT
 import org.ktor_lecture.paymentservice.common.JsonUtil
 import org.ktor_lecture.paymentservice.domain.entity.PaymentEntity
@@ -87,7 +85,7 @@ class PaymentGrpcCoordinator (
                 stepName = PAYMENT_SAVE,
             ) {
                 paymentService.save(
-                    PaymentCreateCommand(reservation.price)
+                    PaymentCreateCommand(reservation.price, reservationId, userId)
                 )
             }
 

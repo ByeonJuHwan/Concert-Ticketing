@@ -1,6 +1,7 @@
 package org.ktor_lecture.concertservice.application.service
 
 import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertReservationResponse
+import org.ktor_lecture.concertservice.adapter.`in`.web.response.ConcertUserReservationsResponse
 import org.ktor_lecture.concertservice.application.port.`in`.ChangeReservationPendingUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationExpiredUseCase
 import org.ktor_lecture.concertservice.application.port.`in`.ReservationPaidUseCase
@@ -81,5 +82,17 @@ class ConcertReservationService (
                 sagaId = sagaId,
             )
         )
+    }
+
+    @ReadOnlyTransactional
+    fun searchUserReservations(userId: Long): List<ConcertUserReservationsResponse> {
+        val reservations = reservationRepository.searchUserReservations(userId)
+
+        return reservations.map { reservation ->
+            ConcertUserReservationsResponse(
+                reservationId = reservation.id!!,
+                reservationStatus = reservation.status.toString(),
+            )
+        }
     }
 }

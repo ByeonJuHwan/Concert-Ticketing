@@ -24,4 +24,8 @@ class PaymentRepositoryAdapter (
     override fun findById(paymentId: Long): Optional<PaymentEntity> {
         return paymentJpaRepository.findById(paymentId)
     }
+
+    override fun findByUserId(userId: Long): List<PaymentEntity> {
+        return paymentJpaRepository.findByUserId(userId)
+    }
 }
