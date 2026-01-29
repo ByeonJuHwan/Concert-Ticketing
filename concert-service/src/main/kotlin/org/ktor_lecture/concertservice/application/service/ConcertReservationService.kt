@@ -92,6 +92,8 @@ class ConcertReservationService (
             ConcertUserReservationsResponse(
                 reservationId = reservation.id!!,
                 reservationStatus = reservation.status.toString(),
+                seatId = reservation.seat.id!!,
+                price = reservation.seat.price,
             )
         }
     }

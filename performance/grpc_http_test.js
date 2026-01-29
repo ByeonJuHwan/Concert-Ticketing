@@ -1,9 +1,8 @@
-// http-load-test.js
+// http-concert-test.js & grpc-concert-test.js
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
 
-// 커스텀 메트릭 정의
 const errorRate = new Rate('error_rate');
 const successRate = new Rate('success_rate');
 const responseTrend = new Trend('response_time_custom');
@@ -11,12 +10,11 @@ const requestCounter = new Counter('total_requests');
 
 export const options = {
   stages: [
-    { duration: '30s', target: 10 },  // 워밍업
-    { duration: '1m', target: 50 },   // 램프업
-    { duration: '2m', target: 50 },   // 유지
-    { duration: '30s', target: 100 }, // 스파이크
-    { duration: '1m', target: 100 },  // 유지
-    { duration: '30s', target: 0 },   // 램프다운
+    { duration: '20s', target: 50 },   // 빠른 램프업
+    { duration: '1m', target: 100 },   // 100 VUs 유지
+    { duration: '40s', target: 200 },  // 스파이크
+    { duration: '1m', target: 200 },   // 200 VUs 유지 (높은 부하)
+    { duration: '30s', target: 0 },    // 램프다운
   ],
   thresholds: {
     'success_rate': ['rate>0.95'],
@@ -27,15 +25,19 @@ export const options = {
 };
 
 export default function () {
-  const userId = Math.floor(Math.random() * 1000) + 1;
-  const url = `http://localhost:8081/api/v2/user/${userId}/payment-detail-history`;
+  const userId = Math.floor(Math.random() * 10) + 1;
+
+  // HTTP 버전은 /http, gRPC 버전은 /grpc
+  // const url = `http://localhost:8081/api/v1/user/${userId}/http`;
+  const url = `http://localhost:8081/api/v2/user/${userId}/grpc`;
 
   const params = {
     headers: {
       'Content-Type': 'application/json',
     },
     tags: {
-      name: 'HTTPPaymentHistory',
+      // name: 'HTTPConcertReservation',
+      name: 'gRPCConcertReservation',
     },
   };
 
@@ -43,11 +45,9 @@ export default function () {
   const res = http.get(url, params);
   const duration = new Date() - startTime;
 
-  // 커스텀 메트릭 기록
   requestCounter.add(1);
   responseTrend.add(duration);
 
-  // 응답 검증
   const checkResult = check(res, {
     'status is 200': (r) => r.status === 200,
     'response time < 500ms': (r) => r.timings.duration < 500,
@@ -56,7 +56,6 @@ export default function () {
     'no server errors': (r) => r.status < 500,
   });
 
-  // 성공/실패율 기록
   if (checkResult) {
     successRate.add(1);
     errorRate.add(0);
@@ -65,5 +64,5 @@ export default function () {
     errorRate.add(1);
   }
 
-  sleep(1);
+  sleep(0.5); // 0.5초로 줄여서 요청 빈도 증가
 }
