@@ -1,6 +1,5 @@
 package org.ktor_lecture.paymentservice.application.service
 
-import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import org.ktor_lecture.paymentservice.adapter.`in`.web.response.PaymentResponse
 import org.ktor_lecture.paymentservice.adapter.out.api.response.ConcertReservationResponse
@@ -87,7 +86,7 @@ class PaymentCoordinator (
             // 결제 저장
             val payment: PaymentEntity = sagaExecution.executeStep(sagaId, PAYMENT_SAVE) {
                 paymentService.save(
-                    PaymentCreateCommand(reservation.price)
+                    PaymentCreateCommand(reservation.price, reservationId, userId)
                 )
             }
             paymentId = payment.id!!

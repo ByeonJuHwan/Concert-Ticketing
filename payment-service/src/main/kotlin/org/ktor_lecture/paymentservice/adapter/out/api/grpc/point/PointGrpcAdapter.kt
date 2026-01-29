@@ -1,17 +1,13 @@
 package org.ktor_lecture.paymentservice.adapter.out.api.grpc.point
 
-import com.concert.point.grpc.GrpcPointUseResponse
 import com.concert.point.grpc.PointServiceGrpcKt
 import com.concert.point.grpc.grpcPointCancelRequest
 import com.concert.point.grpc.grpcPointUseRequest
-import com.concert.point.grpc.grpcPointUseResponse
 import io.grpc.Status
 import io.grpc.StatusException
-import kotlinx.coroutines.runBlocking
 import net.devh.boot.grpc.client.inject.GrpcClient
 import org.ktor_lecture.paymentservice.adapter.out.api.response.PointUseResponse
 import org.ktor_lecture.paymentservice.application.port.out.grpc.PointGrpcClient
-import org.ktor_lecture.paymentservice.application.port.out.http.PointApiClient
 import org.ktor_lecture.paymentservice.domain.exception.ConcertException
 import org.ktor_lecture.paymentservice.domain.exception.ErrorCode
 import org.slf4j.LoggerFactory

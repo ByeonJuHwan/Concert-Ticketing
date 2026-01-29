@@ -10,4 +10,5 @@ interface ReservationRepository {
     fun findExpiredReservations(): List<ReservationEntity>
     fun updateReservationStatusToExpired(reservationIds: List<Long>)
     fun deleteAll()
+    fun searchUserReservations(userId: Long): List<ReservationEntity>
 }

@@ -8,4 +8,5 @@ interface PaymentRepository {
     fun createUser(user: PaymentUserEntity)
     fun save(payment: PaymentEntity): PaymentEntity
     fun findById(paymentId: Long): Optional<PaymentEntity>
+    fun findByUserId(userId: Long): List<PaymentEntity>
 }

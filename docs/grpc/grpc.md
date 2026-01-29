@@ -128,23 +128,95 @@ val pointResponse = sagaGrpcExecution.executeStep(
 
 ## 성능 비교
 
-이제 실제 postMan 을 통해서 api 의 속도가 얼마나 개선되었는지 확인해보겠습니다.
+이제 실제 k6를 통해서 gRPC 와 HTTP1.1 의 성능을 비교해보았습니다
 
-초기 웜업 효과를 배제하기 위해 첫 요청은 제외하고, 이후 10회 요청의 평균을 측정했습니다.
+동시요청 상황에서 gRPC의 멀티플랙싱 이점이 생기다보니 임의로 동시요청 API 작성 후 테스트를 진행했습니다.
 
-- **기존 HTTP 방식**: 평균 150ms
-- **gRPC 방식**: 평균 100ms
-- **개선율**: 약 33% 향상
+```kotlin
+// gRPC
+val (payments, reservations) = coroutineScope {
+    val paymentsDeferred = async { userPaymentGrpcClient.searchUserPayments(userId) }
+    val reservationsDeferred = async { userPaymentGrpcClient.searchUserReservations(userId) }
+
+    paymentsDeferred.await() to reservationsDeferred.await()
+}
+
+// HTTP/1.1
+val paymentsFuture = CompletableFuture.supplyAsync {
+    userPaymentHttpClient.searchUserPayments(userId)
+}
+
+val reservationsFuture = CompletableFuture.supplyAsync {
+    userPaymentHttpClient.searchUserReservations(userId)
+}
+
+val payments = paymentsFuture.get()
+val reservations = reservationsFuture.get()
+```
+
+### 테스트 환경
+- 도구: K6 (부하 테스트)
+- 부하 시나리오:
+  - 워밍업: 10 VUs (30초)
+  - 램프업: 50 VUs (1분)
+  - 유지: 50 VUs (2분)
+  - 스파이크: 100 VUs (30초)
+  - 유지: 100 VUs (1분)
+  - 램프다운: 0 VUs (30초)
+- 총 테스트 시간: 5분 30초
+- 각 VU는 1초 간격으로 요청 반복
+
+### 측정 지표
+- TPS (Transactions Per Second): 처리량
+- 응답 시간: 평균, P50, P90, P95, P99, 최대값
+- 에러율
+- 네트워크 전송량
+
+
+## 성능 테스트 결과
+
+### 전체 비교표
+
+| 메트릭 | REST API | gRPC | 개선율 |
+|--------|----------|------|--------|
+| **TPS** | 53.12 req/s | 53.10 req/s | ~동일 |
+| **평균 응답시간** | 7.69ms | 7.33ms | **4.7% ↓** |
+| **중앙값 (P50)** | 5.31ms | 4.91ms | **7.5% ↓** |
+| **P90** | 16.39ms | 16.14ms | **1.5% ↓** |
+| **P95** | 21.49ms | 19.37ms | **9.9% ↓** |
+| **P99** | 30.8ms | 27.17ms | **11.8% ↓** |
+| **최대 응답시간** | 234.73ms | 194.97ms | **16.9% ↓** |
+| **총 요청 수** | 17,564개 | 17,571개 | ~동일 |
+| **에러율** | 0% | 0% | ~동일 |
+
+## 결과 분석
+
+- **평균 응답시간**: 5% 개선
+- **P95**: 10% 개선 (21.49ms → 19.37ms)
+- **P99**: 12% 개선 (30.8ms → 27.17ms)
+- **최악의 경우**: 17% 개선 (234.73ms → 194.97ms)
+
+**의미**: 
+- 대부분의 사용자(95~99%)가 더 빠른 응답을 경험
+- 특히 **꼬리 지연(Tail Latency) 감소**가 두드러짐
+- 네트워크 지연이 긴 상황에서 gRPC가 더 안정적
+
+#### TPS는 동일한 이유
+- 현재 테스트는 K6(HTTP) → API (REST) → Backend(gRPC) 구조
+- 클라이언트와 서버 사이는 여전히 HTTP/REST 사용
+- **내부 서비스 간 통신**에서만 gRPC의 이점 발휘
+- VUs가 1초마다 요청하므로 처리량보다는 응답 속도에서 차이 발생
+
+요약해보면 모든 응답 시간이 5~17% 개선되었으며, 특히 네트워크 상황이 좋지 않은 사용자 혹은 서버 부하가 높은 상황(P95~P99)에서 10~12%의 더 큰 개선 효과가 나타났습니다.
 
 ## 마무리
 
 gRPC 의 장점도 많지만 도입하면서 장점만 있지는 않았습니다
 
-코루틴기반이다보니 실제 코루틴이 무었인지, HTTP 1.1 과 HTTP 2 의 차이점은 무었은지 등등 실제 러닝커브가 있었습니다.
+코루틴기반이다보니 실제 코루틴이 무었인지, HTTP 1.1 과 HTTP 2 의 차이점은 무었인지 등등 실제 러닝커브가 있었습니다.
 
 테스트및 실제 api 속도 테스트를 진행해보니 유의미한 차이점이 있었나? 제 기준에서는 그렇게 큰 차이점은 못느꼈습니다.
 
 하지만 현재 제 프로젝트보다 더 많은 서비스(서버)와 통신하고,  동시요청이 많은 서비스라면 충분히 도입할만하다고 생각합니다.
 
-이번 gRPC 도입 경험을 통해 **기술 선택은 단순히 '좋다/나쁘다'가 아니라 
-'상황에 맞는가'가 중요**하다는 것을 다시 한번 깨달았습니다. 
+이번 gRPC 도입 경험을 통해 **기술 선택은 단순히 '좋다/나쁘다'가 아니라'상황에 맞는가'가 중요**하다는 것을 다시 한번 깨달았습니다. 

@@ -60,8 +60,14 @@ class PaymentService (
             price = command.price,
             paymentStatus = PaymentStatus.SUCCESS,
             paymentType = PaymentType.POINT,
+            reservationId = command.reservationId,
+            userId = command.userId,
         )
 
         return paymentRepository.save(payment)
+    }
+
+    fun searchUserPayments(userId: Long): List<PaymentEntity> {
+        return paymentRepository.findByUserId(userId)
     }
 }

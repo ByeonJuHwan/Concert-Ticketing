@@ -28,3 +28,8 @@ data class ConcertReservationResponse(
     val price: Long,
     val expiresAt: LocalDateTime,
 )
+
+data class ConcertUserReservationsResponse(
+    val reservationId: Long,
+    val reservationStatus: String,
+)

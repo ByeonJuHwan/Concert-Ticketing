@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+// Java/Kotlin 프로젝트용 패키지 설정
+option java_package = "com.concert.reservation.grpc";
+
+// 각 클래스를 별도 파일로 생성 (코드 가독성)
+option java_multiple_files = true;
+
+// proto 네임스페이스 (다른 proto 파일과 구분)
+package concert.reservation;
+
+
+service ConcertReservationService {
+  rpc SearchUserReservations (GrpcUserReservationRequest) returns (GrpcUserReservationListResponse);
+}
+
+message GrpcUserReservationRequest {
+  int64 user_id = 1;
+}
+
+message GrpcUserReservationListResponse {
+  repeated GrpcUserReservationResponse reservations = 1;
+}
+
+message GrpcUserReservationResponse {
+  int64 reservation_id = 1;
+  string reservation_status = 2;
+}

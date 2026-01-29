@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import java.util.Optional
 
 @Component
-class ReservationWriteAdapter (
+class ReservationRepositoryAdapter (
     private val reservationJpaRepository: ReservationJpaRepository,
 ): ReservationRepository {
     override fun save(reservation: ReservationEntity): ReservationEntity {
@@ -32,5 +32,9 @@ class ReservationWriteAdapter (
 
     override fun deleteAll() {
         reservationJpaRepository.deleteAll()
+    }
+
+    override fun searchUserReservations(userId: Long): List<ReservationEntity> {
+        return reservationJpaRepository.searchUserReservations(userId)
     }
 }

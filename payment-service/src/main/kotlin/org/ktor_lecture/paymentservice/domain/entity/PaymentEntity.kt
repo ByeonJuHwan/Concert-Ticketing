@@ -13,6 +13,12 @@ class PaymentEntity (
     val id: Long? = null,
 
     @Column(nullable = false)
+    val reservationId : Long,
+
+    @Column(nullable = false)
+    val userId: Long,
+
+    @Column(nullable = false)
     val price : Long,
 
     @Column(nullable = false)
