@@ -131,40 +131,38 @@ val pointResponse = sagaGrpcExecution.executeStep(
 이제 실제 k6를 통해서 gRPC 와 HTTP1.1 의 성능을 비교해보았습니다
 
 동시요청 상황에서 gRPC의 멀티플랙싱 이점이 생기다보니 임의로 동시요청 API 작성 후 테스트를 진행했습니다.
-
 ```kotlin
 // gRPC
-val (payments, reservations) = coroutineScope {
-    val paymentsDeferred = async { userPaymentGrpcClient.searchUserPayments(userId) }
-    val reservationsDeferred = async { userPaymentGrpcClient.searchUserReservations(userId) }
+val (concerts, reservations) = coroutineScope {
+    val concertsDeferred = async { userConcertReservationGrpcClient.searchConcerts(userId) }
+    val reservationsDeferred = async { userConcertReservationGrpcClient.searchReservations(userId) }
 
-    paymentsDeferred.await() to reservationsDeferred.await()
+    concertsDeferred.await() to reservationsDeferred.await()
 }
 
 // HTTP/1.1
-val paymentsFuture = CompletableFuture.supplyAsync {
-    userPaymentHttpClient.searchUserPayments(userId)
+val concertsFuture = CompletableFuture.supplyAsync {
+    userConcertReservationHttpClient.searchConcerts(userId)
 }
 
 val reservationsFuture = CompletableFuture.supplyAsync {
-    userPaymentHttpClient.searchUserReservations(userId)
+    userConcertReservationHttpClient.searchReservations(userId)
 }
 
-val payments = paymentsFuture.get()
+val concerts = concertsFuture.get()
 val reservations = reservationsFuture.get()
 ```
 
 ### 테스트 환경
 - 도구: K6 (부하 테스트)
 - 부하 시나리오:
-  - 워밍업: 10 VUs (30초)
-  - 램프업: 50 VUs (1분)
-  - 유지: 50 VUs (2분)
-  - 스파이크: 100 VUs (30초)
-  - 유지: 100 VUs (1분)
+  - 워밍업: 50 VUs (20초)
+  - 램프업: 100 VUs (1분)
+  - 스파이크: 200 VUs (40초)
+  - 유지: 200 VUs (1분)
   - 램프다운: 0 VUs (30초)
-- 총 테스트 시간: 5분 30초
-- 각 VU는 1초 간격으로 요청 반복
+- 총 테스트 시간: 3분 30초
+- 각 VU는 0.5초 간격으로 요청 반복
 
 ### 측정 지표
 - TPS (Transactions Per Second): 처리량
@@ -179,22 +177,22 @@ val reservations = reservationsFuture.get()
 
 | 메트릭 | REST API | gRPC | 개선율 |
 |--------|----------|------|--------|
-| **TPS** | 53.12 req/s | 53.10 req/s | ~동일 |
-| **평균 응답시간** | 7.69ms | 7.33ms | **4.7% ↓** |
-| **중앙값 (P50)** | 5.31ms | 4.91ms | **7.5% ↓** |
-| **P90** | 16.39ms | 16.14ms | **1.5% ↓** |
-| **P95** | 21.49ms | 19.37ms | **9.9% ↓** |
-| **P99** | 30.8ms | 27.17ms | **11.8% ↓** |
-| **최대 응답시간** | 234.73ms | 194.97ms | **16.9% ↓** |
-| **총 요청 수** | 17,564개 | 17,571개 | ~동일 |
+| **TPS** | 241.78 req/s | 244.29 req/s | **1.0% ↑** |
+| **평균 응답시간** | 11.39ms | 6.16ms | **45.9% ↓** |
+| **중앙값 (P50)** | 8.33ms | 5.3ms | **36.4% ↓** |
+| **P90** | 22.17ms | 10.29ms | **53.6% ↓** |
+| **P95** | 29.19ms | 12.98ms | **55.5% ↓** |
+| **P99** | 47.86ms | 19.44ms | **59.4% ↓** |
+| **최대 응답시간** | 227.16ms | 111.99ms | **50.7% ↓** |
+| **총 요청 수** | 50,790개 | 51,348개 | ~동일 |
 | **에러율** | 0% | 0% | ~동일 |
 
 ## 결과 분석
 
-- **평균 응답시간**: 5% 개선
-- **P95**: 10% 개선 (21.49ms → 19.37ms)
-- **P99**: 12% 개선 (30.8ms → 27.17ms)
-- **최악의 경우**: 17% 개선 (234.73ms → 194.97ms)
+- **평균 응답시간**: 46% 개선
+- **P95**: 56% 개선 (29.19ms → 12.98ms)
+- **P99**: 59% 개선 (47.86ms → 19.44ms)
+- **최악의 경우**: 51% 개선 (227.16ms → 111.99ms)
 
 **의미**: 
 - 대부분의 사용자(95~99%)가 더 빠른 응답을 경험
@@ -205,18 +203,16 @@ val reservations = reservationsFuture.get()
 - 현재 테스트는 K6(HTTP) → API (REST) → Backend(gRPC) 구조
 - 클라이언트와 서버 사이는 여전히 HTTP/REST 사용
 - **내부 서비스 간 통신**에서만 gRPC의 이점 발휘
-- VUs가 1초마다 요청하므로 처리량보다는 응답 속도에서 차이 발생
+- VUs가 0.5초마다 요청하므로 처리량보다는 응답 속도에서 차이 발생
 
-요약해보면 모든 응답 시간이 5~17% 개선되었으며, 특히 네트워크 상황이 좋지 않은 사용자 혹은 서버 부하가 높은 상황(P95~P99)에서 10~12%의 더 큰 개선 효과가 나타났습니다.
+요약해보면 모든 응답 시간이 36~59% 개선되었으며, 특히 네트워크 상황이 좋지 않은 사용자 혹은 서버 부하가 높은 상황(P95~P99)에서 55~59%의 더 큰 개선 효과가 나타났습니다.
 
 ## 마무리
 
 gRPC 의 장점도 많지만 도입하면서 장점만 있지는 않았습니다
 
-코루틴기반이다보니 실제 코루틴이 무었인지, HTTP 1.1 과 HTTP 2 의 차이점은 무었인지 등등 실제 러닝커브가 있었습니다.
+코루틴기반이다보니 실제 코루틴이 무었인지, HTTP 1.1 과 HTTP 2 의 차이점은 무었인지 등등 실제 러닝커브가 가장 큰 허들이었습니다.
 
-테스트및 실제 api 속도 테스트를 진행해보니 유의미한 차이점이 있었나? 제 기준에서는 그렇게 큰 차이점은 못느꼈습니다.
-
-하지만 현재 제 프로젝트보다 더 많은 서비스(서버)와 통신하고,  동시요청이 많은 서비스라면 충분히 도입할만하다고 생각합니다.
+하지만 부하테스트를 통해서 많은 서비스(서버)와 통신하고,  동시요청이 많은 서비스라면 충분히 도입할만하다고 생각합니다.
 
 이번 gRPC 도입 경험을 통해 **기술 선택은 단순히 '좋다/나쁘다'가 아니라'상황에 맞는가'가 중요**하다는 것을 다시 한번 깨달았습니다. 

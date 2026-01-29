@@ -32,4 +32,6 @@ data class ConcertReservationResponse(
 data class ConcertUserReservationsResponse(
     val reservationId: Long,
     val reservationStatus: String,
+    val seatId : Long,
+    val price: Long,
 )

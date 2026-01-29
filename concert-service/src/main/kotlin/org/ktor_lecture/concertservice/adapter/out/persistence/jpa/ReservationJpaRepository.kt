@@ -54,10 +54,12 @@ class ReservationJpaRepositoryImpl (
     override fun searchUserReservations(userId: Long): List<ReservationEntity> {
         val reservation = QReservationEntity.reservationEntity
         val concertUser = QConcertUserEntity.concertUserEntity
+        val seat = QSeatEntity.seatEntity
 
         return queryFactory
             .selectFrom(reservation)
             .innerJoin(reservation.user, concertUser).fetchJoin()
+            .leftJoin(reservation.seat, seat).fetchJoin()
             .where(reservation.user.id.eq(userId))
             .fetch()
     }
