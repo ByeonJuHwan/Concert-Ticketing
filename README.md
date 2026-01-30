@@ -86,6 +86,9 @@
 - **[최종적 일관성 구현](docs/msa/eventual-consistency.md)**
   - `Kafka` 기반 이벤트 발행을 통한 데이터 복제
   - 서비스 간 결합도 감소 및 데이터 동기화 전략
+  
+- **[분산시스템에서 로컬 캐시 활용](docs/msa/local-cache-msa.md)**
+  - 분산 환경에서의 로컬 캐시 적용 방안
 
 #### 검색 시스템 개선
 - **[Elasticsearch 도입](docs/elasticsearch.md)**
