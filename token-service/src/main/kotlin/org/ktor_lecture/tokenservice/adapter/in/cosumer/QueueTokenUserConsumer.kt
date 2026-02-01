@@ -1,5 +1,6 @@
 package org.ktor_lecture.tokenservice.adapter.`in`.cosumer
 
+import org.ktor_lecture.tokenservice.adapter.out.kafka.KafkaTopics
 import org.ktor_lecture.tokenservice.application.port.`in`.QueueTokenUserCreateUseCase
 import org.ktor_lecture.tokenservice.common.JsonUtil
 import org.ktor_lecture.tokenservice.domain.event.UserCreatedEvent
@@ -15,7 +16,7 @@ class QueueTokenUserConsumer (
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @KafkaListener(
-        topics = ["user.create"],
+        topics = [KafkaTopics.User.CREATED],
         groupId = "token-user-create-group",
         concurrency = "3",
     )
