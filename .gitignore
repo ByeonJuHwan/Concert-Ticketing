@@ -41,3 +41,6 @@ out/
 
 # application.yml, 혹은 application-test.yml 등 추가
 *.yml
+/concert-service/gradle.properties
+/user-service/gradle.properties
+/payment-service/gradle.properties

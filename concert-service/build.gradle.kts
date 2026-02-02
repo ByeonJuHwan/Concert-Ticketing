@@ -21,6 +21,14 @@ java {
 
 repositories {
     mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/ByeonJuHwan/concert-proto")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -95,6 +103,10 @@ dependencies {
     // Cache
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+
+
+    // proto
+    implementation("com.concert:concert-proto:1.0.3")
 }
 
 kotlin {
