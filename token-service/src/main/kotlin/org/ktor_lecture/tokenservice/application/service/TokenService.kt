@@ -20,10 +20,10 @@ import java.util.UUID
 
 @Service
 class TokenService (
-    @Qualifier("DB") private val tokenRepository: TokenRepository,
+    @Qualifier("REDIS") private val tokenRepository: TokenRepository,
     private val tokenUserRepository: TokenUserRepository,
-    @Qualifier("DB") private val lockKeyGenerator: LockKeyGenerator,
-    @Qualifier("DB") private val tokenGenerator: TokenGenerator,
+    @Qualifier("REDIS") private val lockKeyGenerator: LockKeyGenerator,
+    @Qualifier("REDIS") private val tokenGenerator: TokenGenerator,
 ): CreateTokenUseCase, GetTokenStatusUseCase {
 
 

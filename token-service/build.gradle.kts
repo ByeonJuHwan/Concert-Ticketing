@@ -19,6 +19,9 @@ java {
     }
 }
 
+
+extra["springCloudVersion"] = "2025.0.0"
+
 repositories {
     mavenCentral()
 }
@@ -52,6 +55,15 @@ dependencies {
 
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Eureka Client
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
 }
 
 kotlin {

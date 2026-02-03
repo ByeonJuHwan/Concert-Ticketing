@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 @Service
 class TokenBatchService (
 //    @Qualifier("DB") private val tokenRepository: TokenRepository,
-    @Qualifier("DB") private val tokenQueueDeliver: TokenQueueDeliver,
+    @Qualifier("REDIS") private val tokenQueueDeliver: TokenQueueDeliver,
 ): MoveTokenToActiveQueueUseCase, ManageExpiredActiveTokenUseCase {
 
     /**
