@@ -13,15 +13,32 @@
 * 동시성 이슈를 고려하여 구현
 * 대기열 개념을 고려해 구현
 
-### 마일스톤
-* 1주차: [콘서트 티켓팅 예약 시스템 설계](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218480) (API 명세, 시퀀스 다이어그램, ERD, 마일스톤 작성, Mock API 작성)
-* 2주차: [포인트 충전 / 조회 기능 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218504), [대기열 시스템 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218492)
-* 3주차: [콘서트 좌석 예약](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218503), [결제 구현](https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218505)
+[//]: # (### 마일스톤)
 
-### 설계 문서
-* [API 명세서](https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%98%88%EC%95%BD-%EC%84%9C%EB%B9%84%EC%8A%A4-API-%EB%AA%85%EC%84%B8%EC%84%9C)
-* [시퀀스 다이어그램](https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%A2%8C%EC%84%9D-%EC%98%88%EC%95%BD-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%8B%9C%ED%80%80%EC%8A%A4-%EB%8B%A4%EC%9D%B4%EC%96%B4%EA%B7%B8%EB%9E%A8)
-* [ERD](https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%A2%8C%EC%84%9D-%EC%98%88%EC%95%BD-ERD)
+[//]: # (* 1주차: [콘서트 티켓팅 예약 시스템 설계]&#40;https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218480&#41; &#40;API 명세, 시퀀스 다이어그램, ERD, 마일스톤 작성, Mock API 작성&#41;)
+
+[//]: # (* 2주차: [포인트 충전 / 조회 기능 구현]&#40;https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218504&#41;, [대기열 시스템 구현]&#40;https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218492&#41;)
+
+[//]: # (* 3주차: [콘서트 좌석 예약]&#40;https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218503&#41;, [결제 구현]&#40;https://github.com/users/ByeonJuHwan/projects/7/views/4?pane=issue&itemId=69218505&#41;)
+
+[//]: # ()
+[//]: # (### 설계 문서)
+
+[//]: # (* [API 명세서]&#40;https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%98%88%EC%95%BD-%EC%84%9C%EB%B9%84%EC%8A%A4-API-%EB%AA%85%EC%84%B8%EC%84%9C&#41;)
+
+[//]: # (* [시퀀스 다이어그램]&#40;https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%A2%8C%EC%84%9D-%EC%98%88%EC%95%BD-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EC%8B%9C%ED%80%80%EC%8A%A4-%EB%8B%A4%EC%9D%B4%EC%96%B4%EA%B7%B8%EB%9E%A8&#41;)
+
+[//]: # (* [ERD]&#40;https://github.com/ByeonJuHwan/Concert-Ticketing/wiki/%EC%BD%98%EC%84%9C%ED%8A%B8-%EC%A2%8C%EC%84%9D-%EC%98%88%EC%95%BD-ERD&#41;)
+
+## 📂 프로젝트 구조
+```
+Concert-Ticketing/
+├── concert-service/      # 콘서트 관리 서비스
+├── payment-service/      # 결제 서비스
+├── token-service/        # 대기열 토큰 서비스
+├── user-service/         # 사용자 관리 서비스
+└── gateway-service/      # API Gateway
+```
 
 ---
 
@@ -137,15 +154,3 @@
 ### Testing
 - TestContainers (통합 테스트)
 - JUnit 5
-
----
-
-## 📂 프로젝트 구조
-```
-Concert-Ticketing/
-├── concert-service/      # 콘서트 관리 서비스
-├── payment-service/      # 결제 서비스
-├── token-service/        # 대기열 토큰 서비스
-├── user-service/         # 사용자 관리 서비스
-└── gateway-service/      # API Gateway
-```
