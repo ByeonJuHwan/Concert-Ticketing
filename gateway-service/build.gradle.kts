@@ -6,7 +6,6 @@ plugins {
 
     kotlin("plugin.serialization") version "1.9.25"
 }
-val springCloudVersion by extra("2025.0.0")
 
 group = "org.ktor_lecture"
 version = "0.0.1-SNAPSHOT"
@@ -18,6 +17,8 @@ java {
     }
 }
 
+extra["springCloudVersion"] = "2025.0.0"
+
 repositories {
     mavenCentral()
 }
@@ -25,7 +26,6 @@ repositories {
 dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     testImplementation("io.projectreactor:reactor-test")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -37,6 +37,10 @@ dependencies {
 
     // serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // Eureka Client
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 }
 
 kotlin {
@@ -46,7 +50,7 @@ kotlin {
 }
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
 }
 

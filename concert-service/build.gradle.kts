@@ -19,6 +19,8 @@ java {
     }
 }
 
+extra["springCloudVersion"] = "2025.0.0"
+
 repositories {
     mavenCentral()
     maven {
@@ -107,6 +109,9 @@ dependencies {
 
     // proto
     implementation("com.concert:concert-proto:1.0.3")
+
+    // Eureka Client
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 }
 
 kotlin {
@@ -143,6 +148,12 @@ protobuf {
                 create("kotlin")
             }
         }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
     }
 }
 
