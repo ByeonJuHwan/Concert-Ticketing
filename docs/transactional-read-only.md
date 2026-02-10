@@ -171,6 +171,51 @@ SELECT c.id, c.concert_name, co.concert_date
 총 1개의 DB 명령 실행 (80% 감소)
 ```
 
+---
+
+### 주의사항: SUPPORTS 적용 시 알아야 할 점
+
+성능이 개선되는 건 확인했지만, 모든 조회에 SUPPORTS를 적용하면 안 됩니다.
+
+SUPPORTS는 트랜잭션을 열지 않기 때문에 MySQL InnoDB의 MVCC(Multi-Version Concurrency Control)가 동작하지 않습니다.
+
+MVCC는 트랜잭션이 시작될 때 Read View(스냅샷)를 생성하고, 이후 모든 SELECT는 이 스냅샷 기준으로 데이터를 읽습니다.
+하지만 트랜잭션이 없으면 각 SELECT가 독립된 auto-commit 트랜잭션으로 실행되어 매번 새로운 Read View가 만들어집니다.
+
+이게 왜 문제가 되냐면, 하나의 메서드 안에서 같은 데이터를 두 번 읽는 경우를 생각해보면 됩니다.
+
+#### Non-Repeatable Read 예시
+```kotlin
+@ReadOnlyTransactional  // SUPPORTS → 트랜잭션 없음
+fun checkConcertPrice(concertId: Long) {
+    val name1 = concertRepository.findName(concertId)  // 아이유 콘서트
+    // 이 사이에 관리자가 이름을 방탄소년단 콘서트로 변경 -> 다른 스레드
+    val name2 = concertRepository.findName(concertId)   // 방탄소년단 콘서트
+    // 같은 메서드인데 값이 달라짐
+}
+```
+
+트랜잭션이 있었다면 MVCC 스냅샷 덕분에 name2도 아이유 콘서트로 읽혔을 겁니다.
+
+#### 여러 테이블 조인시
+
+여러테이블 조인시에도 트랜잭션이 존재하지 않으므로 중간에 값이 변동되면 값이 변경되게 됩니다
+간단하게 주문로직에서 아래와 같은 문제가 발생합니다.
+
+```kotlin
+@ReadOnlyTransactional  // SUPPORTS → 트랜잭션 없음
+fun getOrderSummary(orderId: Long): OrderSummaryDto {
+    val order = orderRepository.findById(orderId)       // totalAmount = 30,000원
+    // 이 사이에 사용자가 주문 1개 취소! totalAmount → 20,000원
+    val items = orderItemRepository.findByOrderId(orderId)  // 2개, 합계 20,000원
+    // 총액은 30,000원인데 상세 합계는 20,000원 → 불일치
+}
+```
+
+위와 같은 치명적인 문제점이 존재하기 때문에 이번 프로젝트에서는 `findById`, `findByConcertTime` 같이 다른 테이블과 조인이 없고, 바로 값이 리턴되는 간단한 비드니스 로직에만 적용했습니다.
+
+---
+
 
 ### 마무리 
 
