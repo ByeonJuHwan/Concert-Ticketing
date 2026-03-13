@@ -1,5 +1,118 @@
 # 콘서트 예약 시스템
 
+## 🎯 주요 성능 지표 (K6 부하 테스트 기준)
+
+| API | 평균 응답시간 | p95 응답시간 | 처리량(TPS) | 최대 동시 사용자 |
+|-----|------------|------------|------------|--------------|
+| 포인트 충전 | 925ms | 1.74ms | **620** | 1,000명 |
+| 포인트 조회 | 887ms | 2.79s | 649 | 6,000명 |
+| 토큰 발급 | 4.04ms | 12.68ms | - | 1,800명 (CPU 60%) |
+| 콘서트 목록 조회 | 3.77ms | 6.64ms | 420 | 6,000명 |
+| 좌석 조회 (캐싱 후) | **4.7ms** | 6.76ms | 487 | 4,000명 |
+| 좌석 예약 | 4.49ms | 10.1ms | **645** | 4,000명 |
+| 결제 | - | - | - | 1,000명 (정합성 100%) |
+
+> 캐싱 적용으로 좌석 조회 응답시간 **53.2% 개선** (10.05ms → 4.7ms), p95 **76.9% 개선** (29.3ms → 6.76ms)
+
+---
+
+## 🏛️ 시스템 아키텍처
+
+```mermaid
+graph TB
+    Client["🖥️ Client"]
+
+    subgraph Gateway["API Gateway (8000)"]
+        GW["Spring Cloud Gateway<br/>Token 검증 필터<br/>Rate Limiting"]
+    end
+
+    subgraph Discovery["Service Discovery"]
+        Eureka["Eureka Server (8761)"]
+    end
+
+    subgraph Services["Microservices"]
+        TS["Token Service<br/>(8082)<br/>대기열 토큰 관리"]
+        US["User Service<br/>(8081 / gRPC 9091)<br/>사용자 & 포인트"]
+        CS["Concert Service<br/>(8080 / gRPC 9093)<br/>콘서트 & 예약"]
+        PS["Payment Service<br/>(8083 / gRPC 9094)<br/>결제 & SAGA"]
+    end
+
+    subgraph Infra["Infrastructure"]
+        Kafka["Apache Kafka<br/>이벤트 스트리밍"]
+        Redis["Redis<br/>캐싱 & 분산락"]
+        ES["Elasticsearch<br/>콘서트 검색"]
+        DB["MariaDB<br/>주 데이터베이스"]
+    end
+
+    Client -->|"HTTP"| Gateway
+    Gateway -->|"라우팅"| TS
+    Gateway -->|"라우팅"| US
+    Gateway -->|"라우팅"| CS
+    Gateway -->|"라우팅"| PS
+
+    GW -.->|"서비스 등록/조회"| Eureka
+    TS -.->|"등록"| Eureka
+    US -.->|"등록"| Eureka
+    CS -.->|"등록"| Eureka
+    PS -.->|"등록"| Eureka
+
+    CS -->|"gRPC"| US
+    CS -->|"gRPC"| PS
+
+    CS -->|"이벤트 발행"| Kafka
+    US -->|"이벤트 발행"| Kafka
+    PS -->|"이벤트 발행"| Kafka
+    Kafka -->|"이벤트 소비"| CS
+    Kafka -->|"이벤트 소비"| US
+    Kafka -->|"이벤트 소비"| PS
+
+    TS -->|"대기열 상태"| Redis
+    CS -->|"캐싱"| Redis
+    US -->|"분산락"| Redis
+    Gateway -->|"토큰 검증"| Redis
+
+    CS -->|"검색"| ES
+    CS --- DB
+    US --- DB
+    PS --- DB
+    TS --- DB
+```
+
+### 핵심 요청 흐름 (좌석 예약 → 결제)
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as Gateway
+    participant T as Token Service
+    participant CS as Concert Service
+    participant US as User Service
+    participant PS as Payment Service
+    participant K as Kafka
+
+    C->>G: 토큰 발급 요청
+    G->>T: 라우팅
+    T-->>C: 대기열 토큰 발급
+
+    C->>G: 좌석 예약 요청 (Bearer Token)
+    G->>G: 토큰 검증 (Redis)
+    G->>CS: 라우팅
+    CS->>CS: 비관적 락으로 좌석 점유
+    CS->>K: 예약 이벤트 발행 (Outbox 패턴)
+    CS-->>C: 예약 완료
+
+    C->>G: 결제 요청
+    G->>PS: 라우팅
+    PS->>US: 포인트 차감 (gRPC)
+    PS->>CS: 예약 확정 (gRPC)
+    PS->>K: 결제 완료 이벤트
+    PS-->>C: 결제 완료
+
+    Note over PS,K: 결제 실패 시 SAGA 보상 트랜잭션으로 롤백
+```
+
+---
+
 ## 📋 프로젝트 개요
 
 ### 요구사항
@@ -33,11 +146,17 @@
 ## 📂 프로젝트 구조
 ```
 Concert-Ticketing/
-├── concert-service/      # 콘서트 관리 서비스
-├── payment-service/      # 결제 서비스
-├── token-service/        # 대기열 토큰 서비스
-├── user-service/         # 사용자 관리 서비스
-└── gateway-service/      # API Gateway
+├── concert-service/      # 콘서트 관리 & 예약 (HTTP:8080, gRPC:9093)
+├── payment-service/      # 결제 & SAGA 오케스트레이션 (HTTP:8083, gRPC:9094)
+├── token-service/        # 대기열 토큰 관리 (HTTP:8082)
+├── user-service/         # 사용자 & 포인트 관리 (HTTP:8081, gRPC:9091)
+├── gateway-service/      # API Gateway & 토큰 검증 (HTTP:8000)
+├── eureka-service/       # 서비스 디스커버리 (HTTP:8761)
+├── docs/                 # 기술 의사결정 문서
+├── database/             # DB 설정
+├── redis/                # Redis 설정
+├── search/               # Elasticsearch 설정
+└── docker-compose.yml    # 전체 인프라 구성
 ```
 
 ---
@@ -137,20 +256,20 @@ Concert-Ticketing/
 ## 🛠 기술 스택
 
 ### Backend
-- Kotlin, Spring Boot
-- Spring Data JPA, MyBatis
-- Kafka (이벤트 스트리밍)
-- gRPC, Protocol Buffers
+- **Kotlin 1.9** + **Spring Boot 3.5** (Java 17)
+- Spring Data JPA + QueryDSL (타입 안전 쿼리)
+- Apache Kafka (이벤트 스트리밍, Outbox 패턴)
+- **gRPC + Protocol Buffers** (서비스 간 고성능 통신)
+- Spring Cloud Gateway + Eureka (MSA 기반)
+- Resilience4j (Circuit Breaker, Rate Limiting)
 
 ### Database
-- MySQL (주 데이터베이스)
-- Redis (캐싱, 분산락)
-- Elasticsearch (검색)
+- MariaDB (주 데이터베이스)
+- Redis (분산 캐싱, 대기열, 분산락)
+- Elasticsearch 8.11 (자동완성, 퍼지 검색)
+- Caffeine (로컬 캐싱, 2중 캐시 전략)
 
 ### Infrastructure
-- Docker, Docker Compose
-- Resilience4j (Circuit Breaker)
-
-### Testing
-- TestContainers (통합 테스트)
-- JUnit 5
+- Docker & Docker Compose
+- TestContainers (MariaDB, Kafka, Elasticsearch 통합 테스트)
+- K6 + Prometheus + Grafana (부하 테스트 & 모니터링)
