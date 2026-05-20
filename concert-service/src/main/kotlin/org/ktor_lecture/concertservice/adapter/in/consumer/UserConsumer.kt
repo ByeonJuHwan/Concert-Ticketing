@@ -9,6 +9,7 @@ import org.ktor_lecture.concertservice.domain.exception.ErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.annotation.RetryableTopic
+import org.springframework.kafka.retrytopic.DltStrategy
 import org.springframework.retry.annotation.Backoff
 import org.springframework.stereotype.Component
 
@@ -20,12 +21,14 @@ class UserConsumer (
     private val log = LoggerFactory.getLogger(this::class.java)
 
     @KafkaListener(
+        id = "user-created-listener",
         topics = [KafkaTopics.User.CREATED],
         groupId = "reservation-user-create-group",
-        concurrency = "3",
+        concurrency = "1",
     )
     @RetryableTopic (
         backoff = Backoff(multiplier = 2.0),
+        dltStrategy = DltStrategy.FAIL_ON_ERROR,
         dltTopicSuffix = ".dlt"
     )
     fun userCreatedConsumer(eventString: String) {
