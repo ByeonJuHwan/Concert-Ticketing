@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: Config-Server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/ByeonJuHwan/config-repo.git
+          default-label: main
+    bus:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: busrefresh, health, info
+
+server:
+  port: 8888

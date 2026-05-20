@@ -106,12 +106,15 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
     implementation("org.springframework.boot:spring-boot-starter-cache")
 
-
     // proto
     implementation("com.concert:concert-proto:1.0.3")
 
     // Eureka Client
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
+    // Spring Config
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-bus-kafka")
 }
 
 kotlin {
