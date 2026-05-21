@@ -5,17 +5,29 @@ spring:
     config:
       server:
         git:
+          # 어떤 GitHub Repository 에서 설정을 가져올건지 Path 설정
           uri: https://github.com/ByeonJuHwan/config-repo.git
           default-label: main
+        # OS 프로세스나 무언가가 로컬 디렉토리를 건드리먼 "dirty" 상태가됨 이때는 Pull이 실패함
+        # 이 설정은 dirty 상태여도 강제로 reset --hard 후 Pull
+        force-pull: true
+        # 기본은 lazy clone. 첫 요청시 클론을 시도해서 git uri 오타등이 런타입환경에서 발견됨 -> 또 수정해서 배포해야함
+        # 이를 막기위해서 부팅시 바로 시도 -> 빠르게 실패해서 배포 파이프라인에 잡힘
+        clone-on-start: true
+        # git이 느려지거나 장애상황에서 무한대기하면 모든 스레드가 다묶이는걸 방지하기 위해 timeout 설정 (기본값 5)
+        timeout: 5
     bus:
       enabled: true
+    stream:
+      binder:
+        brokers: localhost:9092
+
   kafka:
     bootstrap-servers: localhost:9092
 
 management:
   endpoints:
     web:
-      base-path: /management
       exposure:
         include: busrefresh, health, info
 

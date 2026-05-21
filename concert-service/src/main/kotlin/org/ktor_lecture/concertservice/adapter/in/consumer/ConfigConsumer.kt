@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent
 import org.springframework.context.event.EventListener
 import org.springframework.core.env.Environment
+import org.springframework.core.env.getProperty
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer
 import org.springframework.stereotype.Component
@@ -20,9 +21,10 @@ class ConfigConsumer (
     fun onConcurrencyChange(event: EnvironmentChangeEvent) {
         if ("spring.kafka.listener.concurrency" !in event.keys) return
 
-        val newConcurrency = environment.getProperty(
-            "spring.kafka.listener.concurrency", Int::class.java, 1
+        val newConcurrency = environment.getProperty<Int>(
+            "spring.kafka.listener.concurrency", 1
         )
+
         val container = kafkaListenerEndpointRegistry
             .getListenerContainer("user-created-listener")
                 as? ConcurrentMessageListenerContainer<*, *>
