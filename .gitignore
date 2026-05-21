@@ -44,3 +44,5 @@ out/
 /concert-service/gradle.properties
 /user-service/gradle.properties
 /payment-service/gradle.properties
+
+.claude
