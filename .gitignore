@@ -46,3 +46,4 @@ out/
 /payment-service/gradle.properties
 
 .claude
+CLAUDE.md
