@@ -1,5 +1,6 @@
 package org.ktor_lecture.concertservice.adapter.`in`.consumer
 
+import org.apache.kafka.common.TopicPartition
 import org.ktor_lecture.concertservice.adapter.out.kafka.KafkaTopics
 import org.ktor_lecture.concertservice.domain.event.UserCreatedEvent
 import org.ktor_lecture.concertservice.application.port.`in`.ConcertUserCreateUseCase
@@ -9,6 +10,7 @@ import org.ktor_lecture.concertservice.domain.exception.ErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.annotation.RetryableTopic
+import org.springframework.kafka.listener.AbstractConsumerSeekAware
 import org.springframework.kafka.retrytopic.DltStrategy
 import org.springframework.retry.annotation.Backoff
 import org.springframework.stereotype.Component
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Component
 @Component
 class UserConsumer (
     private val concertUserCreateUseCase: ConcertUserCreateUseCase,
-) {
+): AbstractConsumerSeekAware() {
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -42,5 +44,13 @@ class UserConsumer (
             log.error("이벤트 처리 실패 : {}", eventString, e)
             throw e
         }
+    }
+
+    fun seekPartitionByTimeStamp(topic: String, partition: Int, timestamp: Long) {
+        getSeekCallbacksFor(TopicPartition(topic, partition))
+            ?.forEach { callback ->
+                log.info("seek to timestamp — topic :{}, partition: {}, timestamp: {}", topic, partition, timestamp)
+                callback.seekToTimestamp(topic, partition, timestamp)
+            }
     }
 }
