@@ -204,6 +204,10 @@ Concert-Ticketing/
   - 토큰 검증 로직 중앙화
   - 서비스별 중복 코드 제거 및 유지보수성 향상
 
+- **[Spring Cloud Config 도입](docs/config/spring-cloud-config.md)**
+  - 중앙화된 설정 관리 및 무중단 설정 갱신
+  - Spring Cloud Bus를 통한 설정 변경 브로드캐스트
+
 #### 서비스 간 통신 최적화
 - **[gRPC 도입](docs/grpc/grpc.md)**
   - REST API에서 gRPC로 전환한 이유
